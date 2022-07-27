@@ -1,0 +1,41 @@
+trash_pickup:
+  name: Trash Pickup
+  options:
+    - Monday
+    - Tuesday
+    - Wednesday
+    - Thursday
+    - Friday
+  initial: Tuesday
+  icon: mdi:delete-variant 
+recycle_pickup:
+  name: Recycle Pickup
+  options:
+    - Monday
+    - Tuesday
+    - Wednesday
+    - Thursday
+    - Friday
+  initial: Tuesday
+  icon: mdi:delete-variant
+spotify_source:
+  name: Spotify Source
+  options:
+  - Everywhere
+  - Living Room
+  - Skylar's Bedroom
+  - Kitchen
+  initial: Living Room
+spotify_playlist:
+  name: Spotify Playlist
+  options:
+  - chill
+  - dedtime
+  - background
+  - scored
+  - jukebox
+  - classical
+  - disney
+  - jazz
+  - skylar
+  initial: background

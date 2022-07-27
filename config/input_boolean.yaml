@@ -1,0 +1,52 @@
+automations:
+  name: Automations
+  icon: mdi:home-automation
+
+welcome_greeting:
+  name: Welcome Greeting
+  icon: mdi:speaker-wireless
+
+kat_heading_home:
+  name: Kat Heading Home
+  icon: mdi:car
+jeff_heading_home:
+  name: Jeff Heading Home
+  icon: mdi:car
+jeff_traffic_alerts:
+  name: Jeff Traffic Alerts
+  icon: mdi:bell-plus
+jeff_traffic_alert_home:
+  name: Jeff Traffic Alert Home
+  icon: mdi:traffic-light
+tornado_watch:
+  name: Tornado Watch
+  icon: mdi:message-alert
+kat_travel_monitor:
+  name: Kat Travel Monitor
+  icon: mdi:car
+jeff_travel_monitor:
+  name: Jeff Travel Monitor
+  icon: mdi:car
+
+weather_reports:
+  name: Weather Info 
+traffic_reports:
+  name: traffic_reports
+sun_reports:
+  name: Sun Reports 
+new_ha_announcement:
+  name: New HA Announcement
+  icon: mdi:twitter
+showing_now:
+  name: Showing Now
+  icon: mdi:popcorn
+skylar_school:
+  name: Skylar at School
+shuffle_spotify:
+  name: Spotify Shuffle
+good_morning_report:
+  name: Good Morning Report 
+master_bedroom_alarm:
+  name: Master Bedroom Alarm
+skylar_awake:
+  name: Skylar Awake

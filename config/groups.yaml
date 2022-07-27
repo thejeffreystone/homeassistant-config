@@ -1,0 +1,164 @@
+
+
+#################################################################################
+### Groups ###
+
+Family:
+  - person.jeffrey
+  - person.katherine
+  - person.uncle_matt
+  - person.papa
+
+People:
+  - person.jeffrey
+  - person.katherine
+  - sensor.skylar_location
+  - person.uncle_matt
+  - person.papa
+
+test:
+  - group.jeffrey
+  - group.kat
+
+jeffrey:
+  - device_tracker.jeffrey_s_iphone_11_app
+  - device_tracker.jeffreys_iphone_11
+  - device_tracker.life360_jeffrey_stone
+
+kat:
+  - device_tracker.iphone_app
+  - device_tracker.life360_kat_stone
+
+arriving:
+  name: Arriving
+  entities: []
+
+#- binary_sensor.skylars_bedroom_motion_occupancy
+occupancy:
+  - binary_sensor.living_room_motion
+  - binary_sensor.kitchen_motion
+  - binary_sensor.master_bedroom_motion
+  - binary_sensor.back_door
+  - binary_sensor.studio_motion
+  
+occupancy_night:
+  - binary_sensor.kitchen_motion
+  - binary_sensor.master_bedroom_motion
+  - binary_sensor.back_door_motion
+
+room_presence:
+  - sensor.jeffs_iphone_11
+  - sensor.kats_iphone_11
+  - sensor.jeffs_watch
+
+jeff_room:
+  - sensor.jeffs_iphone_11
+  - sensor.jeffs_watch
+
+kat_room:
+  - sensor.kats_iphone_11
+
+audio_devices:
+  - media_player.kitchen_display
+  - media_player.upstairs_speaker
+  - media_player.master_bedroom_speaker
+  - media_player.croft_speaker
+  - media_player.ha_blue
+  - media_player.skylars_bedroom_speaker
+  - media_player.theater
+
+all_echos:
+  - media_player.livingroom_echo
+  - media_player.skylars_echo
+  - media_player.dads_desk
+  - media_player.kitchen_echo
+
+Outside Lights:
+  - switch.driveway_light
+  - switch.front_porch_light
+  - light.side_door_light_level
+  
+External Doors:
+  - binary_sensor.side_door
+  - binary_sensor.front_door
+  - binary_sensor.back_door
+  - binary_sensor.laundry_door
+  - binary_sensor.garage_door
+
+Garage Doors:
+  - binary_sensor.side_door
+  - binary_sensor.garage_door
+
+Internal Doors:
+  - binary_sensor.attic_door
+
+rgb lr:
+  - light.front_door_lamp
+  - light.living_room_lamp
+  - light.living_room_tower_lamp
+
+livingroom lighting:
+  - light.front_door_lamp
+  - light.living_room_lamp
+  - light.living_room_tower_lamp
+  - switch.fireplace_lights
+
+livingroom lights:
+  - light.front_door_lamp
+  - light.living_room_lamp
+  - switch.fireplace_lights
+  
+livingroom tower:
+  - light.living_room_tower_lamp
+
+livingroom lamps:
+  - light.living_room_lamp
+  - light.front_door_lamp
+
+incense:
+  - switch.forest_incense_incense
+  - switch.artemis
+  - switch.incense
+
+all fans:
+  - switch.croft_fan
+  - switch.livingroom_fan
+
+Skylars Bedroom:
+  - light.skylars_dresser_lamp
+  - switch.rainbow_lamp # rainbow light
+  - light.wled_skylarsroom
+  - switch.skylars_desk
+
+Master Bedroom:
+  - light.jeff_lamp
+  - light.master_bedroom_dresser_lamp
+  - light.kat_lamp
+  - light.master_bedroom_tower_lamp
+  - light.desk_accent
+  - switch.tplink_a2
+
+kitchen:
+  - light.kitchen_cabinets
+  - switch.kitchen_light_strip
+
+livingroom:
+  - light.front_door_lamp
+  - light.living_room_lamp
+  - light.living_room_tower_lamp
+  - switch.fireplace_lights
+  - switch.rail_lights
+
+vacation lights:
+  - light.front_door_lamp
+  - light.living_room_lamp
+  - light.living_room_tower_lamp
+  - light.skylars_dresser_lamp
+  - light.kitchen_sink
+  - light.master_bedroom_tower_lamp
+  - light.jeff_lamp
+  - switch.fireplace_lights
+
+theater lights:
+  - light.theater_lights
+
