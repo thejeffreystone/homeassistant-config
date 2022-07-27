@@ -1,6 +1,6 @@
 
 <h1 align="center">
-  <a name="logo" href="http://slacker-labs.com"><img src="https://github.com/thejeffreystone/homeassistant-config/blob/master/images/mdl_bw.png" alt="Maison de Lune HA" width="200"></a>
+  <a name="logo" href="http://slacker-labs.com"><img src="https://github.com/thejeffreystone/homeassistant-config/blob/main/images/mdl_bw-2.png" alt="Maison de Lune HA" width="200"></a>
   <br>
   Maison De Lune
   <br>
