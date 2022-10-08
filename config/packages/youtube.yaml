@@ -1,0 +1,16 @@
+#-------------------------------------------
+# I totally stole this from @CCOSTAN
+#
+# Original Repo : https://github.com/CCOSTAN/Home-AssistantConfig
+# YouTube Related Packages from @Pinkywafer
+# https://github.com/pinkywafer/Home-Assistant_Config/blob/master/packages/youtube/vcloudinfo.yaml
+# More information found here in these issues
+# https://github.com/CCOSTAN/Home-AssistantConfig/issues/720
+#-------------------------------------------
+
+  sensor:
+    - platform: youtube
+      channel_id: UCipZJ6748kd8TbelSxcvcVg
+
+
+   

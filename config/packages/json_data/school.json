@@ -1,0 +1,44 @@
+{
+    "MENU": {
+      "static": {
+        "11/11": "Pizza",
+        "11/12": "Taco Burger",
+        "11/15": "Chicken Minis",
+        "11/16": "Housemade Dip and Chips",
+        "11/17": "Sub Sandwich",
+        "11/18": "Pizza",
+        "11/19": "Burgers",
+        "11/29": "Mini Corn Dogs",
+        "11/30": "Housemade Dip and Chips or Cheesy Pull Aparts",
+        "12/1": "Drumstick",
+        "12/2": "Pizza",
+        "12/3": "Taco Burger",
+        "12/6": "Chicken Minis",
+        "12/7": "Housemade Dip and Chips",
+        "12/8": "Sub Sandwich",
+        "12/9": "Pizza",
+        "12/10": "Burgers",
+        "12/13": "Chicken Nuggets",
+        "12/14": "Hot Dog",
+        "12/15": "Chicken Sandwich",
+        "12/16": "Pizza",
+        "12/17": "Seafood Variety"
+        
+      }
+    },
+    "EVENTS": {
+      "static": {
+        "1/25": "Digital Learning Day",
+        "3/2": "Digital Leaerning Day and Early Release",
+        "3/3": "Early Release",
+        "3/22": "Digital Learning Day",
+        "8/4": "Digital Learning Day",
+        "9/14": "Digital Learning Day",
+        "10/20": "Digital Learning Day",
+        "10/21": "Early Release",
+        "10/22": "Early Release",
+        "11/9": "Digital Learning Day"
+        
+      }
+    }
+  }

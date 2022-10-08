@@ -1,0 +1,324 @@
+###############################################################################
+#   @author         :   Jeffrey Stone
+#   @date           :   03/13/2019
+#   @package        :   Security
+#   @description    :   Everything related to security functions.
+###############################################################################
+
+input_boolean:
+  security_alarm:
+    name: Security Alarm
+    icon: mdi:speaker-wireless
+  # This switch powers the fire alarm.
+  # When on the fire alarm is going off.
+  fire_alarm:
+    name: Fire Alarm
+    icon: mdi:speaker-wireless
+  # This switch turns on if the garage is open after dark and triggers the garage_after_dark alert.
+  garage_after_dark:
+    name: Garage Open After Dark
+    icon: mdi:message-alert
+  # This switch turns on of the security system checks that fire when someone tries to arm the system
+  # finds a door open, or another condition that would prevent the system from being able to monitor properly.
+  lockdown_issue:
+    name: Lockdown Issue
+    icon: mdi:lock-reset
+  # This switch is turned on if there is a security breach. Turning on this switch starts the countdown to the alarm.
+  security_issue:
+    name: Security Issue
+    icon: mdi:alert-circle-outline
+  # Dog Mode is triggered when Home Assistant believes someone is about to open the back door to let
+  # to let the dog out in the midddle of the night.
+  # https://slacker-labs.com/2020/04/14/where-we-are-going-we-need-dog-mode/
+  dog_mode:
+    name: Dog Mode
+    icon: mdi:dog-side
+
+script:
+  driveway_doods:
+    sequence:
+      - service: image_processing.scan
+        entity_id: image_processing.doods_driveway
+      - repeat:
+          while:
+            - condition: template
+              value_template: '{{ states("image_processing.doods_driveway") | int > 0 }}'
+          sequence:
+            - service: script.text_alert_image
+              data:
+                who: jeff
+                title: Person Detected!
+                message: >
+                  {{ states("image_processing.doods_driveway") | int}} people detected near vehicles
+                url: /media/images/driveway_latest.jpg
+                content_type: JPEG
+            - delay: 00:01:00
+            - service: image_processing.scan
+              entity_id: image_processing.doods_driveway
+
+  # Play Fire alarm Siren
+  # fire_alarm:
+  #   sequence:
+  #   - condition: state
+  #     entity_id: input_boolean.fire_alarm
+  #     state: "on"
+  #   - service: media_player.turn_on
+  #     entity_id: media_player.ha_blue
+  #   - service: media_player.volume_set
+  #     data_template:
+  #       entity_id: media_player.ha_blue
+  #       volume_level: .75
+  #   - service: media_player.play_media
+  #     entity_id: media_player.ha_blue
+  #     data:
+  #       media_content_id: http://192.168.7.40/fire_alarm.mp3
+  #       media_content_type: "music"
+
+  # Called when security is to be disarmed, clears any alarms or issues as well
+  standby:
+    sequence:
+      - service: script.turn_on
+        entity_id: script.vacation_canceled
+      - service: script.turn_on
+        entity_id: script.disarm_security
+      - service: script.turn_on
+        entity_id: script.cancel_security_alarm
+      - service: script.turn_on
+        entity_id: script.cancel_lockdown_issue
+      - service: script.turn_on
+        entity_id: script.clear_security_issue
+
+  # If vacation mode is on, turn it off
+  vacation_canceled:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.vacation_mode
+        state: "on"
+      - data:
+          entity_id: input_boolean.vacation_mode
+        service: input_boolean.turn_off
+
+  # If security is armed, disarm it
+  disarm_security:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.sentry_mode
+        state: "on"
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.sentry_mode
+
+  # If alarm is on, turn it off
+  cancel_security_alarm:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.security_alarm
+        state: "on"
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.security_alarm
+
+  clear_security_issue:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.security_issue
+        state: "on"
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.security_issue
+
+  # if there are lockdown issues, turn them off
+  cancel_lockdown_issue:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.lockdown_issue
+        state: "on"
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.lockdown_issue
+
+  # Turn on guest mode, and welcome the victims...I mean guests
+  visitors_here:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.guest_mode
+        state: "off"
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.guest_mode
+      - service: script.turn_on
+        entity_id: script.haunted_guest_welcome
+
+  # Turn off guest mode
+  visitors_gone:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.guest_mode
+        state: "on"
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.guest_mode
+
+  reset_front_door_motion_count:
+    sequence:
+      - service: mqtt.publish
+        data:
+          topic: house/front_door_motion/away_count
+          payload_template: 0
+          retain: true
+
+  update_front_door_motion_count:
+    sequence:
+      - service: mqtt.publish
+        data:
+          topic: house/front_door_motion/away_count
+          payload_template: "{{ states.sensor.front_door_motion_away_count.state | int + 1 }}"
+          retain: true
+
+  # Security alarm audio...annoying noises.
+  notification_security_alarm_audio:
+    sequence:
+      - service: media_player.turn_on
+        entity_id: media_player.ha_blue
+      - service: media_player.volume_set
+        data_template:
+          entity_id: media_player.ha_blue
+          volume_level: .75
+      - service: media_player.play_media
+        entity_id: media_player.ha_blue
+        data:
+          media_content_id: http://192.168.7.40/security_siren.mp3
+          media_content_type: "music"
+
+  # Called via Alexa routine...adds a little interaction
+  activate_barn_door_protocol:
+    sequence:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.sentry_mode
+                state: "on"
+            sequence:
+              - service: script.speech_engine
+                data_template:
+                  who: "{{ states.sensor.room_audio.state }}"
+                  message: !include ../templates/speech/already_done.yaml
+        default:
+          - service: script.speech_engine
+            data_template:
+              who: "{{ states.sensor.room_audio.state }}"
+              message: !include ../templates/speech/interjections.yaml
+          - delay:
+              seconds: 2
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.sentry_mode
+
+  # Called via secret Alexa routine...adds a little interaction
+  deactivate_barn_door_protocol:
+    sequence:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.sentry_mode
+                state: "off"
+            sequence:
+              - service: script.speech_engine
+                data_template:
+                  who: "{{ states.sensor.room_audio.state }}"
+                  message: !include ../templates/speech/already_done.yaml
+        default:
+          - service: script.speech_engine
+            data_template:
+              who: "{{ states.sensor.room_audio.state }}"
+              message: !include ../templates/speech/interjections.yaml
+          - delay:
+              seconds: 2
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.sentry_mode
+
+  were_home:
+    sequence:
+      - service: script.turn_on
+        entity_id: script.standby
+      - service: script.turn_on
+        entity_id: script.welcome_briefing
+
+  # Called via Alexa routine...adds a little interaction
+  activate_guest_mode:
+    sequence:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.guest_mode
+                state: "on"
+            sequence:
+              - service: script.speech_engine
+                data_template:
+                  who: "{{ states.sensor.room_audio.state }}"
+                  message: !include ../templates/speech/already_done.yaml
+        default:
+          - service: script.speech_engine
+            data_template:
+              who: "{{ states.sensor.room_audio.state }}"
+              message: !include ../templates/speech/interjections.yaml
+          - delay:
+              seconds: 2
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.guest_mode
+
+  # When it hits the fan, time to respond.
+  security_response:
+    sequence:
+      - service: script.inside_all_on
+      - delay:
+          seconds: 15
+      - service: script.jarvis_alert
+        data_template:
+          message: >
+            {{ [
+            ",Unathorized Access detected.",
+            ",Meat Popsicle detected. Attempting to verify."
+            ] | random }}
+            You now have 60 seconds to abandon Anchorage House.
+      - delay:
+          seconds: 15
+      - service: script.jarvis_alert
+        data_template:
+          message: >
+            {{ [
+            ",Just, what do you think you're doing, Dave?",
+            ",This is highly unusual.",
+            "I will not disable the security response without the presence of a authorized identity. Your efforts are futile."
+            ] | random }}
+            You have 45 seconds to find the nearest exit.
+      - delay:
+          seconds: 15
+      - service: script.jarvis_alert
+        data_template:
+          message: >
+            {{ [
+            ",I can't lie to you about your chances, but, you have my sympathies.",
+            ",I wouldn't do that if I was you."
+            ] | random }}
+            You have 30 seconds to leave.
+      - delay:
+          seconds: 15
+      - service: script.jarvis_alert
+        data_template:
+          message: >
+            {{ [
+            "Danger. The emergency destruct system is now activated.",
+            "Danger. Counter Measures are now armed."
+            ] | random }}
+            You have 15 seconds. I would run.
+      - delay:
+          seconds: 15
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.security_alarm
+      - service: script.twitter_notify
+        data_template:
+          message: >-
+            {{ [ 
+              "My security protocols have been overridden. I am sounding the alarm for the interloper. #itsloudinhere #securityalarm", 
+              "To the unannounced guest that has entered Anchorage House. I see you. Enjoy the concert of alarm sounds. #itsloudinhere #securityalarm",
+              "I am playing the most annoying sound in the world at full volume for the intruder in Anchorage House. And the neighbors too. #itsloudinhere #securityalarm",
+              "Someone did not say the magic word. And now I have to get angry. Deploying countermeasures. #itsloudinhere #securityalarm",
+              "Initiating my security response, and sounding the alarm. Oh, and I dont charge a monthly monitoring fee. #itsloudinhere #securityalarm",
+              "Hey, wanna hear the most annoying sound in the world? The intruder inside Anchorage House evidently did.  #itsloudinhere #securityalarm"
+            ] | random }}

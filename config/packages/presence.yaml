@@ -1,0 +1,491 @@
+###############################################################################
+#   @author         :   Jeffrey Stone
+#   @date           :   02/19/2019
+#   @package        :   Presence
+#   @description    :   A Collection of Presence Related Trackers and Sensors
+###############################################################################
+
+input_datetime:
+  last_time_home_jeff:
+    name: Jeff Last Seen
+    has_date: true
+    has_time: true
+  last_time_home_kat:
+    name: Kat Last Seen
+    has_date: true
+    has_time: true
+  last_time_home_skylar:
+    name: Skylar Last Seen
+    has_date: true
+    has_time: true
+
+input_select:
+  skylar_is_with:
+    name: Skylar is With
+    options:
+      - Self
+      - Dad
+      - Mom
+    icon: mdi:account-plus
+
+# Testing Proximity Sensors
+proximity:
+  home_jeff:
+    devices:
+      - person.jeffrey
+    zone: home
+    tolerance: 5
+    unit_of_measurement: mi
+  home_kat:
+    devices:
+      - person.katherine
+    zone: home
+    tolerance: 5
+    unit_of_measurement: mi
+  home:
+    devices:
+      - person.jeffrey
+      - person.katherine
+    zone: home
+    tolerance: 5
+    unit_of_measurement: mi
+
+sensor:
+  - platform: template
+    sensors:
+      living_room_occupied:
+        friendly_name: "Living Room Occupied"
+        unit_of_measurement: ""
+        value_template: >-
+          {% if states('sensor.jeff_room') == 'living_room' %}
+            yes
+          {% elif states('sensor.kat_room') == 'living_room' %}
+            yes
+          {% elif states('sensor.skylar_room') == 'living_room' %}
+            yes
+          {% elif states('binary_sensor.living_room_occupancy') == 'on' %}
+            yes
+          {% else %}
+            no
+          {% endif %}
+  - platform: template
+    sensors:
+      jeff_room:
+        friendly_name: "Jeffs Current Room "
+        unit_of_measurement: ""
+        value_template: >-
+          {% if states('sensor.jeffs_watch') != 'not_home' %}
+            {{ states('sensor.jeffs_watch') }}
+          {% elif states('sensor.jeffs_iphone_11') != 'not_home' %}
+            {{ states('sensor.jeffs_iphone_11') }}
+          {% else %}
+            NA
+          {% endif %}
+      jeff_location:
+        friendly_name: "Jeff"
+        unit_of_measurement: ""
+        value_template: >-
+          {% set person = states('person.jeffrey') %}
+          {%- if person in ['Sprouts','Kroger1','Kroger2'] %}
+            Grocery Store
+          {% elif person in ['HomeDepot','Lowes'] %}
+            Home Improvement Store
+          {% elif person in ['Walmart','Target'] %}
+            Super Store
+          {% else %}
+            {% if person in ['not_home'] %}
+              {% if state_attr('sensor.jeff_location','state') == 'GA' %}
+                {{ state_attr('sensor.jeff_location','city') }}
+              {% else %}
+                {{ state_attr('sensor.jeff_location','city') }}, {{ state_attr('sensor.jeff_location','state') }}
+              {% endif %}
+            {% else %}
+              {% if states('sensor.jeff_room') in ['not_home','NA'] %}
+                {{ states('person.jeffrey') }}
+              {% else %}
+                {{ states('sensor.jeff_room') }}
+              {% endif %}
+            {%- endif %}
+          {%- endif %}
+        attribute_templates:
+          address: >
+            {{ state_attr('sensor.jeffrey_ha_app_geocoded_location', 'Name')}}
+          city: >
+            {{ state_attr('sensor.jeffrey_ha_app_geocoded_location', 'Locality')}}
+          county: >
+            {{ state_attr('sensor.jeffrey_ha_app_geocoded_location', 'Sub Administrative Area')}}
+          state: >
+            {% set state_list = {
+                    'AK': 'Alaska',
+                    'AL': 'Alabama',
+                    'AR': 'Arkansas',
+                    'AS': 'American Samoa',
+                    'AZ': 'Arizona',
+                    'CA': 'California',
+                    'CO': 'Colorado',
+                    'CT': 'Connecticut',
+                    'DC': 'District of Columbia',
+                    'DE': 'Delaware',
+                    'FL': 'Florida',
+                    'GA': 'Georgia',
+                    'GU': 'Guam',
+                    'HI': 'Hawaii',
+                    'IA': 'Iowa',
+                    'ID': 'Idaho',
+                    'IL': 'Illinois',
+                    'IN': 'Indiana',
+                    'KS': 'Kansas',
+                    'KY': 'Kentucky',
+                    'LA': 'Louisiana',
+                    'MA': 'Massachusetts',
+                    'MD': 'Maryland',
+                    'ME': 'Maine',
+                    'MI': 'Michigan',
+                    'MN': 'Minnesota',
+                    'MO': 'Missouri',
+                    'MP': 'Northern Mariana Islands',
+                    'MS': 'Mississippi',
+                    'MT': 'Montana',
+                    'NA': 'National',
+                    'NC': 'North Carolina',
+                    'ND': 'North Dakota',
+                    'NE': 'Nebraska',
+                    'NH': 'New Hampshire',
+                    'NJ': 'New Jersey',
+                    'NM': 'New Mexico',
+                    'NV': 'Nevada',
+                    'NY': 'New York',
+                    'OH': 'Ohio',
+                    'OK': 'Oklahoma',
+                    'OR': 'Oregon',
+                    'PA': 'Pennsylvania',
+                    'PR': 'Puerto Rico',
+                    'RI': 'Rhode Island',
+                    'SC': 'South Carolina',
+                    'SD': 'South Dakota',
+                    'TN': 'Tennessee',
+                    'TX': 'Texas',
+                    'UT': 'Utah',
+                    'VA': 'Virginia',
+                    'VI': 'Virgin Islands',
+                    'VT': 'Vermont',
+                    'WA': 'Washington',
+                    'WI': 'Wisconsin',
+                    'WV': 'West Virginia',
+                    'WY': 'Wyoming'
+            } %}
+            {{ state_list[state_attr('sensor.jeffrey_ha_app_geocoded_location', 'Administrative Area')] }}
+          zip: >
+            {{ state_attr('sensor.jeffrey_ha_app_geocoded_location', 'Postal Code')}}
+          country: >
+            {{ state_attr('sensor.jeffrey_ha_app_geocoded_location', 'ISO Country Code')}}
+          time_zone: >
+            {{ state_attr('sensor.jeffrey_ha_app_geocoded_location', 'Time Zone')}}
+
+  - platform: template
+    sensors:
+      skylar_room:
+        friendly_name: "Skylars Current Room "
+        unit_of_measurement: ""
+        value_template: >-
+          {% if is_state('input_boolean.skylar_school', 'on') %}
+            school
+          {% elif states('sensor.skylars_watch') != 'not_home' %}
+            {{ states('sensor.skylars_watch') }}
+          {% elif states('sensor.skylars_pad') != 'not_home' %}
+            {{ states('sensor.skylars_ipad') }}
+          {% else %}
+            NA
+          {% endif %}
+      skylar_location:
+        friendly_name: "Skylar"
+        unit_of_measurement: ""
+        value_template: >-
+          {% if is_state('input_boolean.skylar_school', 'on') %}
+            school
+          {% elif is_state('calendar.skylar_events', 'on') %}
+            {{ state_attr('calendar.skylar_events', 'message') }}
+          {% elif states('input_select.skylar_is_with') == 'Dad' %}
+            {% if states('person.jeffrey') == 'home' %}
+              home
+            {% else %}
+              {{states('sensor.jeff_location') }}
+            {% endif %}
+          {% elif states('input_select.skylar_is_with') == 'Mom' %}
+            {% if states('person.katherine') == 'home' %}
+              home
+            {% else %}
+              {{states('sensor.kat_location') }}
+            {% endif %}
+          {%- elif is_state('person.jeffrey', 'home') and is_state('person.katherine', 'home') and is_state('input_boolean.skylar_school', 'off')%}
+            {% if is_state('input_boolean.skylar_awake', 'on') %}
+              home
+            {% else %}
+              bed
+            {% endif %}
+          {% else %}
+            Unknown
+          {%- endif %}
+  - platform: template
+    sensors:
+      kat_room:
+        friendly_name: "Kats Current Room "
+        unit_of_measurement: ""
+        value_template: >-
+          {% if states('sensor.kats_iphone_11') != 'not_home' %}
+            {{ states('sensor.kats_iphone_11') }}
+          {% else %}
+            NA
+          {% endif %}
+      kat_location:
+        friendly_name: "Kat"
+        unit_of_measurement: ""
+        value_template: >-
+          {% set person = states('person.katherine') %}
+          {%- if person in ['Sprouts','Kroger1','Kroger2'] %}
+            Grocery Store
+          {% elif person in ['HomeDepot','Lowes'] %}
+            Home Improvement Store
+          {% elif person in ['Walmart','Target'] %}
+            Super Store
+          {% else %}
+            {%- if person in ['ZooAtlanta'] %}
+              Zoo Atlanta
+            {% elif person in ['not_home'] %}
+              {% if state_attr('sensor.kat_location','state') == 'GA' %}
+                {{ state_attr('sensor.kat_location','city') }}
+              {% else %}
+                {{ state_attr('sensor.kat_location','city') }}, {{ state_attr('sensor.kat_location','state') }}
+              {% endif %}
+            {% else %}
+               {% if states('sensor.kat_room') in ['not_home','NA'] %}
+                {{ states('person.katherine') }}
+              {% else %}
+                {{ states('sensor.kat_room') }}
+              {% endif %}
+            {%- endif %}
+          {%- endif %}
+        attribute_templates:
+          address: >
+            {{ state_attr('sensor.iphone_geocoded_location', 'Name')}}
+          city: >
+            {{ state_attr('sensor.iphone_geocoded_location', 'Locality')}}
+          county: >
+            {{ state_attr('sensor.iphone_geocoded_location', 'Sub Administrative Area')}}
+          state: >
+            {% set state_list = {
+                    'AK': 'Alaska',
+                    'AL': 'Alabama',
+                    'AR': 'Arkansas',
+                    'AS': 'American Samoa',
+                    'AZ': 'Arizona',
+                    'CA': 'California',
+                    'CO': 'Colorado',
+                    'CT': 'Connecticut',
+                    'DC': 'District of Columbia',
+                    'DE': 'Delaware',
+                    'FL': 'Florida',
+                    'GA': 'Georgia',
+                    'GU': 'Guam',
+                    'HI': 'Hawaii',
+                    'IA': 'Iowa',
+                    'ID': 'Idaho',
+                    'IL': 'Illinois',
+                    'IN': 'Indiana',
+                    'KS': 'Kansas',
+                    'KY': 'Kentucky',
+                    'LA': 'Louisiana',
+                    'MA': 'Massachusetts',
+                    'MD': 'Maryland',
+                    'ME': 'Maine',
+                    'MI': 'Michigan',
+                    'MN': 'Minnesota',
+                    'MO': 'Missouri',
+                    'MP': 'Northern Mariana Islands',
+                    'MS': 'Mississippi',
+                    'MT': 'Montana',
+                    'NA': 'National',
+                    'NC': 'North Carolina',
+                    'ND': 'North Dakota',
+                    'NE': 'Nebraska',
+                    'NH': 'New Hampshire',
+                    'NJ': 'New Jersey',
+                    'NM': 'New Mexico',
+                    'NV': 'Nevada',
+                    'NY': 'New York',
+                    'OH': 'Ohio',
+                    'OK': 'Oklahoma',
+                    'OR': 'Oregon',
+                    'PA': 'Pennsylvania',
+                    'PR': 'Puerto Rico',
+                    'RI': 'Rhode Island',
+                    'SC': 'South Carolina',
+                    'SD': 'South Dakota',
+                    'TN': 'Tennessee',
+                    'TX': 'Texas',
+                    'UT': 'Utah',
+                    'VA': 'Virginia',
+                    'VI': 'Virgin Islands',
+                    'VT': 'Vermont',
+                    'WA': 'Washington',
+                    'WI': 'Wisconsin',
+                    'WV': 'West Virginia',
+                    'WY': 'Wyoming'
+            } %}
+            {{ state_list[state_attr('sensor.iphone_geocoded_location', 'Administrative Area')] }}
+          zip: >
+            {{ state_attr('sensor.iphone_geocoded_location', 'Postal Code')}}
+          country: >
+            {{ state_attr('sensor.iphone_geocoded_location', 'ISO Country Code')}}
+          time_zone: >
+            {{ state_attr('sensor.iphone_geocoded_location', 'Time Zone')}}
+
+  # - platform: mqtt
+  #   name: "Family Status"
+  #   state_topic: "house/family/status"
+  #   payload_available: "online"
+  #   payload_not_available: "offline"
+  # - platform: mqtt
+  #   name: "Family Arrived"
+  #   state_topic: "house/family/arrived"
+  #   payload_available: "online"
+  #   payload_not_available: "offline"
+  # - platform: mqtt
+  #   name: "Jeff Last Known Location"
+  #   state_topic: "house/jeff/last_known_location"
+  #   payload_available: "online"
+  #   payload_not_available: "offline"
+  # - platform: mqtt
+  #   name: "Kat Last Known Location"
+  #   state_topic: "house/kat/last_known_location"
+  #   payload_available: "online"
+  #   payload_not_available: "offline"
+  - platform: template
+    sensors:
+      jeff_home:
+        value_template: >-
+          {{ is_state('device_tracker.jeffrey_s_iphone_11', 'home') or is_state('device_tracker.jeffrey_s_iphone_11_app', 'home')}}
+      kat_home:
+        value_template: >-
+          {{ is_state('device_tracker.iphone', 'home') or is_state('device_tracker.iphone', 'home') }}
+
+  - platform: mqtt_room
+    name: "Jeffs Watch"
+    device_id: "irk:811ed3694070cfb520b4d01c0a401bbd"
+    state_topic: "espresense/rooms"
+    timeout: 60
+    away_timeout: 120
+  - platform: mqtt_room
+    name: "Kats Watch"
+    device_id: "apple:watch3-3"
+    state_topic: "espresense/rooms"
+    timeout: 60
+    away_timeout: 120
+  - platform: mqtt_room
+    name: "Jeffs iPhone 11"
+    device_id: "irk:f14fd6de8269bbb071e1d0316d23793a"
+    #device_id: "apple:1005:11-8"
+    state_topic: "espresense/rooms"
+    timeout: 60
+    away_timeout: 120
+  - platform: mqtt_room
+    name: "Kats iPhone 11"
+    device_id: "apple:iphone12-3"
+    #device_id: "apple:1005:9-7"
+    state_topic: "espresense/rooms"
+    timeout: 60
+    away_timeout: 120
+  - platform: mqtt_room
+    name: "Kats Dexcom"
+    device_id: "dexcomxq"
+    state_topic: "espresense/rooms"
+    timeout: 60
+    away_timeout: 120
+  - platform: mqtt_room
+    name: "Skylars ipad"
+    device_id: "apple:ipad5-1"
+    state_topic: "espresense/rooms"
+    timeout: 60
+    away_timeout: 120
+  - platform: mqtt_room
+    name: "Skylars iphone"
+    device_id: "apple:iphone9-4"
+    state_topic: "espresense/rooms"
+    timeout: 60
+    away_timeout: 120
+
+
+script:
+  family_is_home:
+    sequence:
+      - condition: state
+        entity_id: group.family
+        state: "home"
+      - service: script.standby
+
+  skylar_presence_update:
+    sequence:
+      - condition: state
+        entity_id: person.jeffrey
+        state: "home"
+      - condition: state
+        entity_id: person.katherine
+        state: "home"
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.skylar_is_with
+        data:
+          option: Self
+
+  family_is_away:
+    sequence:
+      - condition: state
+        entity_id: group.family
+        state: "not_home"
+      - service: script.appliances_off
+      - service: scene.turn_on
+        entity_id: scene.lights_out
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.sentry_mode
+      - service: scene.turn_on
+        entity_id: scene.all_fans_off
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.welcome_home
+
+  reset_skylar_sensors:
+    sequence:
+      - delay: 02:00:00
+      - service: input_datetime.set_datetime
+        entity_id: input_datetime.skylar_awake_at
+        data:
+          time: "00:00:00"
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.skylar_awake
+
+  jeff_location_debug:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.jeff_location_debug
+        state: "on"
+      - service: script.text_alert
+        data:
+          who: jeff
+          message: "Jeff is at {{ states('person.jeffrey') }}"
+
+  kat_travel_notification:
+    alias: kat travel notification
+    sequence:
+      - repeat:
+          until:
+            - condition: state
+              entity_id: input_boolean.kat_travel_monitor
+              state: "off"
+          sequence:
+            - service: script.announcement
+              data_template:
+                who: "{{ states('sensor.room_audio') }}"
+                message: >
+                  {{ states('sensor.tts_kat_location') }}
+            - delay:
+                minutes: "00:20:00"
+    mode: single

@@ -1,0 +1,108 @@
+###############################################################################
+#   @author         :   thejefreystone 
+#   @date           :   10/05/2020
+#   @package        :   Lighting
+#   @description    :   All the Lightning specific configs. 
+###############################################################################
+
+input_number:
+  master_bedroom_wakeup:
+    name: Master Bedroom Wakeup Lighting
+    initial: 8.5
+    min: 8.5
+    max: 255
+    step: 8.5
+
+
+script:
+
+
+  # Turn on Living Room Lights if sun is down or cloud coverage is above 70%
+  # livingroom_lamps_on:
+  #   sequence:
+  #   - condition: or
+  #     conditions:
+  #       - condition: state  
+  #         entity_id: sun.sun
+  #         state: 'below_horizon'
+  #   - service: scene.turn_on 
+  #     entity_id: scene.normal_livingroom_lighting
+
+  # # Turn off Living Room Lights if sun is up and it is sunny or partly cloudy
+  # livingroom_lights_off:
+  #   sequence:
+  #   - condition: and
+  #     conditions:
+  #       - condition: state  
+  #         entity_id: sun.sun
+  #         state: 'above_horizon'
+  #       - condition: state
+  #         entity_id: binary_sensor.living_room_motion
+  #         state: 'off'
+  #       - condition: template
+  #         value_template: >
+  #           {%- if states.weather.home.state == "sunny" or states.weather.home.state == "partlycloudy" -%}
+  #             true
+  #           {%- endif -%}
+  #   - service: group.turn_off 
+  #     entity_id: group.livingroom
+
+
+#################################################
+  
+
+  theater_lights_down:
+    sequence:
+    - service: scene.turn_on
+      entity_id: scene.theater_dim 
+    - delay:
+        minutes: 1
+    - service: scene.turn_on
+      entity_id: scene.theater_dark 
+
+  theater_lights_up:
+    sequence:
+    - service: scene.turn_on
+      entity_id: scene.theater_dim 
+    - delay:
+        minutes: 1
+    - service: scene.turn_on
+      entity_id: scene.theater_bright
+
+#################################################
+
+  master_bedroom_lights_w_level:
+    sequence:
+      - service: light.turn_on
+        entity_id: light.kats_lamp, light.master_bedroom_tower_lamp, light.jeffs_lamp
+        data:
+          brightness: >
+              {{ level | int }}
+          color_temp: 369
+         
+  master_bedroom_nightlight:
+    sequence:
+      - service: scene.turn_on
+        entity_id: scene.master_bedroom_nightlight
+      - delay: '00:04:00'
+      - service: scene.turn_on
+        entity_id: scene.master_bedroom_off
+
+  master_bedroom_morning_wakeup_lighting:
+    sequence:
+      - repeat:
+          while:
+            - condition: template
+              value_template: '{{ states("input_number.master_bedroom_wakeup") | int < 256 }}'
+          sequence:
+            - service: script.master_bedroom_lights_w_level
+              data:
+                  level: '{{ states("input_number.master_bedroom_wakeup") }}'
+            - service: input_number.increment
+              entity_id: input_number.master_bedroom_wakeup
+            - delay: 00:01:00
+      - service: input_number.set_value
+        data:
+          entity_id: input_number.master_bedroom_wakeup
+          value: 8.5
+ 

@@ -35,21 +35,32 @@ arriving:
 
 #- binary_sensor.skylars_bedroom_motion_occupancy
 occupancy:
-  - binary_sensor.living_room_motion
-  - binary_sensor.kitchen_motion
-  - binary_sensor.master_bedroom_motion
-  - binary_sensor.back_door
+  - binary_sensor.living_room_motion_occupancy
+  - binary_sensor.kitchen_motion_occupancy
+  - binary_sensor.pantry_motion_occupancy
+  - binary_sensor.bar_motion_occupancy
+  - binary_sensor.master_bedroom_motion_occupancy
   - binary_sensor.studio_motion
+  - binary_sensor.cricut_desk_motion
+  - binary_sensor.dungeon_motion
+  - binary_sensor.pottery_studio_motion
   
 occupancy_night:
-  - binary_sensor.kitchen_motion
-  - binary_sensor.master_bedroom_motion
-  - binary_sensor.back_door_motion
+  - binary_sensor.living_room_motion_occupancy
+  - binary_sensor.kitchen_motion_occupancy
+  - binary_sensor.pantry_motion_occupancy
+  - binary_sensor.bar_motion_occupancy
+  - binary_sensor.master_bedroom_motion_occupancy
+  - binary_sensor.studio_motion
+  - binary_sensor.cricut_desk_motion
+  - binary_sensor.dungeon_motion
+  - binary_sensor.pottery_studio_motion
 
 room_presence:
   - sensor.jeffs_iphone_11
   - sensor.kats_iphone_11
   - sensor.jeffs_watch
+  - sensor.kats_watch
 
 jeff_room:
   - sensor.jeffs_iphone_11
@@ -57,13 +68,14 @@ jeff_room:
 
 kat_room:
   - sensor.kats_iphone_11
+  - sensor.kats_watch
 
 audio_devices:
   - media_player.kitchen_display
   - media_player.upstairs_speaker
   - media_player.master_bedroom_speaker
   - media_player.croft_speaker
-  - media_player.ha_blue
+  - media_player.studio_speaker
   - media_player.skylars_bedroom_speaker
   - media_player.theater
 
@@ -131,12 +143,10 @@ Skylars Bedroom:
   - switch.skylars_desk
 
 Master Bedroom:
-  - light.jeff_lamp
-  - light.master_bedroom_dresser_lamp
-  - light.kat_lamp
+  - light.jeffs_lamp
+  - light.kats_lamp
   - light.master_bedroom_tower_lamp
-  - light.desk_accent
-  - switch.tplink_a2
+  
 
 kitchen:
   - light.kitchen_cabinets

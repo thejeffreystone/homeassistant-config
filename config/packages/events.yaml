@@ -1,0 +1,533 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   02/19/2019
+#   @package        :   Events
+#   @description    :   Special Events.
+###############################################################################
+
+input_boolean:
+  rex_manning_audio:
+    name: Rex Manning audio
+    icon: mdi:speaker-wireless
+  blackout_time:
+    name: Blackout Time
+    icon: mdi:closed-octagon
+  school_in_session:
+    name: School In Session
+    icon: mdi:bus-school
+  school_is_digital:
+    name: Digital Learning
+    icon: mdi:laptop
+  school_today:
+    name: School Today
+    icon: mdi:bus-school
+  school_early_release:
+    name: School Early Release
+    icon: mdi:bus-school
+
+input_datetime:
+  school_first_day:
+    name: First Day of School
+    has_date: true
+    has_time: false
+  school_last_day:
+    name: Last Day of School
+    has_date: true
+    has_time: false
+  school_day_start:
+    name: School Day Start
+    has_date: false
+    has_time: true
+  school_day_end:
+    name: School Day End
+    has_date: false
+    has_time: true
+  fall_break_start:
+    name: Fall Break
+    has_date: true
+    has_time: false
+  thanksgiving_break_start:
+    name: Thanksgiving Break
+    has_date: true
+    has_time: false
+  christmas_break_start:
+    name: Christmas Break
+    has_date: true
+    has_time: false
+  winter_break_start:
+    name: Winter Break
+    has_date: true
+    has_time: false
+  spring_break_start:
+    name: Spring Break
+    has_date: true
+    has_time: false
+  school_day_start_reminder:
+    name: School Day Start Reminder
+    has_date: false
+    has_time: true
+  school_day_end_reminder:
+    name: School Day End Reminder
+    has_date: false
+    has_time: true  
+  blackout_time_start:
+    name: Blackout Time Start
+    has_date: false
+    has_time: true
+  blackout_time_end:
+    name: Blackout Time End
+    has_date: false
+    has_time: true
+  pest_service:
+    name: Pest Service
+    has_date: true
+    has_time: true
+  gutter_service:
+    name: Pest Service
+    has_date: true
+    has_time: true
+  
+
+
+sensor:
+  - platform: template
+    sensors:
+      school_start_days2go:
+        value_template: "{{ ((state_attr('input_datetime.school_first_day', 'timestamp')-as_timestamp(now())) | int /60/1440) | round(0) }}"
+        unit_of_measurement: 'Days'
+      school_end_days2go:
+        value_template: "{{ ((state_attr('input_datetime.school_last_day', 'timestamp')-as_timestamp(now())) | int /60/1440) | round(0) }}"
+        unit_of_measurement: 'Days'
+      vacation_days2go:
+        value_template: >
+          {% if state_attr('calendar.vacation', 'start_time') %}
+            {{ ((as_timestamp(strptime(state_attr('calendar.vacation', 'start_time'), '%Y-%m-%d'))-as_timestamp(now())) | int /60/1440) | round(0) }}
+          {% else %}
+            999
+          {% endif %}
+        unit_of_measurement: 'Days'
+  - platform: rest
+    resource: https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/packages/json_data/school.json
+    name: School Lunch
+    scan_interval: 14400
+    value_template: >
+      {% set today = now().month  ~ '/' ~ now().day  %}
+      {% set lunch =  value_json.MENU.static[ today ] %}
+      {%- if lunch %}
+        {{ lunch  }}
+      {% else %}
+        Nothing
+      {%- endif %}
+
+  - platform: rest
+    resource: https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/packages/json_data/school.json
+    name: School Event
+    scan_interval: 14400
+    value_template: >
+      {% set today = now().month  ~ '/' ~ now().day  %}
+      {% set event =  value_json.EVENTS.static[ today ] %}
+      {%- if event %}
+        {{ event  }}
+      {% else %}
+        Nothing
+      {%- endif %}
+
+  # - platform: mqtt 
+  #   name: "Current Released HA Version"
+  #   state_topic: "house/ha/version"
+
+
+automation:
+  - id: refresh_special_event_sensors
+    alias: Refresh special event sensors
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '00:00:01'
+    - platform: homeassistant
+      event: start
+    action:
+    - service: python_script.special_events
+      data:
+        name: Skylar
+        type: birthday
+        date: !secret skylar_bday
+    - service: python_script.special_events
+      data:
+        name: Jeff
+        type: birthday
+        date: !secret jeff_bday
+    - service: python_script.special_events
+      data:
+        name: Kat
+        type: birthday
+        date: !secret kat_bday
+    - service: python_script.special_events
+      data:
+        name: Our wedding
+        type: anniversary
+        date: !secret wed_anniversary
+
+  - id: e1cb2d02-0423-11eb-adc1-0242ac120002
+    alias: School today
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '06:00:00'
+    condition:
+    - condition: template
+      value_template: >
+        {%- if as_timestamp(strptime(state_attr('calendar.skylar_school', 'start_time'), '%Y-%m-%d %H:%M:%S')) | timestamp_custom("%Y-%m-%d") == now().strftime("%Y-%m-%d") %}
+          true
+        {%- endif -%}
+    action:
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: >
+            {{ 'Early Release' in states('sensor.school_event') }}
+        sequence:
+        - service: input_boolean.turn_on
+          entity_id: input_boolen.school_early_release
+        - service: input_datetime.set_datetime
+          target:
+            entity_id: input_datetime.school_day_end
+          data:
+            time: "12:15:00"
+      default:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.school_day_end
+        data:
+          time: "14:20:00" 
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.school_today  
+    - service: script.turn_on
+      entity_id: script.school_in_session
+    - service: script.turn_on
+      entity_id: script.digital_learning_day
+    
+    
+
+#   - id: rex_manning_audio
+#     alias: Rex Manning Day Audio
+#     initial_state: true
+#     trigger:
+#     - platform: time
+#       at: '14:00:00'
+#     condition:
+#     - condition: state
+#       entity_id: calendar.anchorage_holidays
+#       state: "on"
+#     - condition: template
+#       value_template: >
+#         {%- set event=states.calendar.anchorage_holidays.attributes.message %}
+#         {%- if event == 'Rex Manning Day' %}
+#           true
+#         {%- endif -%}
+#     action:
+#     - service: script.turn_on
+#       entity_id: script.rex_manning_audio
+#     - delay:
+#         seconds: 40
+#     - service: script.turn_off
+#       entity_id: script.rex_manning_audio
+#     - service: media_player.media_stop
+#       entity_id: media_player.ha_blue
+
+#   - id: new_ha_notification
+#     alias: New HA Notification
+#     initial_state: true
+#     trigger:
+#     - platform: template
+#       value_template: >
+#         {{ states('sensor.home_assistant_website') > states('sensor.current_released_ha_version') }}
+#     action:
+#     - service: script.twitter_new_ha
+#     - service: script.save_current_ha_version
+    
+  
+
+
+script:
+
+  digital_learning_day:
+    sequence:
+    - condition: template
+      value_template: >
+        {{ 'Digital Learning' in states('sensor.school_event') }}
+    - service: input_boolean.turn_on
+      entity_id: input_boolen.school_is_digital
+    
+  school_in_session:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.school_in_session
+      state: 'off'
+    - service: input_boolean.turn_on
+      entity_id: input_boolen.school_in_session
+
+  school_year_over:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.school_in_session
+      state: 'on'
+    - condition: template
+      value_template: >
+        {{ states('input_datetime.school_last_day') == now().strftime("%Y-%m-%d") }}
+    - service: input_boolean.turn_off
+      entity_id: input_boolen.school_in_session
+
+#   rex_manning_audio:
+#     sequence:
+#     - condition: state
+#       entity_id: input_boolean.audible_notifications
+#       state: 'on'
+#     - condition: state
+#       entity_id: group.family
+#       state: 'home'
+#     - service: media_player.volume_set
+#       data_template:
+#         entity_id: media_player.ha_blue
+#         volume_level: .4
+#     - service: media_player.play_media
+#       entity_id: media_player.ha_blue
+#       data:
+#         media_content_id: /media/music/Rex_Manning_-_Say_No_More_Mon_Amour.mp3
+#         media_content_type: "music"
+
+#   digital_learning_notification:
+#     sequence:
+#     - condition: state
+#       entity_id: group.people
+#       state: 'home'
+#     - service: script.status_annc
+#       data_template:
+#         who: '{{ states.sensor.room_presence.state }}'
+#         call_interuption: 1
+#         speech_message: "Skylar, digital learning will begin in about thirty minutes. I have turned on the lighting around your desk."
+
+#   class_alarm:
+#     sequence:
+#     - service: script.status_annc
+#       data_template:
+#         who: '{{ states.sensor.room_presence.state }}'
+#         call_interuption: 1
+#         speech_message: >
+#           {{ class }} starts in two minutes.
+#     - service: script.text_notify
+#       data:
+#         who: 'parents'
+#         message: >
+#           {{ class }} starts in two minutes.
+
+#   save_current_ha_version:
+#     sequence:
+#       - service: mqtt.publish
+#         data:
+#           topic: house/ha/version
+#           payload: "{{ states('sensor.home_assistant_website') }}"
+#           retain: true
+
+  skylar_good_night:
+    sequence:
+      - service: script.speech_engine
+        data: 
+          who: skylars_bedroom
+          message: >
+            {{ [ 'Oh, I guess it is that time. ',
+            'Another day done. ',
+            'Is it that time already? ',
+            'I was just about to ask if it was time.',
+            'I agree.'
+            ] | random }} 
+            {% if is_state('sensor.school_tomorrow', 'on') %} 
+              {{ [ 'It looks like you have school tomorrow. ',
+                'You do have to get up early tomorrow for school.',
+                'It does make sense. After all, you want to be ready for school tomorrow.',
+                'According to the calendar, you have school tomorrow.'
+              ] | random }}   
+            {% else %}
+              {% set month=states("sensor.date").split('-')[1] | int %}
+              {%- if is_state('input_boolean.school_in_session', 'off') -%}
+                {{ [ 'But do not worry. Tomorrow is another day of summer vacation. ',
+                    'You are still on summer break tomorrow though.'
+                  ] | random }} 
+              {% else %}
+                But it appears you do not have school tomorrow
+              {% endif %} 
+                {{ [ 'so you can sleep in late. ',
+                    'so you could sleep in a little later. ',
+                    'so there is not a reason to get up early. ',
+                    'so we can sleep in. '
+                  ] | random }} 
+            {% endif %} 
+            {% if states.sensor.school_start_days2go.state | int < 10 and states.sensor.school_start_days2go.state | int > 1 -%}
+              {{ [ 'I hate to say it, but ',
+                  'Unfortunately,',
+                  'All good things must come to an end.'
+                ] | random }}
+              There are only {{ states.sensor.school_start_days2go.state }} days  
+              {{ [ 'left of summer vacation. ',
+                  ' left of summer break.',
+                  'Until School starts again.'
+                ] | random }}
+            {% elif states.sensor.school_start_days2go.state | int == 1 -%}
+              Tomorrow is the first day of school. Are you ready? 
+            {%- endif %}
+            {% if states.sensor.school_end_days2go.state | int < 15 and states.sensor.school_end_days2go.state | int > 0 -%}
+            {{ [ 'School is almost over for the year.',
+                'You have made it to the end of the school year.',
+                'You are almost done with school.'
+              ] | random }}
+            There are only {{ states.sensor.school_end_days2go.state }} days  
+            {{ [ 'left in the school year ',
+                ' left of school.',
+                'Until the last day of school.'
+              ] | random }}
+            {% elif states.sensor.school_end_days2go.state | int == 0 -%}
+              Tomorrow is the first day of summer. Are you ready? 
+            {%- endif %}
+              {{ [ 'Good night Skylar. ',
+                'Sleep well Skylar. ',
+                'Sweet dreams Skylar. '
+              ] | random }}
+      - service: scene.turn_on
+        target:
+          entity_id: scene.skylar_bedtime
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.skylar_is_with
+        data:
+          option: Self
+      - service: media_player.volume_set
+        data:
+          entity_id:
+          - media_player.skylars_bedroom_speaker
+          - media_player.skylars_echo
+          volume_level: .4
+      - delay:
+          seconds: 15
+      - service: script.bedtime_music_echo
+
+  alexa_skylar_good_night:
+    sequence:
+      - service: script.speech_engine
+        data: 
+          who: skylars_bedroom
+          message: >
+            {{ [ 'Oh, I guess it is that time. ',
+            'Another day done. ',
+            'Is it that time already? ',
+            'I was just about to ask if it was time.',
+            'I agree.'
+            ] | random }} 
+            {% if is_state('sensor.school_tomorrow', 'on') %} 
+              {{ [ 'It looks like you have school tomorrow. ',
+                'You do have to get up early tomorrow for school.',
+                'Perfect timing. After all, you want to be ready for school tomorrow.'
+              ] | random }}   
+            {% else %}
+              {% set month=states("sensor.date").split('-')[1] | int %}
+              {%- if is_state('input_boolean.school_in_session', 'off') -%}
+                {{ [ 'But do not worry. Tomorrow is another day of summer vacation. ',
+                    'You are still on summer break tomorrow though.'
+                  ] | random }} 
+              {% else %}
+                But it appears you do not have school tomorrow
+              {% endif %} 
+                {{ [ 'so you can sleep in late. ',
+                    'so you could sleep in a little later. ',
+                    'so there is not a reason to get up early. ',
+                    'so we can sleep in. '
+                  ] | random }} 
+            {% endif %} 
+            {% if states.sensor.school_start_days2go.state | int < 10 and states.sensor.school_start_days2go.state | int > 1 -%}
+              {{ [ 'I hate to say it, but ',
+                  'Unfortunately,',
+                  'All good things must come to an end.'
+                ] | random }}
+              There are only {{ states.sensor.school_start_days2go.state }} days  
+              {{ [ 'left of summer vacation. ',
+                  ' left of summer break.',
+                  'Until School starts again.'
+                ] | random }}
+            {% elif states.sensor.school_start_days2go.state | int == 1 -%}
+              Tomorrow is the first day of school. Are you ready? 
+            {%- endif %}
+            {% if states.sensor.school_end_days2go.state | int < 15 and states.sensor.school_end_days2go.state | int > 0 -%}
+            {{ [ 'School is almost over for the year.',
+                'You have made it to the end of the school year.',
+                'You are almost done with school.'
+              ] | random }}
+            There are only {{ states.sensor.school_end_days2go.state }} days  
+            {{ [ 'left in the school year ',
+                ' left of school.',
+                'Until the last day of school.'
+              ] | random }}
+            {% elif states.sensor.school_end_days2go.state | int == 0 -%}
+              Tomorrow is the first day of summer. Are you ready? 
+            {%- endif %}
+              {{ [ 'Good night Skylar. ',
+                'Sleep well Skylar. ',
+                'Sweet dreams Skylar. '
+              ] | random }}
+      - service: scene.turn_on
+        target:
+          entity_id: scene.skylar_bedtime
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.skylar_is_with
+        data:
+          option: Self
+      - delay:
+          seconds: 15
+      - service: script.bedtime_music
+
+#   meeting_time:
+#     sequence:
+#       - service: script.speech_engine
+#         data: 
+#           who: master_bedroom
+#           message: >
+#             {{states('sensor.tts_confirmation') }}
+#       - service: switch.turn_on
+#         entity_id: switch.on_air
+#       - delay:
+#           seconds: 7
+#       - service: script.announcement
+#         data: 
+#           who: master_bedroom
+#           message: >
+#             {{ [
+#                 'Meeting mode has been enabled. ',
+#                 'Your status has been updated. ',
+#                 'I set the meeting indicator on. '
+#                 ] | random }}
+
+#   meeting_time_over:
+#     sequence:
+#       - service: switch.turn_off
+#         entity_id: switch.on_air
+#       - delay:
+#           seconds: 7
+#       - service: script.announcement
+#         data: 
+#           who: master_bedroom
+#           message: >
+#             {{ [
+#                 'Meeting mode has been disabled. ',
+#                 'Your status has been updated. ',
+#                 'I set the meeting indicator off. '
+#                 ] | random }}
+             
+      
+      
+
+# rest_command:
+#   new_version_github_issue:
+#     url: https://api.github.com/repos/thejeffreystone/home-assistant-configuration/issues
+#     method: POST
+#     headers:
+#       Authorization: !secret github_issue_token
+#     payload: '{"title":"Home-Assistant {{ version }} available","body":"Home-Assistant {{ version }} is now available"}'

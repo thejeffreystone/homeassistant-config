@@ -76,6 +76,7 @@ zha:
 automation: !include automations.yaml
 script: !include scripts.yaml
 sensor: !include_dir_merge_list sensors
+mqtt: !include mqtt.yaml
 binary_sensor: !include_dir_merge_list binary_sensors
 group: !include groups.yaml
 scene: !include scenes.yaml

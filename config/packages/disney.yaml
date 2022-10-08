@@ -1,0 +1,2838 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   03/13/2019
+#   @package        :   Security
+#   @description    :   Everything related to Disney in Anchorage House. 
+###############################################################################
+
+input_boolean:
+  happy_ever_after_show:
+    name: Happy Ever After Show
+  boo_to_you_show:
+    name: Boo To You 
+  holiday_wishes:
+    name: Holiday Wishes 
+  spaceship_earth_ride:
+    name: Spaceship Earth 
+  boo_to_you:
+    name: Boo To You 
+  happy_ever_after:
+    name: Happy Ever After
+  mk_loop:
+    name: MK Loop
+  tiki_room_audio:
+    name: Tiki Room
+  illuminations:
+    name: Illuminations
+  move_shake_dance:
+    name: Move It Shake It Dance It
+  welcome_show:
+    name: Welcome Show
+  american_adventure:
+    name: American Adventure
+  disney_springs_xmas:
+    name: Disney Springs XMas
+  sleepy_hollow_audiobook:
+    name: Sleepy Hollow ReadAlong
+  pandora_area_loop:
+    name: Pandora Area Loop
+  resort_room_audio:
+    name: WDW Resort Room Audio
+  wishes_audio:
+    name: Wishes
+  mk_mainstreet_audio:
+    name: MK Mainstreet Audio
+  mk_fof_audio:
+    name: MK Festival of Fantasy Audio
+  mk_trolly_audio:
+    name: MK Trolly Audio
+  mk_tomorrowland_loop:
+    name: MK Tomorrowland Loop
+  mk_adventureland_loop:
+    name: MK Adventureland Loop
+  mk_frontierland_loop:
+    name: MK Frontierland Loop
+  mk_fantasyland_loop:
+    name: MK Fantasyland Loop
+  epcot_entrance_loop:
+    name: Epcot Entrance Loop
+  pixar_pier_loop:
+    name: Pixar Pier Loop
+  disney_random_area_loop:
+    name: Disney Random Area Loop
+  disneyland_christmas_loop:
+    name: Disneyland Christmas Loop
+  mainstreet_usa_christmas_loop:
+    name: Mainstreet Christmas Loop
+  disney_park_christmas_loop:
+    name: Disney Park Christmas Loop
+  christmas_around_disneyland:
+    name: Christmas Around Disneyland
+  worldshowcase_loop:
+    name: World Showcase Loop
+  toystoryland_loop:
+    name: Toy Story Land
+  aroundwdw:
+    name: Around WDW
+  arounddisneyland:
+    name: Around Disneyland
+  aroundmk:
+    name: Around Magic Kingdom
+  hauntedmansionloop:
+    name: Haunted Mansion Loop
+  christmas_background:
+    name: Christmas Background
+  be_our_guest:
+    name: Be Our Guest
+  polynesian:
+    name: Polynesian Loop
+  disney_background:
+    name: Disney Background
+  tangled_loop:
+    name: Tangled Rest Area
+  epcot_gateway:
+    name: Epcot Gateway
+  test_track_loop:
+    name: Test Track Loop
+  tta:
+    name: Peoplemover
+  splash_mountain:
+    name: Splash Mountain
+  peter_pan_flight:
+    name: Peter Pans Flight
+  tiki_statues:
+    name: Tiki Statues
+  pirates_ride_dl:
+    name: Pirates Disneyland
+
+group:
+  Disney Audio:
+    entities:
+      - input_boolean.happy_ever_after_show
+      - input_boolean.haunted_mansion
+      - input_boolean.boo_to_you_show
+      - input_boolean.holiday_wishes
+      - input_boolean.spaceship_earth_ride
+      - input_boolean.boo_to_you
+      - input_boolean.happy_ever_after
+      - input_boolean.mk_loop
+      - input_boolean.tiki_room_audio
+      - input_boolean.illuminations
+      - input_boolean.move_shake_dance
+      - input_boolean.welcome_show
+      - input_boolean.american_adventure
+      - input_boolean.disney_springs_xmas
+      - input_boolean.sleepy_hollow_audiobook
+      - input_boolean.this_is_halloween
+      - input_boolean.pandora_area_loop
+      - input_boolean.resort_room_audio
+      - input_boolean.wishes_audio
+      - input_boolean.mk_mainstreet_audio
+      - input_boolean.mk_fof_audio
+      - input_boolean.mk_trolly_audio
+      - input_boolean.mk_tomorrowland_loop
+      - input_boolean.mk_adventureland_loop
+      - input_boolean.mk_frontierland_loop
+      - input_boolean.mk_fantasyland_loop
+      - input_boolean.epcot_entrance_loop
+      - input_boolean.pixar_pier_loop
+      - input_boolean.disney_random_area_loop
+      - input_boolnea.disneyland_christmas_loop
+      - input_boolean.mainstreet_usa_christmas_loop
+      - input_boolean.disney_park_christmas_loop
+      - input_boolean.christmas_around_disneyland
+      - input_boolean.hauntedmansionloop
+      - input_boolean.aroundmk
+      - input_boolean.arounddisneyland
+      - input_boolean.aroundwdw
+      - input_boolean.toystoryland_loop
+      - input_boolean.worldshowcase_loop
+      - input_boolean.christmas_background
+      - input_boolean.be_our_guest
+      - input_boolean.polynesian
+      - input_boolean.tta
+      - input_boolean.tangled_loop
+      - input_boolean.epcot_gateway
+      - input_boolean.splash_mountain
+      - input_boolean.peter_pan_flight
+      - input_boolean.test_track_loop
+      - input_boolean.hogwartsexpress
+      - input_boolean.forbiddenjourney
+      - input_boolean.islandsofadventure
+      - input_boolean.hogsmeadeloop
+      - input_boolean.underthesea
+      - input_boolean.sorinaroundtheworld
+      - input_boolean.journeyintoimagination
+      - input_boolean.frozeneverafter
+      - input_boolean.piratesqueue
+      - input_boolean.piratesride
+      - input_boolean.sorinqueue
+      - input_boolean.liingwiththeland
+      - input_boolean.tiki_statues
+      - input_boolean.hauntedmansionqueue
+      - input_boolean.hauntedmansionchristmas
+      - input_boolean.theseasnemo
+      - input_boolean.pirates_ride_dl
+      - input_boolean.piratestownsquare
+      - input_boolean.galaxyedge
+      - input_boolean.trollyparade
+      - input_boolean.junglecruise
+      - input_boolean.akloop1
+      - input_boolean.epcotfountains
+      - input_boolean.crystalpalace
+      - input_boolean.safariradio
+      - input_boolean.trainwdw
+
+  Disney Background:
+    entities:
+      - input_boolean.be_our_guest
+      - input_boolean.toystoryland_loop
+      - input_boolean.epcot_entrance_loop
+      - input_boolean.resort_room_audio
+      - input_boolean.polynesian
+      - input_boolean.tta
+      - input_boolean.tangled_loop
+      - input_boolean.epcot_gateway
+      - input_boolean.splash_mountain
+      - input_boolean.peter_pan_flight
+      - input_boolean.test_track_loop
+      - input_boolean.spaceship_earth_ride
+      - input_boolean.pixar_pier_loop
+      - input_boolean.hogwartsexpress
+      - input_boolean.forbiddenjourney
+      - input_boolean.islandsofadventure
+      - input_boolean.hogsmeadeloop
+      - input_boolean.underthesea
+      - input_boolean.sorinaroundtheworld
+      - input_boolean.journeyintoimagination
+      - input_boolean.frozeneverafter
+      - input_boolean.piratesqueue
+      - input_boolean.piratesride
+      - input_boolean.sorinqueue
+      - input_boolean.liingwiththeland
+      - input_boolean.tiki_statues
+      - input_boolean.hauntedmansionloop
+      - input_boolean.theseasnemo
+      - input_boolean.arounddisneyland
+      - input_boolean.trollyparade
+      - input_boolean.akloop1
+      - input_boolean.piratestownsquare
+      - input_boolean.galaxyedge
+      - input_boolean.mk_adventureland_loop
+      - input_boolean.mk_frontierland_loop
+      - input_boolean.mk_mainstreet_audio
+      - input_boolean.epcotfountains
+      - input_boolean.crystalpalace
+      - input_boolean.safariradio
+      - input_boolean.aroundmk
+      - input_boolean.trainwdw
+
+automation:
+  - id: 897eeeeb-44bf-43e0-a0cc-20b3aff1107e
+    alias: Disney Scents
+    initial_state: true
+    mode: restart
+    trigger:
+    - platform: state
+      entity_id: input_boolean.disney_smells
+      to: 'on'
+      from: 'off'
+      id: smells_on
+    - platform: state
+      entity_id: input_boolean.disney_smells
+      to: 'on'
+      for: "00:20:00"
+      id: smells_off
+    - platform: state
+      entity_id: input_boolean.disney_bedrooms
+      to: 'on'
+      from: 'off'
+      id: bedroom_smells_on
+    - platform: state
+      entity_id: input_boolean.disney_bedrooms
+      to: 'on'
+      for: "00:20:00"
+      id: bedroom_smells_off
+    - platform: state
+      entity_id: input_boolean.disney_bedrooms
+      to: 'off'
+      id: bedroom_smells_off
+    - platform: state
+      entity_id: input_boolean.disney_smells
+      to: 'off'
+      id: smells_off
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: smells_on
+        sequence: 
+        - service: select.select_option
+          target:
+            entity_id: select.living_room_diffuser_spray
+          data: 
+            option: 'eco'
+        - service: switch.turn_on
+          entity_id: switch.theater_diffuser
+        - service: switch.turn_on
+          entity_id: switch.theater_diffuser_light
+      - conditions:
+        - condition: trigger
+          id: bedroom_smells_on
+        sequence: 
+        - service: humidifier.turn_on
+          entity_id: humidifier.master_bedroom_asakuki
+        - service: humidifier.turn_on
+          entity_id: humidifier.skylars_bedroom_diffuser
+      - conditions:
+        - condition: trigger
+          id: smells_off
+        sequence: 
+        - service: select.select_option
+          target:
+            entity_id: select.living_room_diffuser_spray
+          data: 
+            option: 'off'
+        - service: switch.turn_off
+          entity_id: switch.theater_diffuser
+        - service: switch.turn_off
+          entity_id: switch.theater_diffuser_light
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.disney_smells
+      - conditions:
+        - condition: trigger
+          id: bedroom_smells_off
+        sequence: 
+        - service: humidifier.turn_off
+          entity_id: humidifier.master_bedroom_asakuki
+        - service: humidifier.turn_off
+          entity_id: humidifier.skylars_bedroom_diffuser
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.disney_bedrooms
+      default: []
+    
+
+  - id: 7959114d-80e9-4eb7-96cf-9ec097fcda1f
+    alias: Make it Smell Like Disney
+    initial_state: true
+    mode: single
+    trigger:
+    - platform: time_pattern
+      minutes: 10
+      id: living_room
+    - platform: time_pattern
+      minutes: 45
+      id: bedrooms
+    condition:
+    - condition: state
+      entity_id: input_boolean.vacation_mode
+      state: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: living_room
+        - condition: state
+          entity_id: sun.sun
+          state: 'above_horizon'
+        sequence: 
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.disney_smells
+      - conditions:
+        - condition: trigger
+          id: bedrooms
+        sequence: 
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.disney_bedrooms
+      default: []
+   
+
+# Turn off input booleans when audio is over:
+  - id: e1cb172c-0423-11eb-adc1-0242ac120002
+    alias: disney_audio_auto_off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: media_player.ha_blue
+      to: 'idle'
+      from: 'playing'
+    - platform: state
+      entity_id: media_player.ha_blue
+      to: 'idle'
+      from: 'paused'
+    condition:
+    - condition: state
+      entity_id: group.disney_background
+      state: 'on'
+    action:
+    - service: homeassistant.turn_off 
+      entity_id: group.disney_background
+
+# If Main audio is off, turn off input_booleans and notify via notifications. 
+  - id: audio_is_disabled
+    alias: Audio is Disabled 
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: group.disney_background
+      to: 'on'
+    condition:
+      condition: or
+      conditions:
+      - condition: state 
+        entity_id: input_boolean.audible_notifications
+        state: 'off'
+      - condition: state
+        entity_id: group.family
+        state: 'not_home'
+    action:
+    - service: homeassistant.turn_off 
+      entity_id: group.disney_background
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: "audioissue"
+    - service: persistent_notification.create
+      data_template:
+        notification_id: "audioissue"
+        message: "Disney audio functions are disabled because the audible notifications are off."
+        title: "Audio Not Available"
+
+
+  - id: 58b1d5a1-88b0-4647-acbe-b4f794d67c2c
+    alias: Diney Background Music 
+    trigger:
+      - platform: time
+        at: input_datetime.disney_background_start
+        id: start
+      - platform: time
+        at: input_datetime.disney_background_stop
+        id: stop
+    condition:
+      - condition: time
+        weekday:
+          - sat
+          - sun
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.disney_background
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.disney_background
+      default: []
+    initial_state: true
+    mode: single   
+
+
+
+  - id: 0e59cc3e-e55a-4442-b7d3-48b0fe19963a
+    alias: Disney background Loop
+    trigger: 
+    - platform: state
+      entity_id: media_player.ha_blue
+      to: 'idle'
+      from: 'playing'
+      id: restart 
+    - platform: state
+      entity_id: input_boolean.disney_background
+      id: start
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: input_boolean.disney_background
+      id: stop
+      from: 'on'
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: input_boolean.turn_on
+          data:
+            entity_id: "{{ expand('group.disney_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}"
+      - conditions:
+        - condition: trigger
+          id: restart
+        - condition: state
+          entity_id: input_boolean.disney_background
+          state: 'on'
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+        - delay: '00:01:00'
+        - service: input_boolean.turn_on
+          data:
+            entity_id: "{{ expand('group.disney_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}"
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+        - service: homeassistant.turn_off
+          entity_id: group.disney_background
+      default: []
+    initial_state: true
+    mode: restart      
+
+  - id: e8d90939-2c62-427c-82e4-358310490d01
+    alias: Polynesian Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.polynesian
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.polynesian
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PolynesianLoop.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single     
+
+  - id: 148233a8-8b19-41ba-9025-bd2ed6aa9414
+    alias: WDW Train Ride
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.trainwdw
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.trainwdw
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/TrainWDW.mp3"
+            volume: .18
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single     
+
+  - id: 8d1dd6fc-a918-4d57-9bd5-539382955404
+    alias: Pirates Town Square
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.piratestownsquare
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.piratestownsquare
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PiratesTown.mp3"
+            volume: .15
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 6302858c-90d6-4b14-aecc-7c6124fed6f2
+    alias: Epcot Fountain
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.epcotfountain
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.epcotfountain
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/EpcotFountainofNationsLoop.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single   
+
+  - id: def4b4bd-f306-40aa-abcb-dfb28305c8fa
+    alias: Crystal Palace Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.crystalpalace
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.crystalpalace
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/TheCrystalPalaceAreaMusic.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single 
+
+  - id: 02548d2f-8182-4825-8b92-806a08502548
+    alias: Safari Radio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.safariradio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.safariradio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/KilamanjaroSafariRadio.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single   
+
+  - id: 1a695a39-c3df-4acb-9894-d0889345f726
+    alias: Trolly Parade
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.trollyparade
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.trollyparade
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/TrollyParade.mp3"
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: d9063da9-ba3e-4344-b1dc-997b2f22cb84
+    alias: Jungle Cruise
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.junglecruise
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.junglecruise
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/JungleCruise.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single   
+
+  - id: 04329cfe-2ffb-4c24-b1fc-fb4c39c60bd1
+    alias: AK Loop 1
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.akloop1
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.akloop1
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/AKLoop1.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 0c7c9bc7-7685-4af2-9742-da0db3ce35f2
+    alias: Seven Swarfs Area
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.sevendwarfs
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.sevendwarfs
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/SevenDwarfs.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 7c79f8e1-190b-4dc7-81a4-cc7cbf625b08
+    alias: Galaxy Edge
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.galaxyedge
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.galaxyedge
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: >
+              {{ [
+                "/media/disney/GalaxyEdge.mp3",
+                "/media/disney/GalaxyEdgeNight.mp3"
+              ] | random }}
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: cb3bd322-e9ee-4168-82fe-a4121f5bdfc2
+    alias: Pirates Ride DL
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.pirates_ride_dl
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.pirates_ride_dl
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PiratesRideDL.mp3"
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single     
+
+  - id: f944fed2-ebb7-4bb4-88c5-9d10d7cb2010
+    alias: Tiki Statues
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.tiki_statues
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.tiki_statues
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/tiki_statues.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single     
+
+  - id: 35b5c37e-deca-489a-bece-4733f8f04a1a
+    alias: Hogwarts Express H2KC
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hogwartsexpress
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hogwartsexpress
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HogwartsExpress.mp3"
+            volume: .18
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single   
+
+  - id: 84cdb9d0-b915-41e6-a73d-3e6fc52207fb
+    alias: Forbidden Journey Queue
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.forbiddenjourney
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.forbiddenjourney
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/ForbiddenJourney.mp3"
+            volume: .15
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: ec2b95bc-0f0c-4438-a35c-35ef1c458db6
+    alias: Islands of Adventure Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.islandsofadventure
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.islandsofadventure
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/IslandsofAdventure.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single   
+
+  - id: 8026749e-a68e-44c6-8aca-8ecb67d879a2
+    alias: Hogsmeade Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hogsmeadeloop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hogsmeadeloop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HogsmeadeMusicLoop.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single       
+
+  - id: 2e7fe730-f391-40e3-aacb-cf0f6bd9aad3
+    alias: Under The Sead Ride
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.underthesea
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.underthesea
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/UnderTheSea.mp3"
+            volume: .18
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: f67e6ebb-22ee-449f-b6ff-e9ded10d288a
+    alias: Sorin Around The World
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.sorinaroundtheworld
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.sorinaroundtheworld
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/SorinAroundTheWorld.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 841c6b58-40a3-4559-b6ae-f9ad857efacd
+    alias: Journey Into Imagination
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.journeyintoimagination
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.journeyintoimagination
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/JourneyIntoImagination.mp3"
+            volume: .18
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: fee5e4c8-1b55-4a83-8fa1-79c93b7cfccb
+    alias: Frozen Ever After
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.frozeneverafter
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.frozeneverafter
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/FrozenEverAfter.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 6a9186db-47ca-482d-bfcf-a38fe6dda868
+    alias: Pirate Queue Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.piratesqueue
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.piratesqueue
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PiratesQueue.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: de73c4ac-9069-486f-be7f-1afde779c233
+    alias: Pirate Ride
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.piratesride
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.piratesride
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: >
+              {{ [
+                "/media/disney/PiratesRide.mp3",
+                "/media/disney/PiratesRideDL.mp3"
+                ] | random }}
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single 
+
+  - id: c55226fc-01b3-4dc0-9e27-d9443d2aef34
+    alias: Soarin Queue
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.sorinqueue
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.sorinqueue
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/SoarinQueueArea.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 4616f09f-ffbc-4e81-bfc7-2dfe1a84f121
+    alias: Living With The Land
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.livingwiththeland
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.livingwiththeland
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/LivingWithTheLand.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 9a252e95-923b-4247-b486-0b59e4d111b5
+    alias: Epcot Gateway Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.epcot_gateway
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.epcot_gateway
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/EpcotGateway.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single    
+
+  - id: 77aed371-bbac-4219-bed5-8c76ef089a3c
+    alias: Tangled Rest Area Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.tangled_loop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.tangled_loop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: >
+              {{[
+                "/media/disney/TangledRestArea.mp3",
+                "/media/disney/TangledRestArea2.mp3"
+                ] | random }}     
+            volume: .15
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single    
+  
+  - id: d49f0b18-10f0-4406-b5a3-c169882ad52d
+    alias: Test Track Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.test_track_loop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.test_track_loop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/TestTrack.mp3"
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single 
+
+  - id: 52d24d70-72d9-490f-8d95-920ab8a57269
+    alias: Peter Pan Flight Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.peter_pan_flight
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.peter_pan_flight
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PeterPanFlight.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single    
+
+  - id: 26f460b7-4c15-451e-8cda-ac4be117b0db
+    alias: Peoplemover Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.tta
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.tta
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PeoplemoverAudio.mp3"
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 84ad5313-8bb2-4843-b32a-1007b3f7894a
+    alias: Haunted Mansion Christmas
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionchristmas
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionchristmas
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HauntedMansionChristmas.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 63b811dd-cc98-426e-a141-ffb0fc48da37
+    alias: The Seas With Nemo
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.theseasnemo
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.theseasnemo
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/TheSeasNemo.mp3"
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 9dea87a8-686b-41da-8f46-cdca1d78fb98
+    alias: Splash Mountain Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.splash_mountain
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.splash_mountain
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/SplashMountainRide.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single      
+
+  - id: eb3bce32-833f-4d78-8ef7-82142796c3b4
+    alias: Be Our Guest
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.be_our_guest
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.be_our_guest
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/be_our_guest.mp3"
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single      
+
+  - id: e1cb210e-0423-11eb-adc1-0242ac120002
+    alias: Around WDW
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.aroundwdw
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.aroundwdw
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/Liberty_square_audio.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb2050-0423-11eb-adc1-0242ac120002
+    alias: Around Magic Kingdom
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.aroundmk
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.aroundmk
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/aroundmk.mp3"
+            volume: .12
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb1f7e-0423-11eb-adc1-0242ac120002
+    alias: Around Disneyland
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.arounddisneyland
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.arounddisneyland
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/DisneylandMainstreetLoop.mp3"
+            volume: .18
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb1eb6-0423-11eb-adc1-0242ac120002
+    alias: Haunted Mansion Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionloop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionloop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HM_Loop.mp3"
+            volume: .23
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: d3816f30-aa17-478a-afa1-f76145129485
+    alias: Haunted Mansion Queue
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionqueue
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionqueue
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HauntedMansionQueue.mp3"
+            volume: .17
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb1d94-0423-11eb-adc1-0242ac120002
+    alias: World Showcase Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.worldshowcase_loop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.worldshowcase_loop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/WorldShowcaseLoop.mp3"
+            volume: .18
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb1cc2-0423-11eb-adc1-0242ac120002
+    alias: Toystory Land Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.toystoryland_loop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.toystoryland_loop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/ToyStorylandLoop.mp3"
+            volume: .20
+            speaker: media_player.ha_blue
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+# MK Mainstreet Audio
+  - id: mk_loop_on
+    alias: MK Loop On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_mainstreet_audio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/MK_MainStreet_Loop.mp3
+        volume: .12
+  - id: mk_loop_off
+    alias: MK Loop Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_mainstreet_audio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Frontier Audio
+  - id: frontier_loop_on
+    alias: Frontier Loop On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_frontierland_loop
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/frontierland_loop.mp3
+        volume: .12
+  - id: frontier_loop_off
+    alias: Frontier Loop Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_frontierland_loop
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Adventure Audio
+  - id: adventureland_loop_on
+    alias: Adventure Land Loop On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_adventureland_loop
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/adventureland_loop.mp3
+        volume: .12
+  - id: adventure_loop_off
+    alias: Adventure Loop Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_adventureland_loop
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Epcot Entrance Audio
+  - id: epcotentrance_loop_on
+    alias: Epcot Entrance Loop On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.epcot_entrance_loop
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/epcot_entrance_loop.mp3
+        volume: .17
+  - id: epcotentrance_loop_off
+    alias: Epcot Entrance Loop Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.epcot_entrance_loop
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+
+# Pixar Pier Audio
+  - id: pixar_pier_loop_on
+    alias: Pixar Pier Loop On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.pixar_pier_loop
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/PixarPier.mp3
+        volume: .20
+  - id: pixar_pier_loop_off
+    alias: Pixar Pier Loop Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.pixar_pier_loop
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Tiki Room
+  - id: tiki_room_on
+    alias: Tiki Room On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.tiki_room_audio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/tiki_room_audio.mp3
+        volume: .22
+  - id: tiki_room_off
+    alias: Tiki Room Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.tiki_room_audio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Illuminations
+  - id: illuminations_on
+    alias: Illuminations On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.illuminations
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/Reflections_of_Earth.mp3
+        volume: .3
+  - id: illuminations_off
+    alias: Illuminations Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.illuminations
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+  
+
+# Happily Ever After
+  - id: happy_ever_after_show_on
+    alias: Happy Ever After Show On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.happy_ever_after_show
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/Happily_Ever_After_Audio.mp3
+        volume: .25
+  - id: happy_ever_after_show_off
+    alias: Happy Ever After Show Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.happy_ever_after_show
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Holiday Wishes 
+  - id: holiday_wishes_show_on
+    alias: Holiday Wishes Show On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.holiday_wishes
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/holidaywishes.mp3
+        volume: .3
+
+  - id: holiday_wishes_show_off
+    alias: Holiday Wishes Show Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.holiday_wishes
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+    - service: script.turn_off
+      entity_id: script.holiday_wishes
+    - service: script.turn_off 
+      entity_id: script.wishes_lights_on
+    - service: script.turn_off
+      entity_id: script.wishes_lights_all
+  
+# Holiday Wishes Preshow Trigger
+  # - id: wishes_preshow_trigger
+  #   alias: Wishes Preshow Trigger 
+  #   initial_state: true
+  #   trigger:
+  #   - platform: state
+  #     entity_id: input_boolean.holiday_wishes
+  #     to: 'on'
+  #   action:
+  #   - service: script.local_audio
+  #     data_template:
+  #       media: "http://192.168.7.40/audio/holidaywishes.mp3"
+  #       volume: .3
+
+# Holiday Wishes Light Show Trigger  
+  - id: wishes_show_trigger
+    alias: Wishes show Trigger 
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: media_player.ha_blue
+      to: 'playing'
+    condition:
+    - condition: state 
+      entity_id: input_boolean.holiday_wishes
+      state: 'on'
+    action:
+    - service: script.turn_on 
+      entity_id: script.wishes_lights_on
+    - service: script.turn_on
+      entity_id: script.wishes_lights_all
+
+# Spaceship Earth Ride Audio    
+  - id: spaceship_earth_on
+    alias: Spaceship Earth On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.spaceship_earth_ride
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/spaceship_earth_ride.mp3
+        volume: .20
+  - id: spaceship_earth_off
+    alias: Spaceship Earth Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.spaceship_earth_ride
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+  
+# Boo to You Parade  
+  - id: 63ed9c55-d269-4d62-8880-26c56e2b2662
+    alias: Boo To You Show
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.boo_to_you_show
+      to: 'on'
+      id: start
+    - platform: state
+      entity_id: input_boolean.boo_to_you_show
+      to: 'off'
+      id: end
+    action:
+    - alias: "choose audio"
+      choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data_template:
+            speaker: media_player.ha_blue
+            media: /media/disney/boo_to_you_audio.mp3
+            volume: .2
+      - conditions:
+        - condition: trigger
+          id: end
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    
+
+
+
+
+
+
+
+
+# Holiday Wishes  
+  - id: holiday_wishes_on
+    alias: Holiday Wishes On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.holiday_wishes
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/holidaywishes.mp3
+        volume: .3
+
+  - id: holiday_wishes_off
+    alias: Holiday Wishes Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.holiday_wishes
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+  
+# Magic Kingdom Welcome Show
+  - id: welcome_show_on
+    alias: Welcome Show On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.welcome_show
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/ML_Welcome_Show.mp3
+        volume: .25
+    - delay:
+        minutes: 8
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.welcome_show
+  # - id: welcome_show_off
+  #   alias: Welcome Show Off
+  #   initial_state: true
+  #   trigger:
+  #   - platform: state
+  #     entity_id: input_boolean.welcome_show
+  #     to: 'off'
+  #   action:
+  #   - service: media_player.media_stop
+  #     entity_id: media_player.ha_blue
+  #   - service: script.turn_off
+  #     entity_id: script.local_audio
+
+# MK Trolly Show
+  - id: trolly_audio_show_on
+    alias: Trolly Audio Show On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_trolly_audio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/music/Voctave_Trolly_Song.mp3
+        volume: .20
+  - id: trolly_audio_show_off
+    alias: Trolly Audio Show Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_trolly_audio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Pandora Ambient Audio
+  - id: pandora_audio_on
+    alias: Pandora Audio On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.pandora_area_loop
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/Pandora_Area_Loop.mp3
+        volume: .20
+  - id: pandora_audio_off
+    alias: Pandora Audio Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.pandora_area_loop
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+
+# Resort Room Audio
+  - id: resort_room_audio_on
+    alias: Resort Room Audio On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.resort_room_audio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/WDW_Resort_TV.mp3
+        volume: .20
+  - id: resort_room_audio_off
+    alias: Resort Room Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.resort_room_audio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+
+# American Adventure
+  - id: american_adventure_on
+    alias: American Adventure On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.american_adventure
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/The_American_Adventure.mp3
+        volume: .25
+  - id: american_adventure_off
+    alias: American Adventure Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.american_adventure
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Sleepy Hollow Story Readalong
+  - id: sleepy_hollow_readalong_on
+    alias: Sleepy Hollow Readalong On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.sleepy_hollow_audiobook
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/thelegendofsleepyhallow-readalong.mp3
+        volume: .3
+  - id: sleepy_hollow_readalong_off
+    alias: Sleepy Hollow Readalong Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.sleepy_hollow_audiobook
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Move It Shake It
+  - id: move_dance_on
+    alias: Move It Shake It On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.move_shake_dance
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        media: /media/disney/move_it_shake_dance_audio.mp3
+        volume: .2
+  - id: move_dance_off
+    alias: Move It Shake It Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.move_shake_dance
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Random Disney Area Loop
+  - id: random_disney_area_on
+    alias: Random Disney Area On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.disney_random_area_loop
+      to: 'on'
+    action:
+    - service: script.disney_park_audio
+  - id: random_disney_area_off
+    alias: Random Disney Area Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.disney_random_area_loop
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+script:
+  # kill_hurry_back:
+  #   sequence:
+  #   - service: shell_command.alarm_off
+  hurry_back_short:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    - condition: state
+      entity_id: group.family
+      state: 'home'
+    - service: shell_command.haunted_mansion_hurry_back_short
+  hurry_back_full:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    - condition: state
+      entity_id: group.family
+      state: 'home'
+    - service: shell_command.haunted_mansion_hurry_back_full
+  haunted_lights_on:
+    sequence:
+    - delay: 00:02:25
+    - service: scene.turn_on
+      data:
+        entity_id: scene.haunted_preshow
+  
+  haunted_lights_out:
+    sequence:
+    - delay: 00:02:15
+    - service: scene.turn_on
+      data:
+        entity_id: scene.haunted_lights_out
+  haunted_preshow:
+    sequence:
+    - delay: 00:01:15
+    - service: scene.turn_on
+      data:
+        entity_id: scene.haunted_preshow
+  
+  kill_haunted_mansion:
+    sequence:
+    - service: shell_command.alarm_off
+    - service: script.turn_off
+      data:
+        entity_id: script.haunted_preshow
+    - service: script.turn_off
+      data:
+        entity_id: script.haunted_lights_out
+    - service: script.turn_off
+      data:
+        entity_id: script.haunted_lights_on
+    - service: scene.turn_on
+      data:
+        entity_id: scene.normal_livingroom_lighting
+  haunted_ride:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    - condition: state
+      entity_id: group.family
+      state: 'home'
+    - service: shell_command.haunted_mansion_ride
+
+# Big Kill show script - This is my E-Stop
+  kill_this_ride:
+    sequence:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+    - service: script.turn_off
+      entity_id: script.local_audio
+    - service: homeassistant.turn_off 
+      entity_id: group.disney_background
+
+  living_room_effects_on:
+    sequence:
+      - service: select.select_option
+        target:
+          entity_id:
+          - select.living_room_tower_lamp_effect
+          - select.front_door_lamp_effect
+          - select.living_room_lamp_effect
+        data: 
+          option: 'WLED / DDP'
+
+  living_room_effects_off:
+    sequence:
+      - service: select.select_option
+        target:
+          entity_id:
+          - select.living_room_tower_lamp_effect
+          - select.front_door_lamp_effect
+          - select.living_room_lamp_effect
+        data: 
+          option: 'None'
+
+  living_effeects_test:
+    sequence:
+      - service: select.select_option
+        target:
+          entity_id: select.living_room_lamps_preset
+        data:
+          option: 'Candles'
+      - service: script.living_room_effects_on
+      - service: light.turn_off
+        entity_id: light.front_door_lamp,light.living_room_lamp,light.living_room_tower_lamp
+      - delay: '00:00:10'
+      - service: light.turn_off
+        entity_id: light.living_room_lamps
+      - service: script.living_room_effects_off
+      - service: light.turn_on
+        entity_id: light.front_door_lamp,light.living_room_lamp,light.living_room_tower_lamp
+        
+
+  
+  holiday_wishes_preshow:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    - condition: state
+      entity_id: group.family
+      state: 'home'
+    - service: media_player.play_media
+      entity_id: media_player.ha_blue
+      data:
+        media_content_id: /media/disney/wishes_5_min.mp3
+        media_content_type: "music"
+    - delay: 00:03:00
+    - service: scene.turn_on
+      entity_id: scene.wishes_preshow
+  
+  
+  wishes_lights_on:
+    sequence:
+    - delay:
+        seconds: 10
+    - service: scene.turn_on
+      entity_id: scene.wishes_show
+
+  wishes_lights_all:
+    sequence:
+    - delay:
+        seconds: 110
+    - service: scene.turn_on
+      entity_id: scene.table_lamp_blue
+    - delay:
+        seconds: 2
+    - service: scene.turn_on
+      entity_id: scene.front_lamp_green
+    - delay:
+        seconds: 2
+    - service: scene.turn_on
+      entity_id: scene.tower_lamp_red
+
+  
+  
+  illuminations_lights_out:
+    sequence:
+    - delay: 00:00:57
+    - service: scene.turn_on
+      data:
+        entity_id: scene.haunted_lights_out
+  illuminations_single_light:
+    sequence:
+    - delay: 00:01:03
+    - service: scene.turn_on
+      data:
+        entity_id: scene.dimished_livingroom_lighting
+  illuminations_dual_light:
+    sequence:
+    - delay: 00:01:08
+    - service: scene.turn_on
+      data:
+        entity_id: scene.illuminations_livingroom_lighting_two
+  illuminations_triple_light:
+    sequence:
+    - delay: 00:01:11
+    - service: scene.turn_on
+      data:
+        entity_id: scene.illuminations_livingroom_lighting_three
+  illuminations_show:
+    sequence:
+    - delay: 00:01:19
+    - service: scene.turn_on
+      data:
+        entity_id: scene.normal_livingroom_lighting
+  illuminations_preshow:
+    sequence:
+    - service: scene.turn_on
+      data:
+        entity_id: scene.normal_livingroom_lighting
+  
+# Welcome Foolish Mortals to the Haunted Mansion
+  haunted_guest_welcome:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    - condition: state
+      entity_id: group.family
+      state: 'home'
+    - service: script.local_audio
+      data_template:
+        media: /media/disney/haunted_guest_welcome.mp3
+        volume: .3
+
+# Random Disney Park Music
+  disney_park_audio:
+    sequence:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        volume: .4
+        media: >
+         {{- ["http://192.168.7.40/Liberty_square_audio.mp3",
+            "http://192.168.7.40/adventureland_loop.mp3",
+            "http://192.168.7.40/be_our_guest.mp3",
+            "http://192.168.7.40/epcot_entrance_loop.mp3",
+            "http://192.168.7.40/frontierland_loop.mp3",
+            "http://192.168.7.40/tomorrowland_loop.mp3",
+            "https://www.youtube.com/watch?v=IyWlxq2kOvw",
+            "https://www.youtube.com/watch?v=ngRdzcvr0rg",
+            "https://youtu.be/UW9WKIvF9y4",
+            "https://www.youtube.com/watch?v=31YJPz7gZ4c",
+            "https://www.youtube.com/watch?v=EPO3S649TNs",
+            "https://www.youtube.com/watch?v=jOfcg9WYkGw",
+            "https://www.youtube.com/watch?v=tBm73YjJB0o",
+            "https://www.youtube.com/watch?v=Jmyspnk8DZ8",
+            "https://www.youtube.com/watch?v=joOLgTNMuVU",
+            "https://www.youtube.com/watch?v=19-ooWL5R8w"] | random -}}
+
+# Dapper Dan Music
+  dapper_dan_audio:
+    sequence:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.ha_blue
+        volume: .4
+        media: >
+         {{- [
+            "https://www.youtube.com/watch?v=ELjBO21QaI0",
+            "https://www.youtube.com/watch?v=sQqz_6dkwKE",
+            "https://www.youtube.com/watch?v=4uqapvdZLlc",
+            "https://www.youtube.com/watch?v=NgWemGSpQDc",
+            "https://www.youtube.com/watch?v=bCyCWP311pE"
+            ] | random -}}

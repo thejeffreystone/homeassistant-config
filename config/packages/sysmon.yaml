@@ -1,0 +1,90 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   02/19/2019
+#   @package        :   Sysmon
+#   @description    :   A collection of Home Assistant and Pi Sensors
+###############################################################################
+
+sensor:
+  - platform: systemmonitor
+    resources:
+    - type: disk_use_percent
+      arg: /
+    - type: memory_use_percent
+    - type: network_in
+      arg: eth0
+    - type: network_out
+      arg: eth0
+    - type: load_15m
+    - type: processor_use
+    - type: last_boot
+  - platform: time_date
+    display_options:
+    - 'time'
+    - 'date'
+    - 'date_time'
+    - 'time_date'
+    - 'time_utc'
+    - 'beat'
+  
+  - platform: template
+    sensors:
+      current_version_ha:
+        #command: python3 -c "import requests; print(requests.get('https://pypi.python.org/pypi/homeassistant/json').json()['info']['version'])"
+        friendly_name: Current HA Version
+        value_template: >-
+          {{ states.binary_sensor.attributes.newest_version }}
+  - platform: version
+    name: Installed version
+    source: local
+    #command: "head -5 /home/homeassistant/.homeassistant/.HA_VERSION"
+  - platform: version
+    name: Released Version
+    source: pypi
+  - platform: version
+    name: Released Hassio Ver
+    source: hassio 
+
+  # unit of measurement deprecated in 2020.12.0
+  - platform: uptime
+    name: Time Online
+    #unit_of_measurement: days 
+  - platform: command_line
+    name: Lines of Code
+    command: "find /config -name '*.yaml' | xargs cat | wc -l"
+    scan_interval: 20000
+  - platform: template
+    sensors:
+      open_pull_requests:
+        friendly_name: Open Pull Requests
+        value_template: >-
+          {{ states.sensor.home_assistant_configuration.attributes.open_pull_requests }}
+          
+  # For tracking number of times motion is detected 
+  # at front door in last 7 days       
+  - platform: history_stats
+    name: Front Door Motion
+    entity_id: binary_sensor.aarlo_motion_front_door
+    state: 'on'
+    type: count 
+    end: '{{ now() }}'
+    duration:
+      days: 7
+          
+utility_meter:
+  # Use the 7 day history of motion at front door
+  # to get daily motion.
+  hourly_frontdoor_motion:
+    source: sensor.front_door_motion
+    cycle: hourly
+  daily_frontdoor_motion:
+    source: sensor.front_door_motion
+    cycle: daily
+    
+    
+    
+    
+    
+    
+    
+    

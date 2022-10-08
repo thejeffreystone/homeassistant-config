@@ -1,0 +1,227 @@
+- platform: history_stats
+  name: Jeff Driving Time
+  entity_id: binary_sensor.jeff_driving
+  state: 'on'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    days: 7
+- platform: history_stats
+  name: Jeff School
+  entity_id: person.jeffrey
+  state: 'SHMES'
+  type: count
+  end: '{{ now() }}'
+  duration:
+    days: 7
+- platform: history_stats
+  name: Kat Driving Time
+  entity_id: binary_sensor.kat_driving
+  state: 'on'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    days: 7
+- platform: history_stats
+  name: Speech time
+  entity_id: media_player.ha_blue
+  state: 'playing'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    days: 8
+- platform: history_stats
+  name: AppleTV time
+  entity_id: media_player.apple_tv
+  state: 'playing'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    hours: 24
+- platform: history_stats
+  name: Game time
+  entity_id: media_player.playstation_4
+  state: 'playing'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    hours: 24
+- platform: history_stats
+  name: Roku time
+  entity_id: media_player.bedroom
+  state: 'playing'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    hours: 24
+- platform: history_stats
+  name: Roku Theater time
+  entity_id: media_player.roku_premiere
+  state: 'playing'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    hours: 24
+- platform: history_stats
+  name: Washer Time
+  entity_id: sensor.washer_status #entity
+  state: 'running'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    days: 7
+- platform: statistics
+  name: Outside Temp Stats
+  entity_id: sensor.acurite_6045m_3078_t
+  state_characteristic: mean
+  sampling_size: 500
+- platform: statistics
+  name: Garage Temp Stats
+  entity_id: sensor.acurite_tower_10968_t
+  state_characteristic: mean
+  sampling_size: 500
+
+- platform: statistics
+  entity_id: sensor.craft_room_temperature
+  name: "Craft Room Temp Sats"
+  state_characteristic: mean
+- platform: statistics
+  entity_id: sensor.kitchen_temperature
+  name: "Kitchen Temp Sats"
+  state_characteristic: mean  
+- platform: statistics
+  entity_id: sensor.living_room_temperature
+  name: "Living Room Temp Sats"
+  state_characteristic: mean
+- platform: statistics
+  entity_id: sensor.master_bedroom_temperature
+  name: "MAster Bedroom Temp Sats"
+  state_characteristic: mean
+- platform: statistics
+  entity_id: sensor.skylar_room_temperature
+  name: "Skylar Room Temp Sats"
+  state_characteristic: mean
+- platform: min_max
+  name: Inside Temp Stats
+  entity_ids:
+  - sensor.craft_room_temperature
+  - sensor.kitchen_temperature
+  - sensor.living_room_temperature
+  - sensor.master_bedroom_temperature
+  - sensor.skylar_room_temperature
+  type: mean
+- platform: history_stats
+  name: Outside Lights
+  entity_id: group.outside_lights
+  state: 'on'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    hours: 24
+
+
+
+- platform: statistics
+  name: Wind Speed Stats
+  entity_id: sensor.pirateweather_wind_speed
+  state_characteristic: mean
+  sampling_size: 500
+- platform: statistics
+  name: Visibility Stats
+  entity_id: sensor.nws_current_visibility
+  state_characteristic: mean
+  sampling_size: 500
+- platform: statistics
+  name: Temperature Stats
+  entity_id: sensor.pirateweather_temperature
+  state_characteristic: mean
+  sampling_size: 500
+- platform: statistics
+  name: Humidity Stats
+  entity_id: sensor.pirateweather_humidity
+  state_characteristic: mean
+  sampling_size: 500
+- platform: statistics
+  name: Washer Power Stats
+  entity_id: sensor.washer_power_consumed_w
+  state_characteristic: mean
+  max_age:
+    days: 30
+- platform: history_stats
+  name: Cooling Last Month
+  entity_id: sensor.hvac_action
+  state: 'cooling'
+  type: time
+  end: '{{ now() }}'
+  duration:
+    days: 30
+
+
+
+- platform: template
+  sensors:
+    sensor_count:
+      friendly_name: 'Number of Sensors'
+      value_template: >-
+        {{ states.sensor | rejectattr('state', 'eq', 'unavailable') | list | count }}
+    automation_count:
+      friendly_name: 'Number of Automations'
+      value_template: >-
+        {{ states.automation| rejectattr('state', 'eq', 'unavailable') | list | count }}
+    script_count:
+      friendly_name: 'Number of Scripts'
+      value_template: >-
+        {{ states.script | rejectattr('state', 'eq', 'unavailable') | list | count }}
+    binary_sensor_count:
+      friendly_name: 'Number of Binary Sensors'
+      value_template: >-
+        {{ states.binary_sensor | rejectattr('state', 'eq', 'unavailable') | list | count }}
+    tracker_count:
+      friendly_name: 'Number of Devices'
+      value_template: >-
+        {{ states.device_tracker| rejectattr('state', 'eq', 'unavailable') | list | count }}
+    lights_count:
+      friendly_name: 'Number of Lights'
+      value_template: >-
+        {{ states.light | rejectattr('state', 'eq', 'unavailable') | list | count }}
+    switches_count:
+      friendly_name: 'Number of Switches'
+      value_template: >-
+        {{ states.switch | rejectattr('state', 'eq', 'unavailable') | list | count }}
+    camera_count:
+      friendly_name: 'Number of online Cameras'
+      value_template: >-
+        {{ states.camera | rejectattr('state', 'eq', 'unavailable') | list | count }}
+    entities_count:
+      friendly_name: 'Number of Entities'
+      value_template: >-
+        {{ states | rejectattr('state', 'eq', 'unavailable') | list | count}}
+    na_entities_count:
+      friendly_name: 'Number of NA Entities'
+      value_template: >-
+        {{ states | selectattr('state', 'eq', 'unavailable') | map(attribute='entity_id') | list | count }}
+    today_is:
+      friendly_name: 'Today is'
+      value_template: "{{ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][now().weekday()] }}"
+    month_is:
+      friendly_name: 'Month is'
+      value_template: "{{ ['January','February','March','April','May','June','August','September','October','November','December'][now().month-1] }}" 
+    holiday:
+      friendly_name: 'Holiday'
+      value_template: >-
+          {% if states.calendar.holidays_in_united_states.state == 'on' %}
+            {{ states.calendar.holidays_in_united_states.attributes.message }}
+          {% elif states.calendar.anchorage_holidays.state == 'on' %}
+            {{ states.calendar.anchorage_holidays.attributes.message }}
+          {% else %}
+            none
+          {% endif %}
+    school_tomorrow:
+      friendly_name: 'School Tomorrow'
+      value_template: >-
+        {%- set test=(as_timestamp(now())+ (86400)) | timestamp_custom("%Y-%m-%d",true) %}
+        {% if states.calendar.school.attributes.start_time == test + " 07:10:00" %}
+          on
+        {% else %}
+          off
+        {% endif %}

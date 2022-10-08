@@ -1,0 +1,107 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   02/19/2019
+#   @package        :   USPS
+#   @description    :   Notifies us of mails and packages.
+#                       Package modified from https://github.com/skalavala/smarthome/blob/master/packages/usps.yaml
+###############################################################################
+
+homeassistant:
+  customize:
+    sensor.usps_mail:
+      friendly_name: USPS Mail
+      icon: mdi:mailbox
+    sensor.usps_packages:
+      friendly_name: USPS Packages
+      icon: mdi:package-variant
+
+mqtt:
+  sensor:
+  - name: 'USPS Mail'
+    state_topic: 'house/usps/mails'
+    value_template: "{{ value }}"
+
+  - name: USPS Packages
+    state_topic: 'house/usps/packages'
+    value_template: "{{ value }}"
+
+sensor:
+  - platform: template
+    sensors:
+      mail_deliveries_message:
+        friendly_name: "Deliveries Summary"
+        value_template: > 
+          {# Deliveries Sentence #}
+            {% macro deliveries_sentence() -%}
+                  {%- if states("sensor.mail_usps_mail")|int == 0 -%}
+                    No
+                  {%- else -%}
+                    {{states("sensor.mail_usps_mail")|int}}
+                  {%- endif -%}
+                {{' '}} 
+                  {%- if states("sensor.mail_usps_mail")|int <= 1 -%}
+                    piece of mail
+                  {%- else -%}
+                    pieces of mail
+                  {%- endif -%}
+                {{' '}}will be delivered.{{' '}} 
+                  {%- if states("sensor.mail_usps_delivering")|int == 0 -%}
+                    No
+                  {%- else -%}
+                    {{states("sensor.mail_usps_delivering")|int}}
+                  {%- endif -%}
+                {{' '}} 
+                  {%- if states("sensor.mail_usps_delivering")|int == 1 -%}
+                    USPS package is
+                  {%- else -%}
+                    USPS packages are
+                  {%- endif -%}
+                {{' '}}in transit.{{' '}}
+                  {%- if states("sensor.mail_fedex_delivering_2")|int == 0 -%}
+                    No
+                  {%- else -%}
+                    {{states("sensor.mail_fedex_delivering_@")|int}}
+                  {%- endif -%}
+                {{' '}} 
+                  {%- if states("sensor.mail_fedex_delivering_2")|int == 1 -%}
+                    FedEx package is
+                  {%- else -%}
+                    Fedex packages are
+                  {%- endif -%}
+                {{' '}}in transit.{{' '}}
+                {%- if states("sensor.mail_ups_delivering")|int == 0 -%}
+                    No
+                  {%- else -%}
+                    {{states("sensor.mail_ups_delivering")|int}}
+                  {%- endif -%}
+                {{' '}} 
+                  {%- if states("sensor.mail_ups_delivering")|int == 1 -%}
+                    UPS package is
+                  {%- else -%}
+                    UPS packages are
+                  {%- endif -%}
+                {{' '}}in transit.{{' '}}
+                {%- if states("sensor.mail_amazon_packages")|int == 0 -%}
+                    No
+                  {%- else -%}
+                    {{states("sensor.mail_amazon_packages")|int}}
+                  {%- endif -%}
+                {{' '}} 
+                  {%- if states("sensor.mail_amazon_packages")|int == 1 -%}
+                    Amazon package is
+                  {%- else -%}
+                    Amazon packages are
+                  {%- endif -%}
+                {{' '}}in transit.{{' '}}
+            {%- endmacro %}
+          {{deliveries_sentence()}}
+
+camera:
+  - platform: generic
+    name: USPS Mail Pictures
+    still_image_url: !secret usps_camera_url
+
+  - platform: local_file
+    file_path: /config/images/mail_today.gif
+    name: mail_usps
+

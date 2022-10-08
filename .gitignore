@@ -1,8 +1,6 @@
 # ignore my git update script
 update_git.py
 transporter.py
-customize.yaml
-
 
 # ignore hidden folders
 /config/.storage
@@ -21,11 +19,6 @@ customize.yaml
 /config/deps
 /config/hacs
 /config/zigbee2mqtt/
-/config/python_scripts/
-/config/sensors/
-/config/packages/
-/config/templates/
-/config/binary_sensors/
 /config/custom_components/localtuya/__pycache__/
 
 
@@ -70,3 +63,4 @@ customize.yaml
 **pyozw.sqlite
 **ipchange.yaml
 **production_auth.json
+**traccar.xml

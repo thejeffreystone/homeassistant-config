@@ -1,0 +1,712 @@
+- id: '1659356031043'
+  name: Kitchen Normal
+  entities:
+    light.kitchen_lights:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 255
+      color_temp: 153
+      hs_color:
+      - 54.768
+      - 1.6
+      rgb_color:
+      - 255
+      - 254
+      - 250
+      xy_color:
+      - 0.326
+      - 0.333
+      entity_id:
+      - light.lumary_smart_recessed_downlight_a2_3
+      - light.lumary_smart_recessed_downlight_a2_9
+      - light.lumary_smart_recessed_downlight_a2_8
+      - light.lumary_smart_recessed_downlight_a2_6
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen Lights
+      supported_features: 0
+      state: 'on'
+    light.lumary_smart_recessed_downlight_a2_7:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 255
+      color_temp: 153
+      hs_color:
+      - 54.768
+      - 1.6
+      rgb_color:
+      - 255
+      - 254
+      - 250
+      xy_color:
+      - 0.326
+      - 0.333
+      friendly_name: Fridge Light
+      supported_features: 0
+      state: 'on'
+  metadata:
+    light.kitchen_lights:
+      entity_only: true
+    light.lumary_smart_recessed_downlight_a2_7:
+      entity_only: true
+- id: '1659356107704'
+  name: Pantry Normal
+  entities:
+    light.pantry_lights:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 255
+      color_temp: 153
+      hs_color:
+      - 54.768
+      - 1.6
+      rgb_color:
+      - 255
+      - 254
+      - 250
+      xy_color:
+      - 0.326
+      - 0.333
+      entity_id:
+      - light.lumary_smart_recessed_downlight_a2_5
+      - light.lumary_smart_recessed_downlight_a2_4
+      icon: mdi:lightbulb-group
+      friendly_name: Pantry Lights
+      supported_features: 0
+      state: 'on'
+  metadata:
+    light.pantry_lights:
+      entity_only: true
+- id: '1659356121269'
+  name: Bar Normal
+  entities:
+    light.bar_lights:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 99
+      color_temp: 153
+      hs_color:
+      - 54.768
+      - 1.6
+      rgb_color:
+      - 255
+      - 254
+      - 250
+      xy_color:
+      - 0.326
+      - 0.333
+      entity_id:
+      - light.lumary_smart_rgb_tunable_white_recessed_light_a2
+      - light.lumary_smart_recessed_downlight_a2_2
+      icon: mdi:lightbulb-group
+      friendly_name: Bar Lights
+      supported_features: 0
+      state: 'on'
+  metadata:
+    light.bar_lights:
+      entity_only: true
+- id: '1659356333948'
+  name: Kitchen Dark
+  entities:
+    light.kitchen_lights:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      entity_id:
+      - light.lumary_smart_recessed_downlight_a2_3
+      - light.lumary_smart_recessed_downlight_a2_9
+      - light.lumary_smart_recessed_downlight_a2_8
+      - light.lumary_smart_recessed_downlight_a2_6
+      icon: mdi:lightbulb-group
+      friendly_name: Kitchen Lights
+      supported_features: 0
+      state: 'off'
+    light.lumary_smart_recessed_downlight_a2_7:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      friendly_name: Fridge Light
+      supported_features: 0
+      state: 'off'
+  metadata:
+    light.kitchen_lights:
+      entity_only: true
+    light.lumary_smart_recessed_downlight_a2_7:
+      entity_only: true
+- id: '1659356371875'
+  name: Bar Dark
+  entities:
+    light.bar_lights:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      entity_id:
+      - light.lumary_smart_rgb_tunable_white_recessed_light_a2
+      - light.lumary_smart_recessed_downlight_a2_2
+      icon: mdi:lightbulb-group
+      friendly_name: Bar Lights
+      supported_features: 0
+      state: 'off'
+  metadata:
+    light.bar_lights:
+      entity_only: true
+- id: '1659356387035'
+  name: Pantry Dark
+  entities:
+    light.pantry_lights:
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      entity_id:
+      - light.lumary_smart_recessed_downlight_a2_5
+      - light.lumary_smart_recessed_downlight_a2_4
+      icon: mdi:lightbulb-group
+      friendly_name: Pantry Lights
+      supported_features: 0
+      state: 'off'
+  metadata:
+    light.pantry_lights:
+      entity_only: true
+- name: master bedroom on
+  entities:
+    light.kats_lamp:
+      state: 'on'
+      brightness: 255
+      color_temp: 369
+    light.jeffs_lamp:
+      state: 'on'
+      brightness: 255
+      color_temp: 369
+    light.master_bedroom_tower_lamp:
+      state: 'on'
+      brightness: 255
+      color_temp: 369
+  id: d250bb4c5c1644b0a7064a9f36ffec32
+- name: master bedroom off
+  entities:
+    light.kats_lamp:
+      state: 'off'
+    light.master_bedroom_tower_lamp:
+      state: 'off'
+    light.jeffs_lamp:
+      state: 'off'
+  id: 06e4b59c35f14054ab7e741445b7fd21
+- name: master bedroom dim
+  entities:
+    light.kats_lamp:
+      state: 'on'
+      brightness: 74
+    light.jeffs_lamp:
+      state: 'on'
+      brightness: 74
+    light.master_bedroom_tower_lamp:
+      state: 'off'
+  id: 85953e56acc94c8b8614347de8aab96a
+- name: master bedroom nightlight
+  entities:
+    light.kats_lamp:
+      state: 'off'
+    light.jeffs_lamp:
+      state: of
+    light.master_bedroom_tower_lamp:
+      state: 'on'
+      brightness: 25
+  id: a9d1eaf762b041f4adcf5cf450765245
+- name: skylar bedtime
+  entities:
+    input_boolean.audible_notifications:
+      state: 'off'
+    light.skylars_dresser_lamp:
+      state: 'off'
+    switch.sleep_aid:
+      state: 'on'
+    input_boolean.skylar_awake:
+      state: 'off'
+  id: f4e8d2f594c446ee9f0e41cf46df3a53
+- id: '1663677327698'
+  name: Work Time
+  entities:
+    light.desk_lighting:
+      min_mireds: 111
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 180
+      - 100
+      rgb_color:
+      - 0
+      - 255
+      - 255
+      xy_color:
+      - 0.151
+      - 0.343
+      rate_limit_total: 100
+      rate_limit_remaining: 42
+      rate_limit_reset_seconds: -1663678498.66
+      rate_limit_reset: '1969-12-31T19:00:00'
+      rate_limit_on: 5
+      manufacturer: Govee
+      model: H6056
+      friendly_name: Desk Lighting
+      supported_features: 19
+      assumed_state: true
+      state: 'on'
+    switch.work_desk_lamp:
+      friendly_name: Work Desk Lamp
+      state: 'on'
+    switch.studio_shelves:
+      linkquality: 134
+      update:
+        state: idle
+      update_available: false
+      friendly_name: Studio Shelves
+      state: 'on'
+    switch.accent_light_1:
+      linkquality: 153
+      friendly_name: Accent Light 1
+      state: 'on'
+    light.sl_desk_lamp:
+      min_mireds: 150
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      color_mode: color_temp
+      brightness: 115
+      color_temp: 238
+      hs_color:
+      - 26.743
+      - 31.347
+      rgb_color:
+      - 255
+      - 210
+      - 175
+      xy_color:
+      - 0.409
+      - 0.361
+      color:
+        x: 0.372
+        y: 0.3713
+      energy: 71.49
+      linkquality: 87
+      power: 4.1
+      update:
+        state: available
+      update_available: true
+      friendly_name: SL Desk Lamp
+      supported_features: 59
+      state: 'on'
+    switch.studio_airfreshener:
+      linkquality: 149
+      friendly_name: Studio Airfreshener
+      state: 'on'
+    switch.d50_light:
+      icon: mdi:spotlight
+      friendly_name: D50
+      state: 'on'
+    switch.accent_light_2:
+      linkquality: 182
+      friendly_name: Accent Light 2
+      state: 'off'
+    switch.key_light:
+      icon: mdi:spotlight
+      friendly_name: Key Light
+      state: 'off'
+    light.studio_fan_lights:
+      supported_color_modes:
+      - color_temp
+      - xy
+      icon: mdi:lightbulb-group
+      friendly_name: Studio Fan Lights
+      supported_features: 40
+      min_mireds: 154
+      max_mireds: 500
+      entity_id:
+      - light.studio_fan_light_1
+      - light.studio_fan_light_2
+      color_mode: xy
+      brightness: 255
+      hs_color:
+      - 210.364
+      - 96.863
+      rgb_color:
+      - 8
+      - 130
+      - 255
+      xy_color:
+      - 0.141
+      - 0.137
+      state: 'on'
+  metadata:
+    light.desk_lighting:
+      entity_only: true
+    switch.work_desk_lamp:
+      entity_only: true
+    switch.studio_shelves:
+      entity_only: true
+    switch.accent_light_1:
+      entity_only: true
+    light.sl_desk_lamp:
+      entity_only: true
+    switch.studio_airfreshener:
+      entity_only: true
+    switch.d50_light:
+      entity_only: true
+    switch.accent_light_2:
+      entity_only: true
+    switch.key_light:
+      entity_only: true
+    light.studio_fan_lights:
+      entity_only: true
+- id: '1663677462540'
+  name: Film Time
+  entities:
+    light.sl_desk_lamp:
+      min_mireds: 150
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      color_mode: color_temp
+      brightness: 115
+      color_temp: 238
+      hs_color:
+      - 26.743
+      - 31.347
+      rgb_color:
+      - 255
+      - 210
+      - 175
+      xy_color:
+      - 0.409
+      - 0.361
+      color:
+        x: 0.372
+        y: 0.3713
+      energy: 71.5
+      linkquality: 98
+      power: 4.1
+      update:
+        state: available
+      update_available: true
+      friendly_name: SL Desk Lamp
+      supported_features: 59
+      state: 'on'
+    switch.work_desk_lamp:
+      friendly_name: Work Desk Lamp
+      state: 'on'
+    switch.d50_light:
+      icon: mdi:spotlight
+      friendly_name: D50
+      state: 'on'
+    switch.key_light:
+      icon: mdi:spotlight
+      friendly_name: Key Light
+      state: 'on'
+    switch.studio_shelves:
+      linkquality: 149
+      update:
+        state: idle
+      update_available: false
+      friendly_name: Studio Shelves
+      state: 'on'
+    switch.accent_light_1:
+      linkquality: 145
+      friendly_name: Accent Light 1
+      state: 'off'
+    switch.accent_light_2:
+      linkquality: 182
+      friendly_name: Accent Light 2
+      state: 'on'
+    light.desk_lighting:
+      min_mireds: 111
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 180
+      - 100
+      rgb_color:
+      - 0
+      - 255
+      - 255
+      xy_color:
+      - 0.151
+      - 0.343
+      rate_limit_total: 100
+      rate_limit_remaining: -123
+      rate_limit_reset_seconds: -1663685700.65
+      rate_limit_reset: '1969-12-31T19:00:00'
+      rate_limit_on: 5
+      manufacturer: Govee
+      model: H6056
+      friendly_name: Desk Lighting
+      supported_features: 19
+      assumed_state: true
+      state: 'on'
+    light.studio_fan_lights:
+      min_mireds: 154
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      entity_id:
+      - light.studio_fan_light_1
+      - light.studio_fan_light_2
+      icon: mdi:lightbulb-group
+      friendly_name: Studio Fan Lights
+      supported_features: 40
+      state: 'off'
+    switch.slacker_labs_on_air:
+      friendly_name: Slacker Labs On Air
+      state: 'on'
+  metadata:
+    light.sl_desk_lamp:
+      entity_only: true
+    switch.work_desk_lamp:
+      entity_only: true
+    switch.d50_light:
+      entity_only: true
+    switch.key_light:
+      entity_only: true
+    switch.studio_shelves:
+      entity_only: true
+    switch.accent_light_1:
+      entity_only: true
+    switch.accent_light_2:
+      entity_only: true
+    light.desk_lighting:
+      entity_only: true
+    light.studio_fan_lights:
+      entity_only: true
+    switch.slacker_labs_on_air:
+      entity_only: true
+- id: '1663678251933'
+  name: Studio Normal
+  entities:
+    switch.work_desk_lamp:
+      friendly_name: Work Desk Lamp
+      state: 'on'
+    light.studio_fan_lights:
+      supported_color_modes:
+      - color_temp
+      - xy
+      icon: mdi:lightbulb-group
+      friendly_name: Studio Fan Lights
+      supported_features: 40
+      min_mireds: 154
+      max_mireds: 500
+      entity_id:
+      - light.studio_fan_light_1
+      - light.studio_fan_light_2
+      color_mode: color_temp
+      brightness: 255
+      hs_color:
+      - 26.933
+      - 38.871
+      rgb_color:
+      - 255
+      - 200
+      - 155
+      xy_color:
+      - 0.434
+      - 0.369
+      color_temp: 264
+      state: 'on'
+  metadata:
+    switch.work_desk_lamp:
+      entity_only: true
+    light.studio_fan_lights:
+      entity_only: true
+- id: '1663682666021'
+  name: Studio Night Mode
+  entities:
+    switch.accent_light_1:
+      linkquality: 134
+      friendly_name: Accent Light 1
+      state: 'off'
+    switch.accent_light_2:
+      linkquality: 182
+      friendly_name: Accent Light 2
+      state: 'off'
+    switch.studio_shelves:
+      linkquality: 167
+      update:
+        state: idle
+      update_available: false
+      friendly_name: Studio Shelves
+      state: 'off'
+    light.sl_desk_lamp:
+      min_mireds: 150
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      color_mode: color_temp
+      brightness: 115
+      color_temp: 238
+      hs_color:
+      - 26.743
+      - 31.347
+      rgb_color:
+      - 255
+      - 210
+      - 175
+      xy_color:
+      - 0.409
+      - 0.361
+      color:
+        x: 0.372
+        y: 0.3713
+      energy: 71.49
+      linkquality: 54
+      power: 4.1
+      update:
+        state: available
+      update_available: true
+      friendly_name: SL Desk Lamp
+      supported_features: 59
+      state: 'on'
+    light.desk_lighting:
+      min_mireds: 111
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 180
+      - 100
+      rgb_color:
+      - 0
+      - 255
+      - 255
+      xy_color:
+      - 0.151
+      - 0.343
+      rate_limit_total: 100
+      rate_limit_remaining: -48
+      rate_limit_reset_seconds: -1663682661.28
+      rate_limit_reset: '1969-12-31T19:00:00'
+      rate_limit_on: 5
+      manufacturer: Govee
+      model: H6056
+      friendly_name: Desk Lighting
+      supported_features: 19
+      state: 'on'
+    light.studio_fan_lights:
+      supported_color_modes:
+      - color_temp
+      - xy
+      icon: mdi:lightbulb-group
+      friendly_name: Studio Fan Lights
+      supported_features: 40
+      min_mireds: 154
+      max_mireds: 500
+      entity_id:
+      - light.studio_fan_light_1
+      - light.studio_fan_light_2
+      color_mode: xy
+      brightness: 255
+      hs_color:
+      - 210.364
+      - 96.863
+      rgb_color:
+      - 8
+      - 130
+      - 255
+      xy_color:
+      - 0.141
+      - 0.137
+      state: 'on'
+    switch.key_light:
+      icon: mdi:spotlight
+      friendly_name: Key Light
+      state: 'off'
+    switch.d50_light:
+      icon: mdi:spotlight
+      friendly_name: D50
+      state: 'off'
+    switch.work_desk_lamp:
+      friendly_name: Work Desk Lamp
+      state: 'on'
+  metadata:
+    switch.accent_light_1:
+      entity_only: true
+    switch.accent_light_2:
+      entity_only: true
+    switch.studio_shelves:
+      entity_only: true
+    light.sl_desk_lamp:
+      entity_only: true
+    light.desk_lighting:
+      entity_only: true
+    light.studio_fan_lights:
+      entity_only: true
+    switch.key_light:
+      entity_only: true
+    switch.d50_light:
+      entity_only: true
+    switch.work_desk_lamp:
+      entity_only: true
+- name: theater dark
+  entities:
+    light.theater_lights:
+      state: "off"
+  id: 7e5b57ca735f4fc6b5ca75d4f41b63f0
+- name: theater dim
+  entities:
+    light.theater_lights:
+      state: "on"
+      brightness: 60
+  id: 59b3ac43a09f43e1bd6ac40950b97d13
+- name: theater movie
+  entities:
+    light.theater_lights:
+      state: "on"
+      brightness: 25
+- name: theater bright
+  entities:
+    light.theater_lights:
+      state: "on"
+      brightness: 255
+  id: 1834362d4b2140b6874d0c6d9c0067e9

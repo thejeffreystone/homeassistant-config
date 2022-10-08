@@ -1,0 +1,2260 @@
+- id: '1659356428735'
+  alias: Kitchen Lighting
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_motion_occupancy
+    from: 'off'
+    to: 'on'
+    id: Light_Needed
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_motion_occupancy
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+    id: light_not_needed
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.kitchen_lights
+        state: 'off'
+      - condition: trigger
+        id: Light_Needed
+      sequence:
+      - service: scene.turn_on
+        data: {}
+        target:
+          entity_id: scene.kitchen_normal
+    - conditions:
+      - condition: trigger
+        id: light_not_needed
+      sequence:
+      - service: scene.turn_on
+        data: {}
+        target:
+          entity_id: scene.kitchen_dark
+    default: []
+  mode: restart
+- id: '1659356561696'
+  alias: Bar Lighting
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.bar_motion_occupancy
+    from: 'off'
+    to: 'on'
+    id: light_needed
+  - platform: state
+    entity_id:
+    - binary_sensor.bar_motion_occupancy
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+    id: light_not_needed
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.bar_lights
+        state: 'off'
+      - condition: trigger
+        id: light_needed
+      sequence:
+      - service: scene.turn_on
+        data: {}
+        target:
+          entity_id: scene.bar_normal
+    - conditions:
+      - condition: trigger
+        id: light_not_needed
+      sequence:
+      - service: scene.turn_on
+        data: {}
+        target:
+          entity_id: scene.bar_dark
+    default: []
+  mode: restart
+- id: '1659356679430'
+  alias: Pantry Lighting
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.pantry_motion_occupancy
+    from: 'off'
+    to: 'on'
+    id: light_needed
+  - platform: state
+    entity_id:
+    - binary_sensor.pantry_motion_occupancy
+    from: 'on'
+    to: 'off'
+    id: light_not_needed
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.pantry_lights
+        state: 'off'
+      - condition: trigger
+        id: light_needed
+      sequence:
+      - service: scene.turn_on
+        data: {}
+        target:
+          entity_id: scene.pantry_normal
+    - conditions:
+      - condition: trigger
+        id: light_not_needed
+      sequence:
+      - service: scene.turn_on
+        data: {}
+        target:
+          entity_id: scene.pantry_dark
+    default: []
+  mode: restart
+- id: '1659367047240'
+  alias: Audible Notifications
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.audible_notification_on
+    id: 'on'
+  - platform: time
+    at: input_datetime.audible_notification_off
+    id: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      - condition: state
+        entity_id: group.family
+        state: home
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.audible_notifications
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      - condition: state
+        entity_id: input_boolean.audible_notifications
+        state: 'on'
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.audible_notifications
+    default: []
+  mode: single
+- id: '1659551877212'
+  alias: Kats Closet
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.kats_closet_door
+    from: 'off'
+    to: 'on'
+    id: opened
+  - platform: state
+    entity_id:
+    - binary_sensor.kats_closet_door
+    from: 'on'
+    to: 'off'
+    id: closed
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: opened
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness: 255
+        target:
+          entity_id: light.kats_closet_light
+    - conditions:
+      - condition: trigger
+        id: closed
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.kats_closet_light
+    default: []
+  mode: single
+- id: '1662424449450'
+  alias: Dungeon Lighting
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: dungeon-lighting
+  - platform: state
+    entity_id:
+    - binary_sensor.dungeon_motion
+    from: 'off'
+    to: 'on'
+    id: motion
+  - platform: state
+    entity_id:
+    - binary_sensor.dungeon_motion
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+    id: no_motion
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: trigger
+          id: motion
+        - condition: template
+          value_template: '{{ trigger.json.event == "motion" }}'
+      - condition: state
+        entity_id: light.dungeon_door_light
+        state: 'off'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
+          color_temp: 298
+        target:
+          entity_id: light.dungeon_door_light
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: trigger
+          id: no_motion
+        - condition: template
+          value_template: '{{ trigger.json.event == "no_motion" }}'
+      - condition: state
+        entity_id: light.dungeon_door_light
+        state: 'on'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.dungeon_door_light
+    default: []
+  mode: restart
+- id: e1cb39dc-0423-11eb-adc1-0242ac120002
+  alias: Master Bedroom Lights Needed
+  initial_state: true
+  trigger:
+  - entity_id: binary_sensor.master_bedroom_motion_occupancy
+    from: 'off'
+    platform: state
+    to: 'on'
+    id: light_needed
+  - entity_id: binary_sensor.master_bedroom_motion_occupancy
+    from: 'on'
+    platform: state
+    to: 'off'
+    for: 00:10:00
+    id: light_not_needed
+  - platform: time
+    at: '23:00:00'
+    id: lights_out
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: light_needed
+      - below: 10
+        condition: numeric_state
+        entity_id: sensor.master_bedroom_lux
+      - condition: state
+        entity_id: sun.sun
+        state: above_horizon
+      - condition: state
+        entity_id: group.master_bedroom
+        state: 'off'
+      sequence:
+      - service: script.master_bedroom_lights_w_level
+        data:
+          level: 255
+    - conditions:
+      - condition: trigger
+        id: light_needed
+      - condition: state
+        entity_id: sun.sun
+        state: below_horizon
+      - condition: time
+        after: '17:00:00'
+        before: '23:00:00'
+      sequence:
+      - service: script.master_bedroom_lights_w_level
+        data:
+          level: 74
+    - conditions:
+      - condition: trigger
+        id: light_needed
+      - condition: state
+        entity_id: sun.sun
+        state: below_horizon
+      - condition: time
+        after: '23:00:00'
+        before: 06:00:00
+      sequence:
+      - service: scene.turn_on
+        entity_id: scene.master_bedroom_nightlight
+    - conditions:
+      - condition: trigger
+        id: light_not_needed
+      - condition: state
+        entity_id: group.master_bedroom
+        state: 'on'
+      sequence:
+      - service: scene.turn_on
+        entity_id: scene.master_bedroom_off
+    - conditions:
+      - condition: trigger
+        id: lights_out
+      - condition: state
+        entity_id: group.master_bedroom
+        state: 'on'
+      sequence:
+      - service: scene.turn_on
+        entity_id: scene.master_bedroom_off
+    default: []
+- id: '1662943600604'
+  alias: Stair Lighting
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.stairs_motion_top_occupancy
+    - binary_sensor.stairs_motion_bottom_occupancy
+    from: 'off'
+    to: 'on'
+    id: motion
+  - platform: state
+    entity_id:
+    - binary_sensor.stairs_motion_top_occupancy
+    from: 'on'
+    to: 'off'
+    id: no_motion_top
+  - platform: state
+    entity_id:
+    - binary_sensor.stairs_motion_bottom_occupancy
+    from: 'on'
+    to: 'off'
+    id: no_motion_bottom
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: motion
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness: 255
+          color_temp: 249
+        target:
+          entity_id: light.stair_lights
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: trigger
+          id: no_motion_top
+        - condition: trigger
+          id: no_motion_bottom
+        alias: 'If either sensors clear, turn off lights '
+      - condition: and
+        conditions:
+        - condition: state
+          state: 'off'
+          entity_id: binary_sensor.stairs_motion_top_occupancy
+        - condition: state
+          entity_id: binary_sensor.stairs_motion_bottom_occupancy
+          state: 'off'
+        alias: Make sure both sensors are clear
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.stair_lights
+    alias: Turn on and off Stair Lights
+  mode: restart
+- id: 95a38af4-c0bf-443c-94f8-bd7ed5e34b42
+  alias: Lightning Detected
+  trigger:
+  - platform: template
+    value_template: '{{ states(''sensor.recent_lightning_strikes'') | int > 0 }}'
+  condition:
+  - condition: state
+    entity_id: input_boolean.lightning_warning
+    state: 'off'
+  action:
+  - service: script.text_notify
+    data_template:
+      who: jeff
+      title: Lightning Detected!
+      message: Lightning has been detected within 20 miles of Anchorage House. Nearest
+        storm is {{ states('sensor.acurite_6045m_3078_stdist') }} miles away.
+  - service: input_boolean.turn_on
+    entity_id: input_boolean.lightning_warning
+- id: 37baaae3-a8cc-4723-8afa-0f70a63ecc20
+  alias: Lightning Warning Off
+  trigger:
+  - platform: template
+    value_template: '{{ states(''sensor.recent_lightning_strikes'') | int < 1 }}'
+    for:
+      minutes: 45
+  condition:
+  - condition: state
+    entity_id: input_boolean.lightning_warning
+    state: 'on'
+  action:
+  - service: script.text_notify
+    data_template:
+      who: jeff
+      title: Lightning Threat Over.
+      message: No more Lightning Strikes detected.
+  - service: input_boolean.turn_off
+    entity_id: input_boolean.lightning_warning
+- id: '1663251471668'
+  alias: Studio Wax Warmer
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.studio_airfreshener
+    from: 'off'
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 20
+      seconds: 0
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.studio_airfreshener
+  mode: single
+- id: '1663671389098'
+  alias: Studio Lighting
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.studio_motion
+    from: 'off'
+    to: 'on'
+    id: motion
+  - platform: state
+    entity_id:
+    - sensor.jeff_location
+    to: master_bedroom
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    id: sleeping
+  - platform: state
+    entity_id:
+    - person.jeffrey
+    to: not_home
+    id: gone
+  - platform: state
+    entity_id:
+    - binary_sensor.studio_motion
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 1
+      minutes: 10
+      seconds: 0
+    id: no_motion
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: motion
+      - condition: numeric_state
+        entity_id: sensor.slacker_labs_illuminance_lux
+        below: 9.9
+      - condition: state
+        entity_id: switch.key_light
+        state: 'off'
+      - condition: state
+        entity_id: switch.d50_light
+        state: 'off'
+      sequence:
+      - service: scene.turn_on
+        target:
+          entity_id: scene.studio_night_mode
+        metadata: {}
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: trigger
+          id: gone
+        - condition: and
+          conditions:
+          - condition: trigger
+            id: sleeping
+          - condition: time
+            before: 00:00:00
+            after: '20:30:00'
+            weekday:
+            - sun
+            - sat
+            - fri
+            - thu
+            - wed
+            - tue
+            - mon
+        - condition: and
+          conditions:
+          - condition: trigger
+            id: no_motion
+          - condition: time
+            before: '17:30:00'
+            after: 08:00:00
+            weekday:
+            - fri
+            - thu
+            - wed
+            - tue
+            - mon
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          area_id: studio
+      - service: switch.turn_off
+        data: {}
+        target:
+          area_id: studio
+  mode: single
+- id: '1663678889161'
+  alias: Outdoor Lighting
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: 0
+    id: sundown
+  - platform: sun
+    event: sunrise
+    offset: 0
+    id: sunup
+  - platform: time
+    at: '23:00:00'
+    id: closing_time
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: sundown
+        alias: At Sundown
+      sequence:
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id: light.outdoor_spotlights
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.deck_lights
+    - conditions:
+      - condition: trigger
+        id: sunup
+        alias: At Sunrise
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.outdoor_spotlights
+    - conditions:
+      - condition: trigger
+        id: closing_time
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.deck_lights
+  mode: single
+- id: '1663801951273'
+  alias: Holiday Display
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: 0
+    id: sunup
+  - platform: sun
+    event: sunset
+    offset: 0
+    id: sundown
+  - platform: sun
+    event: sunset
+    offset: +00:30:00
+    id: effects_on
+  - platform: time
+    at: '22:00:00'
+    id: effects_off
+  condition:
+  - condition: state
+    entity_id: input_boolean.holiday_mode
+    state: 'on'
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: sundown
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id:
+          - switch.front_yard1
+          - switch.fromt_yard2
+          - switch.graveyard_one
+          - switch.scene_2a
+          - switch.scene_2b
+    - conditions:
+      - condition: trigger
+        id: sunup
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id:
+          - switch.front_yard1
+          - switch.fromt_yard2
+          - switch.graveyard_one
+    - conditions:
+      - condition: trigger
+        id: effects_on
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.graveyard_two
+    - conditions:
+      - condition: trigger
+        id: effects_off
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id:
+          - switch.graveyard_two
+          - switch.scene_2a
+          - switch.scene_2b
+  mode: single
+- id: '1664669337778'
+  alias: Pottery Studio Lighting
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.cricut_desk_motion
+    id: desk_motion
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id:
+    - binary_sensor.pottery_studio_motion
+    id: studio_motion
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id:
+    - input_boolean.chimichanga_mode
+    from: 'off'
+    to: 'on'
+    id: pot_time
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.pottery_lights
+    id: times_up
+  - platform: state
+    entity_id:
+    - input_boolean.chimichanga_mode
+    from: 'on'
+    to: 'off'
+    id: shut_down
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: trigger
+          id: desk_motion
+        - condition: trigger
+          id: studio_motion
+        - condition: trigger
+          id: pot_time
+      - condition: state
+        entity_id: switch.pot_lights
+        state: 'off'
+      sequence:
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id: light.cricut_light
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.pot_lights
+      - if:
+        - condition: state
+          entity_id: input_boolean.chimichanga_mode
+          state: 'off'
+        then:
+        - service: timer.start
+          data: {}
+          target:
+            entity_id: timer.pottery_lights
+    - conditions:
+      - condition: trigger
+        id: times_up
+      - condition: state
+        entity_id: input_boolean.chimichanga_mode
+        state: 'off'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.cricut_light
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.pot_lights
+    - conditions:
+      - condition: trigger
+        id: shut_down
+      sequence:
+      - service: timer.start
+        data: {}
+        target:
+          entity_id: timer.pottery_lights
+  mode: restart
+- id: e1cb2fdc-0423-11eb-adc1-0242ac120002
+  alias: Set Room Presence
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: sensor.room_audio
+  action:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.room_presence
+        value: '{{ states(''sensor.room_audio'') }}'
+    - service: mqtt.publish
+      data:
+        topic: house/presence/current_room
+        payload: '{{ states(''sensor.room_audio'') }}'
+        retain: true
+
+- id: 36b35286-5a87-4dd2-84ba-6ad7e83b5d84
+  alias: Set Presence Source
+  mode: restart
+  trigger:
+    - platform: state
+      entity_id: sensor.room_audio
+      attribute: presence_source
+  action:
+    - service: mqtt.publish
+      data:
+        topic: house/presence/source
+        payload: '{{ state_attr(''sensor.room_audio'', ''presence_source'') }}'
+        retain: true
+
+- id: e1cb287a-0423-11eb-adc1-0242ac120002
+  alias: Notification Volume Dim
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: input_boolean.audible_notifications
+      to: 'off'
+  action:
+    - service: media_player.volume_set
+      data:
+        entity_id:
+        - media_player.kitchen_display
+        - media_player.kitchen_echo
+        volume_level: >
+            {{ states('input_number.tts_low_volume') | float }}
+
+- id: e1cb27bc-0423-11eb-adc1-0242ac120002
+  alias: Notification Volume Normal
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: input_boolean.audible_notifications
+      to: 'on'
+  action:
+    - service: media_player.volume_set
+      data:
+        entity_id:
+        - media_player.kitchen_display
+        - media_player.kitchen_echo
+        - media_player.upstairs_speaker
+        - media_player.croft_speaker
+        - media_player.living_room_echo
+        - media_player.master_bedroom_speaker
+        - media_player.skylars_bedroom_speaker
+        - media_player.skylars_bedroom_echo
+        - media_player.studio_speaker
+        volume_level: >
+            {{ states('input_number.tts_volume') | float }}
+    - service: media_player.volume_set
+      data:
+        entity_id:
+        - media_player.ha_blue
+        volume_level: >
+          {{ states('input_number.tts_main_volume') | float }}
+
+- id: e1cb17ea-0423-11eb-adc1-0242ac120002
+  alias: Set Last Alexa Called Time 
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: 
+      - media_player.living_room_echo
+      - media_player.kitchen_echo
+      - media_player.skylars_bedroom_echo
+      - media_player.dads_desk
+  condition:
+    - condition: template
+      value_template: '{{ trigger.to_state.attributes.last_called_timestamp | float > trigger.from_state.attributes.last_called_timestamp | float }}'   # Alexa has been triggered
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.last_time_alexa_called
+      data:
+        datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+
+
+# Turn on Theater lighting
+- id: a2f8621f-064b-4a4f-8414-44983848ff00
+  alias: bias_lighting
+  initial_state: true
+  trigger:
+  - platform: state
+    entity_id: media_player.apple_tv
+    to: 'idle'
+    for: '00:00:05'
+    id: tv_on_late
+  - platform: state
+    entity_id: media_player.theater_tv
+    to: 'on'
+    id: tv_on
+  - platform: state
+    entity_id: media_player.theater_tv
+    to: 'off'
+    id: tv_off_late
+  - platform: state
+    entity_id: media_player.apple_tv
+    to: 'standby'
+    for: '00:00:05'
+    id: tv_off
+  - platform: state
+    entity_id: media_player.apple_tv
+    to: 'playing'
+    for: '00:00:30'
+    id: movie_time
+  - platform: state
+    entity_id: media_player.apple_tv
+    to: 'idle'
+    for: '00:00:30'
+    id: movie_over
+  - platform: state
+    entity_id: media_player.apple_tv
+    to: 'paused'
+    for: '00:00:05'
+    id: movie_paused
+  action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: tv_on
+        - condition: state
+          entity_id: light.theater
+          state: 'off'
+        sequence:
+        - service: light.turn_on
+          entity_id: light.theater
+        # - service: media_player.play_media
+        #   data:
+        #     media_content_id: theater tv lights on
+        #     media_content_type: routine
+        #   entity_id: media_player.living_room_echo
+      - conditions:
+        - condition: trigger
+          id: tv_on_late
+        - condition: state
+          entity_id: light.theater
+          state: 'off'
+        sequence:
+        - service: light.turn_on
+          entity_id: light.theater
+        # - service: media_player.play_media
+        #   data:
+        #     media_content_id: theater tv lights on
+        #     media_content_type: routine
+        #   entity_id: media_player.living_room_echo
+      - conditions:
+        - condition: trigger
+          id: tv_off
+        sequence:
+        - service: light.turn_off
+          entity_id: light.theater
+        # - service: media_player.play_media
+        #   data:
+        #     media_content_id: theater tv lights off
+        #     media_content_type: routine
+        #   entity_id: media_player.living_room_echo
+      - conditions:
+        - condition: trigger
+          id: tv_off_late
+        sequence:
+        - service: light.turn_off
+          entity_id: light.theater
+        # - service: media_player.play_media
+        #   data:
+        #     media_content_id: theater tv lights off
+        #     media_content_type: routine
+        #   entity_id: media_player.living_room_echo
+      - conditions:
+        - condition: trigger
+          id: movie_time
+        sequence:
+        - service: scene.turn_on
+          entity_id: scene.theater_movie
+        - service: script.adjust_audio
+      - conditions:
+          condition: or
+          conditions:
+          - condition: trigger
+            id: movie_over
+          - condition: trigger
+            id: movie_paused
+        sequence:
+        - service: scene.turn_on
+          entity_id: scene.theater_dim
+      default: []
+
+- id: 9f783303-8715-4254-82a3-79ae9b042243
+  alias: Theater Lighting
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.theater_motion_occupancy
+    to: 'on'
+    id: motion
+  - platform: state
+    entity_id: media_player.theater_tv
+    to: 'off'
+    for: '00:10:00'
+    id: shut_down
+  action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: motion
+        - condition: state
+          entity_id: light.theater_lights
+          state: 'off'
+        - below: 10
+          condition: numeric_state
+          entity_id: sensor.theater_motion_illuminance_lux
+        sequence:
+        - service: scene.turn_on
+          entity_id: scene.theater_dim
+      - conditions:
+        - condition: trigger
+          id: shut_down
+        sequence:
+        - service: scene.turn_on
+          entity_id: scene.theater_dark
+      default: []
+
+
+# Increase the light level in master bedroom from 15% to 100% over 15 minutes. 
+- id: 1feafed1-0de9-44a4-a2f0-e693bc637ea1
+  alias: Master bedroom Wake Up
+  initial_state: true
+  trigger:
+  - platform: time
+    at: 06:00:00
+  condition:
+  - condition: state
+    entity_id: input_boolean.vacation_mode
+    state: 'off'
+  action:
+  - service: script.turn_on
+    entity_id: script.master_bedroom_morning_wakeup_lighting
+  - delay: 00:33:00
+  - service: script.turn_off
+    entity_id: script.master_bedroom_morning_wakeup_lighting
+  - service: input_number.set_value
+    data_template:
+      entity_id: input_number.master_bedroom_wakeup
+      value: 8.5
+  - service: scene.turn_on
+    entity_id: scene.master_bedroom_on
+
+- id: 27b83e67-b509-427a-aa2f-1ce4bb7ad0ab
+  alias: Sunset
+  initial_state: true
+  trigger:
+  - platform: time
+    at: '20:00:00'
+  condition:
+  - condition: state
+    entity_id: input_boolean.vacation_mode
+    state: 'off'
+  action:
+  - service: scene.turn_on
+    entity_id: scene.master_bedroom_on
+
+
+# Using the HACS Daily Snapshot Clean Up Plugin 
+- id: daily_snapshot_clean_up
+  alias: Daily snapshot clean up
+  trigger: 
+  - platform: time
+    at: '03:00:00'
+  action:
+    - service: clean_up_snapshots_service.clean_up
+
+# Morning Entity Refresh - For all those sensors that need a little push
+- id: daily_entity_refresh
+  alias: Daily Entity Refresh
+  trigger: 
+  - platform: time
+    at: '04:30:00'
+  action:
+    - service: homeassistant.update_entity
+      entity_id: sensor.today_is 
+    - service: homeassistant.update_entity
+      entity_id: sensor.holiday
+
+# Nightly Entity Refresh - For all those sensors that need a little push
+- id: daily_entity_refresh2
+  alias: Daily Entity Refresh2
+  trigger: 
+  - platform: time
+    at: '17:00:00'
+  action:
+    - service: homeassistant.update_entity
+      entity_id: sensor.school_tomorrow
+      
+
+# startup auotmations to update some custom sensors due to new order of home assistant firing up    
+- id: startup_automations 
+  alias: startup_automations 
+  trigger:
+    platform: homeassistant
+    event: start
+  action:
+    - service: homeassistant.update_entity
+      entity_id: sensor.jeff_location
+    - service: homeassistant.update_entity
+      entity_id: sensor.kat_location
+    - service: homeassistant.update_entity
+      entity_id: sensor.skylar_location 
+    - service: homeassistant.update_entity
+      entity_id: sensor.today_is 
+    - service: homeassistant.update_entity
+      entity_id: sensor.holiday
+    - service: frontend.set_theme
+      data:
+        name: Google Dark Theme
+
+
+- id: '1629578209876'
+  alias: Remote System Heartbeat
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: remote_system_heartbeat
+    id: heartbeat
+  - platform: time_pattern
+    id: update
+    minutes: /30
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: heartbeat
+      sequence:
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.remote_system_heartbeat
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.remote_system_status
+        data:
+          option: alive
+    - conditions:
+      - condition: trigger
+        id: update
+      - condition: template
+        value_template: '{{ (as_timestamp(now()) - as_timestamp(states(''input_datetime.remote_system_heartbeat'')))
+          < 3600 }}'
+      sequence:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.remote_system_status
+        data:
+          option: alive
+    default:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.remote_system_status
+      data:
+        option: unknown
+  mode: single
+- id: '1629581648846'
+  alias: Remote System Alert
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: input_select.remote_system_status
+    from: alive
+    to: unknown
+    id: alert
+  - platform: state
+    entity_id: input_select.remote_system_status
+    id: alive
+    from: unknown
+    to: alive
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: alert
+      sequence:
+      - service: notify.mobile_app_jeffrey_ha_app
+        data:
+          message: Remote System is Down!!
+    - conditions:
+      - condition: trigger
+        id: alive
+      sequence:
+      - service: notify.mobile_app_jeffrey_ha_app
+        data:
+          message: Remote System is Alive again
+    default: []
+  mode: single
+- id: '1629837216637'
+  alias: Send Heartbeat
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: /30
+  - platform: homeassistant
+    event: start
+  condition: []
+  action:
+  - service: rest_command.remote_system_webhook
+  mode: single
+- id: just_a_test_webhook
+  alias: Testing Webhooks
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: send_a_message
+  action:
+  - service: notify.mobile_app_jeffrey_ha_app
+    data:
+      message: '{{ trigger.json.message }}'
+  - service: '{{ trigger.json.service }}'
+    data:
+      entity_id: '{{ trigger.json.entity }}'
+  mode: single
+
+- id: skylar_is_awake
+  alias: Skylar is Awake
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.skylars_bedroom_motion_occupancy
+      to: "off"
+      from: "on"
+  condition:
+    - condition: time
+      after: "05:00:00"
+      before: "08:30:00"
+    - condition: state
+      entity_id: input_boolean.skylar_awake
+      state: "off"
+  action:
+    - service: input_datetime.set_datetime
+      entity_id: input_datetime.skylar_awake_at
+      data:
+        time: "{{ now().strftime('%H:%M') }}"
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.skylar_awake
+    # - service: switch.turn_off
+    #   entity_id: switch.rainbow_light
+
+- id: skylar_early_morning_tv
+  alias: Skylar Early Morning TV
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: media_player.theater_tv
+      to: "on"
+      from: "off"
+    - platform: state
+      entity_id: media_player.croft_tv
+      to: "playing"
+  condition:
+    - condition: time
+      after: "05:00:00"
+      before: "08:30:00"
+    - condition: state
+      entity_id: input_boolean.skylar_dressed_reminder
+      state: "off"
+    - condition: state
+      entity_id: input_boolean.skylar_awake
+      state: "on"
+  action:
+    - service: script.status_annc
+      data:
+        who: >-
+          {% if is_state('media_player.theater_tv', 'on') %}
+            theater 
+          {% else %}
+            croft
+          {% endif %}
+        call_interuption: 1
+        call_skylar_dressed_reminder: 1
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.skylar_dressed_reminder
+
+- id: kat_arrives_zoo
+  alias: Kat Arrives at Zoo
+  initial_state: true
+  trigger:
+    - platform: zone
+      event: enter
+      zone: zone.zooatlanta
+      entity_id: person.katherine
+  condition:
+    condition: time
+    after: "07:00:00"
+    before: "10:00:00"
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.kat_travel_monitor
+    # - service: script.status_annc
+    #   data:
+    #     who: "{{ states('sensor.room_audio') }}"
+    #     speech_message: "Kat has arrived at work."
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.skylar_is_with
+      data:
+        option: >
+          {% if is_state('input_select.skylar_is_with', 'Self') %}
+            Dad
+          {% else %}
+            {{ states('input_select.skylar_is_with') }}
+          {% endif %}
+    - service: script.text_notify
+      data:
+        who: "jeff"
+        message: Kat is at work
+
+- id: kat_leaves_zoo
+  alias: Kat Leaves Zoo Notification
+  initial_state: true
+  trigger:
+    - platform: zone
+      event: leave
+      zone: zone.zooatlanta
+      entity_id: person.katherine
+  condition:
+    condition: time
+    after: "16:00:00"
+    before: "18:00:00"
+  action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.kat_travel_monitor
+    - service: script.text_notify
+      data:
+        who: "jeff"
+        message: Kat left work
+    # - service: script.status_annc
+    #   data_template:
+    #     who: "{{ states('sensor.room_audio') }}"
+    #     call_interpruption: 1
+    #     call_kat_location: 1
+
+- id: 1c51df28-369e-41e5-a590-bea0f1beafaa
+  alias: Kat Tracking Mode
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: input_boolean.kat_tracking_mode
+      to: "on"
+      from: "off"
+      id: tracking_on
+    - platform: state
+      entity_id: input_boolean.kat_tracking_mode
+      to: "off"
+      from: "on"
+      id: tracking_off
+    - platform: state
+      entity_id: sensor.kat_location
+      attribute: state
+      id: state_updated
+    - platform: state
+      entity_id: sensor.kat_location
+      attribute: county
+      to: "Fayette County"
+      id: fayette
+  condition:
+    condition: state
+    entity_id: input_boolean.kat_tracking_mode
+    state: "on"
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: state_updated
+          sequence:
+            - service: script.speech_engine
+              data:
+                who: "{{ states('sensor.room_audio') }}"
+                message: >
+                  {{ states('sensor.tts_interuption') }} 
+                  {{ [
+                      'It appears Kat has entered the state of ' + state_attr('sensor.kat_location','state') + '.' ,
+                      'the latest report shows Kat has crossed the ' + state_attr('sensor.kat_location','state') + ' state line.',
+                      'I have detected Blueys drive signature entering the state of ' + state_attr('sensor.kat_location','state') +'.'
+                    ] | random }}
+                  {{ states('sensor.tts_kat_location') }}
+            - service: script.text_notify
+              data:
+                who: "jeff"
+                title: Kat Travel Update - State
+                message: >
+                  {{ [
+                      'It appears Kat has entered the state of ' + state_attr('sensor.kat_location','state') + '.' ,
+                      'the latest report shows Kat has crossed the ' + state_attr('sensor.kat_location','state') + ' state line.',
+                      'I have detected Blueys drive signature entering the state of ' + state_attr('sensor.kat_location','state') +'.'
+                    ] | random }}
+        - conditions:
+            - condition: trigger
+              id: fayette
+          sequence:
+            - service: script.speech_engine
+              data:
+                who: "{{ states('sensor.room_audio') }}"
+                message: >
+                  {{ states('sensor.tts_interuption') }} 
+                  {{ [
+                      'Kat has entered ' + state_attr('sensor.kat_location','county') + '.' ,
+                      'the latest report shows Kat has crossed the ' + state_attr('sensor.kat_location','county') + ' line.',
+                      'I have detected Blueys drive signature entering ' + state_attr('sensor.kat_location','county') +'.'
+                    ] | random }}
+                  {{ states('sensor.tts_kat_location') }}
+            - service: script.text_notify
+              data:
+                who: "jeff"
+                title: Kat Travel Update - County
+                message: >
+                  {{[
+                      'Kat has entered ' + state_attr('sensor.kat_location','county') + '.' ,
+                      'the latest report shows Kat has crossed the ' + state_attr('sensor.kat_location','county') + ' line.',
+                      'I have detected Blueys drive signature entering ' + state_attr('sensor.kat_location','county') +'.'
+                    ] | random }}
+        - conditions:
+            - condition: trigger
+              id: tracking_on
+          sequence:
+            - service: script.speech_engine
+              data:
+                who: "{{ states('sensor.room_audio') }}"
+                message: >
+                  {{ [
+                      'I am now tracking Kats travel and will report any signifigant changes. ' ,
+                      'Tracking mode is now enabled for Kat. ',
+                      'I am attempting to locl on to Blueys drive signature and will provide updates if anything changes. '
+                    ] | random }}
+                  {{ states('sensor.tts_kat_location') }}
+            - service: script.text_notify
+              data:
+                who: "jeff"
+                message: Kat Tracking mode enabled
+        - conditions:
+            - condition: trigger
+              id: tracking_off
+          sequence:
+            - service: script.speech_engine
+              data:
+                who: "{{ states('sensor.room_audio') }}"
+                message: >
+                  {{ [
+                      'I am no longer tracking Kats travel. ' ,
+                      'Tracking mode is now disabled for Kat. '
+                    ] | random }}
+            - service: script.text_notify
+              data:
+                who: "jeff"
+                message: Kat Tracking mode disabled
+      default: []
+
+- id: ec8cc298-c4e6-4ecb-9cd2-4975b52ef044
+  alias: Skylar School Tracking
+  trigger:
+    - entity_id: person.jeffrey
+      event: leave
+      platform: zone
+      zone: zone.shmes
+      id: leave
+    - entity_id: person.katherine
+      event: leave
+      platform: zone
+      zone: zone.shmes
+      id: leave
+    - entity_id: person.jeffrey
+      event: enter
+      platform: zone
+      zone: zone.shmes
+      id: dad
+    - entity_id: person.katherine
+      event: enter
+      platform: zone
+      zone: zone.shmes
+      id: mom
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: dad
+            - condition: template
+              value_template: "{{ states('person.katherine') not in ['SHMES'] }}"
+            - condition: state
+              entity_id:
+                - input_boolean.skylar_school
+              state: "on"
+          sequence:
+            - service: script.text_notify
+              data:
+                who: "kat"
+                message: Jeff has arrived at School for Pickup
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.skylar_is_with
+              data:
+                option: >
+                  {% if is_state('input_select.skylar_is_with', 'Self') %}
+                    Dad
+                  {% else %}
+                    {{ states('input_select.skylar_is_with') }}
+                  {% endif %}
+        - conditions:
+            - condition: trigger
+              id: mom
+            - condition: template
+              value_template: "{{ states('person.jeffrey') not in ['SHMES'] }}"
+            - condition: state
+              entity_id:
+                - input_boolean.skylar_school
+              state: "on"
+          sequence:
+            - service: script.text_notify
+              data:
+                who: "jeff"
+                message: Kat has arrived at School for Pickup
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.skylar_is_with
+              data:
+                option: >
+                  {% if is_state('input_select.skylar_is_with', 'Self') %}
+                    Mom
+                  {% else %}
+                    {{ states('input_select.skylar_is_with') }}
+                  {% endif %}
+        - conditions:
+            - condition: trigger
+              id: leave
+            - condition: state
+              entity_id:
+                - input_boolean.skylar_school
+              state: "on"
+            - condition: time
+              after: "08:30:00"
+              weekday:
+                - mon
+                - tue
+                - wed
+                - thu
+                - fri
+          sequence:
+            - service: script.text_notify
+              data:
+                who: "parents"
+                message: Skylar has been picked up from School.
+            - service: input_boolean.turn_off
+              entity_id: input_boolean.skylar_school
+        - conditions:
+            - condition: trigger
+              id: leave
+            - condition: state
+              entity_id:
+                - input_boolean.skylar_school
+              state: "off"
+          sequence:
+            - service: script.text_notify
+              data:
+                who: "parents"
+                message: Skylar has been dropped off School.
+            - service: input_boolean.turn_on
+              entity_id: input_boolean.skylar_school
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.skylar_is_with
+              data:
+                option: Self
+      default: []
+  initial_state: true
+
+- id: jeff_arrives_summit
+  alias: Jeff Arrives At Summit
+  trigger:
+    - entity_id: person.jeffrey
+      event: enter
+      platform: zone
+      zone: zone.summit
+  action:
+    - service: script.text_notify
+      data:
+        who: "kat"
+        message: "Jeff has arrived at Summit"
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.skylar_is_with
+      data:
+        option: >
+          {% if is_state('input_select.skylar_is_with', 'Self') %}
+            Mom
+          {% else %}
+            {{ states('input_select.skylar_is_with') }}
+          {% endif %}
+    - service: script.jeff_destination_na
+  initial_state: true
+
+- id: e1cb15b0-0423-11eb-adc1-0242ac120002
+  alias: Zone Debugger
+  trigger:
+    - platform: state
+      entity_id: person.jeffrey
+  condition:
+    - condition: state
+      entity_id: input_boolean.jeff_location_debug
+      state: "on"
+  action:
+    - service: script.jeff_location_debug
+
+- id: jeff_leaves_summit
+  alias: Jeff Leaves Summit
+  initial_state: true
+  trigger:
+    - entity_id: person.jeffrey
+      event: leave
+      platform: zone
+      zone: zone.summit
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.jeff_traffic_alert_home
+
+- id: guests_have_arrived
+  alias: Guests have arrived
+  trigger:
+    - entity_id: person.papa
+      event: enter
+      platform: zone
+      zone: zone.home
+    - entity_id: person.uncle_matt
+      event: enter
+      platform: zone
+      zone: zone.home
+  action:
+    - service: script.standby
+    - service: script.family_is_home
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.guest_mode
+  initial_state: true
+
+- id: disable_bad_traffic_home_jeff
+  alias: Disabling Jeff Bad Traffic Home
+  initial_state: true
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.jeff_ett_home
+      below: 40
+    - platform: state
+      entity_id: sensor.jeff_destination
+      to: Home
+  condition:
+    - condition: state
+      entity_id: input_boolean.jeff_traffic_alert_home
+      state: "on"
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.jeff_traffic_alert_home
+
+- id: e1cb1114-0423-11eb-adc1-0242ac120002
+  alias: Jeff Last Known Location
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.jeffrey_ha_app_geocoded_location
+  action:
+    - service: mqtt.publish
+      data:
+        topic: house/jeff/last_known_location
+        payload_template: "{{ states('sensor.jeffrey_ha_app_geocoded_location') }}"
+        retain: true
+- id: e1cb11d2-0423-11eb-adc1-0242ac120002
+  alias: Kat Last Known Location
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.iphone_geocoded_location
+  action:
+    - service: mqtt.publish
+      data:
+        topic: house/kat/last_known_location
+        payload_template: "{{ states('sensor.iphone_geocoded_location') }}"
+        retain: true
+
+#############################################
+  # Vacation Mode Enabled
+  # Enable when everyone is 3 hours away.
+  # Disable happens in family_is_home automation in presence.yaml
+- id: enable_vacation_mode
+  alias: Enable Vacation Mode
+  initial_state: true
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.jeff_ett_home
+      above: 180
+    - platform: numeric_state
+      entity_id: sensor.kat_ett_home
+      above: 180
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.jeff_ett_home
+      above: 180
+    - condition: numeric_state
+      entity_id: sensor.kat_ett_home
+      above: 180
+  action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.vacation_mode
+  #############################################
+
+- id: door_notifications
+  alias: Door Notifications
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.front_door_contact
+        - binary_sensor.kitchen_door_contact
+        - binary_sensor.basement_door_contact
+        - binary_sensor.back_door_contact
+      to: "on"
+      id: chime
+    - platform: state
+      entity_id:
+        - binary_sensor.front_door_contact
+        - binary_sensor.kitchen_door_contact
+        - binary_sensor.basement_door_contact
+        - binary_sensor.back_door_contact
+        - binary_sensor.basement_access_door
+      from: "off"
+      to: "on"
+      for: "00:01:00"
+      id: door_still_open
+  condition:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: "on"
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: "off"     
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: chime
+            - condition: or
+              conditions:
+              - condition: state
+                entity_id: media_player.ha_blue
+                state: "idle"
+              - condition: state
+                entity_id: media_player.ha_blue
+                state: "off"
+          sequence:
+            - service: media_player.volume_set
+              data_template:
+                entity_id: media_player.ha_blue
+                volume_level: .12
+            - service: media_player.play_media
+              entity_id: media_player.ha_blue
+              data:
+                media_content_id: /media/sounds/door_open.wav
+                media_content_type: "music"
+        - conditions:
+            - condition: trigger
+              id: door_still_open
+          sequence:
+            - service: script.speech_engine
+              data:
+                who: "{{ states('sensor.room_audio') }}"
+                message: >
+                  The {{ trigger.to_state.attributes.friendly_name }}
+                  {{ [
+                    ' is standing open.',
+                    ' is open.',
+                    ' does not close on its own.',
+                    ' was left standing open.'
+                  ] | random }}
+                  {{ [
+                      'Can a human be so kind and close it?',
+                      'The air quality in this house has actually improved.',
+                      'Closing the door would improve the internal climate of the house.',
+                      'Hey. The door was just opened and this is crazy. But now you know. So close it maybe.',
+                      'If at first you do not succeed in closing the door, please try again. Like, Right now seems like a good time to try again.',
+                      'And the automatic door closer appears to be broken. So, you know what to do. Time to get physical.',
+                      'I would close it for you. But I lack legs. And Arms.'
+                  ] | random }}
+  initial_state: true
+
+
+# If guest mode is enabled, notify the house
+- id: guest_mode_feedback
+  alias: Guest Mode Audio Feedback
+  trigger:
+    - platform: state
+      entity_id:
+        - input_boolean.guest_mode
+      from: "off"
+      to: "on"
+  action:
+    - service: script.speech_engine
+      data_template:
+        who: "{{ states.sensor.room_audio.state }}"
+        message: >
+          {{ [
+          "Guest Mode has been enabled.",
+          "I have switched to the system to guest mode.",
+          "I have enabled guest mode. ",
+          "Guest Mode is on."
+          ] | random }}
+
+# If sentry mode is on / Security armed, notify when there is movement around doors.
+- id: motion_detected_front_door
+  alias: Motion Detected Front Door
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aarlo_motion_front_door
+      from: "off"
+      to: "on"
+
+  action:
+    - service: image_processing.scan
+      entity_id: image_processing.doods_aarlo_front_door
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: '{{ states("image_processing.doods_aarlo_front_door") | int > 0 }}'
+          sequence:
+            - service: mqtt.publish
+              data:
+                topic: house/front_door_motion/away_count
+                payload_template: "{{ states.sensor.front_door_motion_away_count.state | int + 1 }}"
+                retain: true
+            - service: script.status_annc
+              data:
+                who: "{{ states.sensor.room_presence.state }}"
+                call_interuption: 1
+                call_snark_door_motion: 1
+                speech_message: >
+                  {{ [
+                  "I have detected someone at the ",
+                  "Someone appears to be at the ",
+                  "There is a person at the ",
+                  "My sensors are picking up presence at the ",
+                  "We appear to have a visitor at the ",
+                  "My sensors have detected a meat popsicle at the "
+                  ] | random }}
+                  {{ trigger.to_state.attributes.friendly_name }}.
+    - delay:
+        minutes: 2
+  initial_state: true
+
+#############################################
+
+#############################################
+# Security Issues
+# If doors are opened and sentry mode is on / security armed announce location of breach to house and turn on security issue.
+# If its the back door and dog mode is on ignore
+- id: security_breach_door
+  alias: Security Breach Doors
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.front_door_contact
+        - binary_sensor.kitchen_door_contact
+        - binary_sensor.basement_door_conact
+        - binary_sensor.back_door_contact
+        - binary_sensor.garage_door
+      to: "on"
+  condition:
+    - condition: state
+      entity_id: input_boolean.sentry_mode
+      state: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template:
+                '{{ trigger.to_state.attributes.friendly_name == "Back Door"
+                }}'
+            - condition: state
+              entity_id: input_boolean.dog_mode
+              state: "on"
+          sequence:
+            - service: script.text_notify
+              data:
+                who: "jeff"
+                message: "Dog Mode enabled, bypassing back door sensor."
+      default:
+        - service: script.jarvis_alert
+          data_template:
+            message: "My security protocols are being overidden,, The {{ trigger.to_state.attributes.friendly_name }} has been opened."
+        - service: script.text_alert
+          data:
+            who: parents
+            title: "Security Alert!!"
+            message: "{{ trigger.to_state.attributes.friendly_name }} has been opened."
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.security_issue
+  initial_state: true
+
+# If security issue switch turns on, kick off security response script, and go red.
+- id: security_response_on
+  alias: Security Response On
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: input_boolean.security_issue
+      from: "off"
+      to: "on"
+      for: 00:02:00
+  action:
+    - service: script.turn_on
+      entity_id: script.security_response
+    - service: scene.turn_on
+      entity_id: scene.lr_red
+
+# If security issue is turned off, cancel response.
+- id: security_response_off
+  alias: Security Response Off
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: input_boolean.security_issue
+      from: "on"
+      to: "off"
+  action:
+    - service: script.turn_off
+      entity_id: script.security_response
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.security_alarm
+    - service: scene.turn_on
+      entity_id: scene.normal_livingroom_lighting
+    - service: script.text_alert
+      data:
+        who: parents
+        message: "Security Issue Cleared! Canceling Repsonse."
+
+# Security alarm is turned on, lets make it loud.
+- id: security_alarm_on
+  alias: Security alarm On
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: input_boolean.security_alarm
+      to: "on"
+  action:
+    - service: script.turn_on
+      entity_id: script.notification_security_alarm_audio
+
+# Security alarm turned off so concert is over.
+- id: security_alarm_off
+  alias: Security alarm Off
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: input_boolean.security_alarm
+      to: "off"
+  action:
+    - service: script.turn_off
+      entity_id: script.notification_security_alarm_audio
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+
+# If water leak is deteced near fridge, let everyone know.
+- id: water_leak_detected
+  alias: Welcome Home
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.0x286d9700010c9f39_water_leak
+      from: "off"
+      to: "on"
+  action:
+    - service: script.text_notify
+      data_template:
+        who: "parents"
+        title: "Water Leak!!!!"
+        message: >
+          {% set location = trigger.to_state.attributes.friendly_name %}
+          location + has detected a leak
+    - service: script.jarvis_alert
+      data_template:
+        message: >
+          {% set location = trigger.to_state.attributes.friendly_name %}
+          {%- macro issue_report(location) -%}
+            {{ [
+                'I have detected an issue!',
+                'We have a problem!',
+                'You might not like this.',
+                'There is something that needs your attention.'
+                ] | random }}
+            {{ [
+              location + " is detecting a leak.",
+              location + " has detected water.",
+              location + " is picking up water."
+              ] | random }}
+          {%- endmacro -%}
+          {{issue_report(location)}}
+
+- id: update_usps_camera_path
+  alias: "Update USPS Mail Camera"
+  trigger:
+    - platform: state
+      entity_id: sensor.mail_usps_mail
+  action:
+    - service: local_file.update_file_path
+      data_template:
+        entity_id: camera.mail_usps
+        file_path: >
+          {% if state_attr('sensor.mail_usps_mail','image') == None  %}
+          /config/custom_components/mail_and_packages/mail_none.gif
+          {% else %}
+          /config/www/mail_and_packages/{{ state_attr('sensor.mail_usps_mail','image') }}
+          {% endif %}
+
+# Notify USPS mails via TTS, and iOS notification with attachment
+###############################################################################
+- id: notify_usps_mail
+  alias: Notify USPS Mail
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.usps_mail
+  condition:
+    - condition: template
+      value_template: '{{ states.sensor.usps_mail.state | int > 0 }}'
+    - condition: template
+      value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
+  action:
+    - service: script.announcement
+      data:
+        who: '{{ states(''sensor.room_audio'') }}'
+        message: >-
+          {%- if states.sensor.usps_mail.state | int == 1 -%} 
+            {{ [ 
+              "USPS is delivering", 
+              "The postal service will be leaving",
+              "The nice lady in the mail truck is bringing us ",
+              "I have scanned the incoming mail, eliminated the junk, and determined there is"
+                ] | random }}
+            {{ states.sensor.usps_mail.state }} piece of mail today.
+          {%- else -%}
+            {{ [ 
+              "USPS is delivering", 
+              "The postal service will be leaving",
+              "The nice lady in the mail truck is bringing us ",
+              "I have scanned the incoming mail, eliminated the junk, and determined there are"
+                ] | random }} 
+            {{ states.sensor.usps_mail.state }} pieces of mail today.
+          {%- endif -%}
+    - service: script.text_notify
+      data_template:
+        who: "jeff"
+        title: "USPS Delivering Today"
+        message: "USPS will be delivering {{ states.sensor.usps_mail.state }} piece(s) of mail today."
+        # data:
+        #   push:
+        #     category: camera
+        #   entity_id: "camera.usps_mail_pictures"
+        #   attachment:
+        #     url: "{{ states.camera.usps_mail_pictures.attributes.entity_picture }}"
+        #     content-type: jpg
+    - service: script.twitter_notify
+      data_template:
+        message: >-
+          {{ [ 
+          "I just let Anchorage House know how much mail the USPS is leaving in the mailbox today. For the code checkout https://github.com/thejeffreystone/usps2mqtt #automation", 
+          "One of the things I know is how much mail is being delivered because I am integrated with USPS Informed Delivery using https://github.com/thejeffreystone/usps2mqtt #automation.",
+          "There is a letter in the mailbox. Or will be when the USPS gets here. If you want to know how I know checkout https://github.com/thejeffreystone/usps2mqtt #automation.",
+          "Neither snow nor rain nor heat nor gloom of night prevents me from letting Anchorage House know what to expect from the USPS thanks to https://github.com/thejeffreystone/usps2mqtt #automation."
+          ] | random }}
+
+# Notify USPS packages via TTS. Usually there are no pictures for packages
+###############################################################################
+- id: notify_usps_packages
+  alias: Notify USPS Packages
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.usps_mail
+  condition:
+    - condition: template
+      value_template: '{{ states.sensor.usps_mail.state | int > 0 }}'
+    - condition: template
+      value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
+  action:
+    - service: script.announcement
+      data_template:
+        who: '{{ states.sensor.room_audio.state }}'
+        message: >
+          {%- if states.sensor.usps_packages.state | int == 1 -%}
+            USPS is delivering {{ states.sensor.usps_packages.state }} package today.
+          {%- else -%}
+            USPS is delivering {{ states.sensor.usps_packages.state }} packages today.
+          {%- endif -%}
+    
+- alias: "Mail Notif - Mail Delieveries"
+  trigger:
+    - platform: time
+      at: '10:05:00'
+  #Trigger if mail or packages get updated
+    # - platform: state
+    #   entity_id: sensor.mail_usps_mail
+    # - platform: state
+    #   entity_id: sensor.mail_usps_delivering
+  #send only if mail or packages are more than 0
+  condition:
+    - condition: or
+      conditions:
+        - condition: template
+          value_template: "{{ states('sensor.mail_usps_mail') | int > 0 }}"
+        - condition: template
+          value_template: "{{ states('sensor.mail_usps_delivering') | int > 0 }}"
+  action:
+    - service: script.text_notify
+      data_template:
+        who: "jeff"
+        title: "Delivering Today"
+        message: "{{ states('sensor.mail_deliveries_message')}}"
+    - service: script.status_annc
+      data_template:
+        who: '{{ states(''sensor.room_audio'')}}'
+        call_interuption: 1
+        speech_message: >-
+          {%- if states.sensor.mail_usps_mail.state | int == 1 -%} 
+            {{ [ 
+              "USPS is delivering", 
+              "The postal service will be leaving",
+              "The nice lady in the mail truck is bringing us ",
+              "I have scanned the incoming mail,and there is"
+                ] | random }}
+            {{ states.sensor.mail_usps_mail.state }} piece of mail today.
+          {%- else -%}
+            {{ [ 
+              "USPS is delivering", 
+              "The postal service will be leaving",
+              "The nice lady in the mail truck is bringing us ",
+              "I have scanned the incoming mail, and determined there are"
+                ] | random }} 
+            {{ states.sensor.mail_usps_mail.state }} pieces of mail today.
+          {%- endif -%}
+      
+
+- alias: "Delivered Package Notification"
+  initial_state: true
+  trigger:
+    - platform: state
+      entity_id: sensor.mail_fedex_delivered_2
+    - platform: state
+      entity_id: sensor.mail_ups_delivered
+  #send only if mail or packages are more than 0
+  condition:
+    - condition: or
+      conditions:
+        - condition: template
+          value_template: "{{ states('sensor.mail_fedex_delivered_2') | int > 0 }}"
+        - condition: template
+          value_template: "{{ states('sensor.mail_ups_delivered') | int > 0 }}"
+  action:
+    - service: script.text_notify
+      data_template:
+        who: "jeff"
+        title: "Package Delivered"
+        message: "Fedex/UPS just made a delivery"
+    - service: script.announcment
+      data_template:
+        who: '{{ states.sensor.room_audio.state }}'
+        message: >-
+            A package was just left on the porch.
+
+- alias: "record previous day rainfall"
+  trigger:
+    - platform: time
+      at: "23:58:00"
+  action:
+    service: mqtt.publish
+    data_template:
+      topic: "house/rain/yesterday_total"
+      retain: true
+      payload: "{{ states('sensor.todays_rainfall') }}"
+
+- alias: Forecast Low Near Freezing
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.tonights_low_temp
+      below: 35
+    - platform: numeric_state
+      entity_id: sensor.pirateweather_temperature
+      below: 35
+  condition:
+    - condition: state
+      entity_id: input_boolean.freeze_warning
+      state: "off"
+  action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.freeze_warning
+
+- alias: Forecast Low Above Freezing
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.tonights_low_temp
+      above: 33
+  condition:
+    - condition: state
+      entity_id: input_boolean.freeze_warning
+      state: "on"
+    - condition: numeric_state
+      entity_id: sensor.tonights_low_temp
+      above: 35
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.freeze_warning
+
+- alias: YouTube Notification - SlackerLabs
+  id: 5e751352-067e-4706-978a-2479b6f5fd96
+  trigger:
+    - platform: state
+      entity_id: sensor.slackerlabs
+
+  condition:
+    - condition: template
+      value_template: "{{ trigger.from_state.attributes.url != trigger.to_state.attributes.url }}"
+
+  action:
+  - service: script.text_notify
+    data_template:
+      who: "jeff"
+      message: Your Video is now Live {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} 
+  - repeat:
+      count: 1
+      sequence:
+        - delay: '00:03:00'
+
+        - service: script.twitter_notify_image
+          data:
+            tweet: >
+              {{ [
+              "Brand New SlackerLabs Video! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "New SlackerLabs Video went Live! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "Boom! New SlackerLabs Video! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "Its time for a New SlackerLabs Video! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "Today is SlackerLabs Video Release Day! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome "
+              ] | random }}
+            who: 'thejeffreystone'
+            image: > 
+              {{ state_attr('sensor.slackerlabs', 'entity_picture') }}
+
+        - delay: '00:10:00'
+
+        - service: script.twitter_notify_image
+          data:
+            tweet: >
+              {{ [
+              "Brand New SlackerLabs Video! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "New SlackerLabs Video went Live! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "Boom! New SlackerLabs Video! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "Its time for a New SlackerLabs Video! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome ",
+              "Today is SlackerLabs Video Release Day! {{ states('sensor.slackerlabs') }} - {{ state_attr('sensor.slackerlabs','url') }} #homeassistant #homeautomation #smarthome "
+              ] | random }}
+            who: 'slackerlabs'
+            image: >
+              {{ state_attr('sensor.slackerlabs', 'entity_picture') }}
+
+        - delay: '12:30:00'
