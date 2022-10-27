@@ -30,7 +30,7 @@ spotify_playlist:
   name: Spotify Playlist
   options:
   - chill
-  - dedtime
+  - bedtime
   - background
   - scored
   - jukebox
