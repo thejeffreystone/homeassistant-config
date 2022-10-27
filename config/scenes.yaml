@@ -253,6 +253,8 @@
       state: 'on'
     input_boolean.skylar_awake:
       state: 'off'
+    light.galaxy_lamp:
+      state: 'on'
   id: f4e8d2f594c446ee9f0e41cf46df3a53
 - id: '1663677327698'
   name: Work Time
@@ -276,29 +278,24 @@
       - 0.151
       - 0.343
       rate_limit_total: 100
-      rate_limit_remaining: 42
-      rate_limit_reset_seconds: -1663678498.66
+      rate_limit_remaining: -6446
+      rate_limit_reset_seconds: -1665412450.26
       rate_limit_reset: '1969-12-31T19:00:00'
       rate_limit_on: 5
       manufacturer: Govee
       model: H6056
       friendly_name: Desk Lighting
       supported_features: 19
-      assumed_state: true
       state: 'on'
     switch.work_desk_lamp:
       friendly_name: Work Desk Lamp
       state: 'on'
     switch.studio_shelves:
-      linkquality: 134
+      linkquality: 123
       update:
         state: idle
       update_available: false
       friendly_name: Studio Shelves
-      state: 'on'
-    switch.accent_light_1:
-      linkquality: 153
-      friendly_name: Accent Light 1
       state: 'on'
     light.sl_desk_lamp:
       min_mireds: 150
@@ -306,8 +303,19 @@
       supported_color_modes:
       - color_temp
       - xy
+      color:
+        x: 0.372
+        y: 0.3713
+      energy: 72.69
+      linkquality: 160
+      power: 4.1
+      update:
+        state: available
+      update_available: true
+      friendly_name: SL Desk Lamp
+      supported_features: 40
       color_mode: color_temp
-      brightness: 115
+      brightness: 1
       color_temp: 238
       hs_color:
       - 26.743
@@ -319,25 +327,10 @@
       xy_color:
       - 0.409
       - 0.361
-      color:
-        x: 0.372
-        y: 0.3713
-      energy: 71.49
-      linkquality: 87
-      power: 4.1
-      update:
-        state: available
-      update_available: true
-      friendly_name: SL Desk Lamp
-      supported_features: 59
       state: 'on'
     switch.studio_airfreshener:
-      linkquality: 149
+      linkquality: 145
       friendly_name: Studio Airfreshener
-      state: 'on'
-    switch.d50_light:
-      icon: mdi:spotlight
-      friendly_name: D50
       state: 'on'
     switch.accent_light_2:
       linkquality: 182
@@ -347,18 +340,16 @@
       icon: mdi:spotlight
       friendly_name: Key Light
       state: 'off'
+    switch.desk_key_light:
+      icon: mdi:spotlight
+      friendly_name: Desk Key Light
+      state: 'on'
     light.studio_fan_lights:
+      min_mireds: 154
+      max_mireds: 500
       supported_color_modes:
       - color_temp
       - xy
-      icon: mdi:lightbulb-group
-      friendly_name: Studio Fan Lights
-      supported_features: 40
-      min_mireds: 154
-      max_mireds: 500
-      entity_id:
-      - light.studio_fan_light_1
-      - light.studio_fan_light_2
       color_mode: xy
       brightness: 255
       hs_color:
@@ -371,6 +362,12 @@
       xy_color:
       - 0.141
       - 0.137
+      entity_id:
+      - light.studio_fan_light_1
+      - light.studio_fan_light_2
+      icon: mdi:lightbulb-group
+      friendly_name: Studio Fan Lights
+      supported_features: 40
       state: 'on'
   metadata:
     light.desk_lighting:
@@ -379,13 +376,9 @@
       entity_only: true
     switch.studio_shelves:
       entity_only: true
-    switch.accent_light_1:
-      entity_only: true
     light.sl_desk_lamp:
       entity_only: true
     switch.studio_airfreshener:
-      entity_only: true
-    switch.d50_light:
       entity_only: true
     switch.accent_light_2:
       entity_only: true
@@ -691,22 +684,306 @@
 - name: theater dark
   entities:
     light.theater_lights:
-      state: "off"
+      state: 'off'
   id: 7e5b57ca735f4fc6b5ca75d4f41b63f0
 - name: theater dim
   entities:
     light.theater_lights:
-      state: "on"
+      state: 'on'
       brightness: 60
   id: 59b3ac43a09f43e1bd6ac40950b97d13
 - name: theater movie
   entities:
     light.theater_lights:
-      state: "on"
+      state: 'on'
       brightness: 25
+  id: 641f194690c444f6a75676fe5defd808
 - name: theater bright
   entities:
     light.theater_lights:
-      state: "on"
+      state: 'on'
       brightness: 255
   id: 1834362d4b2140b6874d0c6d9c0067e9
+- id: '1666216865814'
+  name: Product Shots
+  entities:
+    light.desk_lighting:
+      min_mireds: 111
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 180
+      - 100
+      rgb_color:
+      - 0
+      - 255
+      - 255
+      xy_color:
+      - 0.151
+      - 0.343
+      rate_limit_total: 100
+      rate_limit_remaining: -14507
+      rate_limit_reset_seconds: -1666216853.5
+      rate_limit_reset: '1969-12-31T19:00:00'
+      rate_limit_on: 5
+      manufacturer: Govee
+      model: H6056
+      friendly_name: Desk Lighting
+      supported_features: 19
+      state: 'on'
+    switch.d50_light:
+      icon: mdi:spotlight
+      friendly_name: D50
+      state: 'on'
+    switch.product_lights:
+      friendly_name: Product Lights
+      state: 'on'
+  metadata:
+    light.desk_lighting:
+      entity_only: true
+    switch.d50_light:
+      entity_only: true
+    switch.product_lights:
+      entity_only: true
+- id: '1666611682957'
+  name: Living Room Night
+  entities:
+    light.living_room_tower_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 26
+      color_temp: 316
+      hs_color:
+      - 27.575
+      - 52.614
+      rgb_color:
+      - 255
+      - 182
+      - 120
+      xy_color:
+      - 0.482
+      - 0.38
+      friendly_name: Living Room Tower Lamp
+      supported_features: 36
+      state: 'on'
+    light.living_room_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      friendly_name: Living Room Lamp
+      supported_features: 36
+      state: 'off'
+    light.front_door_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      friendly_name: Front door Lamp
+      supported_features: 36
+      state: 'off'
+  metadata:
+    light.living_room_tower_lamp:
+      entity_only: true
+    light.living_room_lamp:
+      entity_only: true
+    light.front_door_lamp:
+      entity_only: true
+- id: '1666612045418'
+  name: Living Room Lamps On
+  entities:
+    light.living_room_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      friendly_name: Living Room Lamp
+      supported_features: 36
+      color_mode: color_temp
+      brightness: 255
+      color_temp: 350
+      hs_color:
+      - 28.077
+      - 60.925
+      rgb_color:
+      - 255
+      - 172
+      - 99
+      xy_color:
+      - 0.51
+      - 0.386
+      state: 'on'
+    light.front_door_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      friendly_name: Front door Lamp
+      supported_features: 36
+      color_mode: color_temp
+      brightness: 255
+      color_temp: 350
+      hs_color:
+      - 28.077
+      - 60.925
+      rgb_color:
+      - 255
+      - 172
+      - 99
+      xy_color:
+      - 0.51
+      - 0.386
+      state: 'on'
+    light.living_room_tower_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 255
+      color_temp: 316
+      hs_color:
+      - 27.575
+      - 52.614
+      rgb_color:
+      - 255
+      - 182
+      - 120
+      xy_color:
+      - 0.482
+      - 0.38
+      friendly_name: Living Room Tower Lamp
+      supported_features: 36
+      state: 'on'
+  metadata:
+    light.living_room_lamp:
+      entity_only: true
+    light.front_door_lamp:
+      entity_only: true
+    light.living_room_tower_lamp:
+      entity_only: true
+- id: '1666614254507'
+  name: Living room Dim
+  entities:
+    light.living_room_tower_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 128
+      color_temp: 316
+      hs_color:
+      - 27.575
+      - 52.614
+      rgb_color:
+      - 255
+      - 182
+      - 120
+      xy_color:
+      - 0.482
+      - 0.38
+      friendly_name: Living Room Tower Lamp
+      supported_features: 36
+      state: 'on'
+    light.living_room_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 128
+      color_temp: 350
+      hs_color:
+      - 28.077
+      - 60.925
+      rgb_color:
+      - 255
+      - 172
+      - 99
+      xy_color:
+      - 0.51
+      - 0.386
+      friendly_name: Living Room Lamp
+      supported_features: 36
+      state: 'on'
+    light.front_door_lamp:
+      min_mireds: 111
+      max_mireds: 666
+      effect_list:
+      - effect_colorloop
+      - effect_pulse
+      - effect_stop
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: color_temp
+      brightness: 128
+      color_temp: 350
+      hs_color:
+      - 28.077
+      - 60.925
+      rgb_color:
+      - 255
+      - 172
+      - 99
+      xy_color:
+      - 0.51
+      - 0.386
+      friendly_name: Front door Lamp
+      supported_features: 36
+      state: 'on'
+  metadata:
+    light.living_room_tower_lamp:
+      entity_only: true
+    light.living_room_lamp:
+      entity_only: true
+    light.front_door_lamp:
+      entity_only: true

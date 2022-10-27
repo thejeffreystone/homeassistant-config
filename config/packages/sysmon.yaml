@@ -46,8 +46,8 @@ sensor:
     source: hassio 
 
   # unit of measurement deprecated in 2020.12.0
-  - platform: uptime
-    name: Time Online
+  # - platform: uptime
+  #   name: Time Online
     #unit_of_measurement: days 
   - platform: command_line
     name: Lines of Code

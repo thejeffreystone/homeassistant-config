@@ -240,8 +240,8 @@ automation:
       id: smells_on
     - platform: state
       entity_id: input_boolean.disney_smells
-      to: 'on'
-      for: "00:20:00"
+      to: 'off'
+      from: 'on'
       id: smells_off
     - platform: state
       entity_id: input_boolean.disney_bedrooms
@@ -250,17 +250,9 @@ automation:
       id: bedroom_smells_on
     - platform: state
       entity_id: input_boolean.disney_bedrooms
-      to: 'on'
-      for: "00:20:00"
-      id: bedroom_smells_off
-    - platform: state
-      entity_id: input_boolean.disney_bedrooms
       to: 'off'
+      from: 'on'
       id: bedroom_smells_off
-    - platform: state
-      entity_id: input_boolean.disney_smells
-      to: 'off'
-      id: smells_off
     action:
     - choose:
       - conditions:
@@ -272,10 +264,17 @@ automation:
             entity_id: select.living_room_diffuser_spray
           data: 
             option: 'eco'
+        - service: select.select_option
+          target:
+            entity_id: select.theater_diffuser_spray
+          data: 
+            option: 'eco'
         - service: switch.turn_on
-          entity_id: switch.theater_diffuser
+          entity_id: switch.pottery_diffuser
         - service: switch.turn_on
-          entity_id: switch.theater_diffuser_light
+          entity_id: switch.pottery_diffuser_light
+        - service: timer.start
+          entity_id: timer.disney_scents
       - conditions:
         - condition: trigger
           id: bedroom_smells_on
@@ -284,6 +283,8 @@ automation:
           entity_id: humidifier.master_bedroom_asakuki
         - service: humidifier.turn_on
           entity_id: humidifier.skylars_bedroom_diffuser
+        - service: timer.start
+          entity_id: timer.disney_scents
       - conditions:
         - condition: trigger
           id: smells_off
@@ -293,12 +294,15 @@ automation:
             entity_id: select.living_room_diffuser_spray
           data: 
             option: 'off'
+        - service: select.select_option
+          target:
+            entity_id: select.theater_diffuser_spray
+          data: 
+            option: 'off'
         - service: switch.turn_off
-          entity_id: switch.theater_diffuser
+          entity_id: switch.pottery_diffuser
         - service: switch.turn_off
-          entity_id: switch.theater_diffuser_light
-        - service: input_boolean.turn_off
-          entity_id: input_boolean.disney_smells
+          entity_id: switch.pottery_diffuser_light
       - conditions:
         - condition: trigger
           id: bedroom_smells_off
@@ -307,8 +311,6 @@ automation:
           entity_id: humidifier.master_bedroom_asakuki
         - service: humidifier.turn_off
           entity_id: humidifier.skylars_bedroom_diffuser
-        - service: input_boolean.turn_off
-          entity_id: input_boolean.disney_bedrooms
       default: []
     
 
@@ -318,11 +320,16 @@ automation:
     mode: single
     trigger:
     - platform: time_pattern
-      minutes: 10
+      minutes: 20
       id: living_room
     - platform: time_pattern
-      minutes: 45
+      minutes: 50
       id: bedrooms
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.disney_scents
+      id: times_up
     condition:
     - condition: state
       entity_id: input_boolean.vacation_mode
@@ -332,9 +339,6 @@ automation:
       - conditions:
         - condition: trigger
           id: living_room
-        - condition: state
-          entity_id: sun.sun
-          state: 'above_horizon'
         sequence: 
         - service: input_boolean.turn_on
           entity_id: input_boolean.disney_smells
@@ -344,6 +348,14 @@ automation:
         sequence: 
         - service: input_boolean.turn_on
           entity_id: input_boolean.disney_bedrooms
+      - conditions:
+        - condition: trigger
+          id: times_up
+        sequence: 
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.disney_bedrooms
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.disney_smells
       default: []
    
 

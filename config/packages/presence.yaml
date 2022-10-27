@@ -340,26 +340,7 @@ sensor:
           time_zone: >
             {{ state_attr('sensor.iphone_geocoded_location', 'Time Zone')}}
 
-  # - platform: mqtt
-  #   name: "Family Status"
-  #   state_topic: "house/family/status"
-  #   payload_available: "online"
-  #   payload_not_available: "offline"
-  # - platform: mqtt
-  #   name: "Family Arrived"
-  #   state_topic: "house/family/arrived"
-  #   payload_available: "online"
-  #   payload_not_available: "offline"
-  # - platform: mqtt
-  #   name: "Jeff Last Known Location"
-  #   state_topic: "house/jeff/last_known_location"
-  #   payload_available: "online"
-  #   payload_not_available: "offline"
-  # - platform: mqtt
-  #   name: "Kat Last Known Location"
-  #   state_topic: "house/kat/last_known_location"
-  #   payload_available: "online"
-  #   payload_not_available: "offline"
+  
   - platform: template
     sensors:
       jeff_home:

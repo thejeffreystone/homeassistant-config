@@ -138,6 +138,11 @@ activate_work_time:
     data: {}
     target:
       entity_id: scene.work_time
+  - service: input_select.select_option
+    data:
+      option: Work
+    target:
+      entity_id: input_select.studio_mode
   mode: single
 activate_film_time:
   alias: Activate Film Time
@@ -146,6 +151,11 @@ activate_film_time:
     data: {}
     target:
       entity_id: scene.film_time
+  - service: input_select.select_option
+    data:
+      option: Film
+    target:
+      entity_id: input_select.studio_mode
   mode: single
 activate_cone_of_silence:
   alias: Activate Cone of Silence

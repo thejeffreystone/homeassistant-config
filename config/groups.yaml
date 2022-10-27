@@ -91,10 +91,10 @@ Outside Lights:
   - light.side_door_light_level
   
 External Doors:
-  - binary_sensor.side_door
+  - binary_sensor.kitchen_door
   - binary_sensor.front_door
   - binary_sensor.back_door
-  - binary_sensor.laundry_door
+  - binary_sensor.basement_door
   - binary_sensor.garage_door
 
 Garage Doors:

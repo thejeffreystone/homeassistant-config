@@ -1,0 +1,459 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   02/19/2019
+#   @package        :   Holidays
+#   @description    :   Holiday Specific.
+#
+#   I'm not sure where I got this, but it leverages a python script: https://github.com/thejeffreystone/home-assistant-configuration/blob/master/python_scripts/special_events.py
+#
+#   To create a sensor just create an automation to fire around midnight.
+#
+#   automation:
+#   - id: refresh_holioday_sensors
+#     alias: Refresh Holiday sensors
+#     initial_state: true
+#     trigger:
+#     - platform: time
+#       at: '00:00:07'
+#     - platform: homeassistant
+#       event: start
+#     action:
+#     - service: python_script.special_events
+#       data:
+#         name: Christmas
+#         type: holiday
+#         date: 25/12/2001
+#
+#   Where Name equals the name of the event, type is the type of event, and date is the date in DD/MM/YYYY format
+# 
+#   Year only matters if your want to take advantage fo the years attribute which will tell you have many years since the event. Useful 
+#   with birthdays and anniversaries.
+# 
+#   I use the Following types:
+#   birthday
+#   anniversary
+#   holiday
+#   trip
+#   
+#   The type will be used in the name of the sensor it creates. For example:
+#   sensor.trip_camping
+#   sensor.birthday_jeff
+#   sensor.holiday_christmas
+#
+#   The state of the sensor will be the days until the event. For birthdays and anniversaries it will never be more than 365. 
+#   For example {{ states.sensor.birthday_jeff.state }} will be the number of days until my next birthday. 
+#   And {{ states.sensor.birthday_jeff.attributes.years }} will be my age, or the number of years since my birth (if you put the real year in)
+#   For events with a year in the future, the state will be number of days to that exact moment in time.
+#  
+###############################################################################
+
+input_boolean:
+  christmas_season:
+    name: Christmas Season
+
+
+
+automation:
+# Holiday Wishes
+  # - id: wishes_five_min
+  #   alias: Wishes Five Minute
+  #   initial_state: true
+  #   trigger:
+  #   - platform: template
+  #     value_template: "{{ states('sensor.time') == (state_attr('input_datetime.christmas_preshow', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+  #   condition:
+  #   - condition: state
+  #     entity_id: calendar.holidays_in_united_states
+  #     state: "on"
+  #   - condition: template
+  #     value_template: >
+  #       {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
+  #       {%- if event == 'Christmas Eve' %}
+  #         true
+  #       {%- endif -%}
+  #   action:
+  #   - service: script.holiday_wishes_preshow
+
+  # - id: wishes_show_start
+  #   alias: Wishes Show Start
+  #   initial_state: true
+  #   trigger:
+  #   - platform: template
+  #     value_template: "{{ states('sensor.time') == (state_attr('input_datetime.christmas_show', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+  #   condition:
+  #   - condition: state
+  #     entity_id: calendar.holidays_in_united_states
+  #     state: "on"
+  #   - condition: template
+  #     value_template: >
+  #       {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
+  #       {%- if event == 'Christmas Eve' %}
+  #         true
+  #       {%- endif -%}
+  #   action:
+  #   - service: input_boolean.turn_on
+  #     entity_id: input_boolean.holiday_wishes
+
+
+  - id: e1cb2582-0423-11eb-adc1-0242ac120002
+    alias: Mainstreet USA Christmas Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.mainstreet_usa_christmas_loop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.mainstreet_usa_christmas_loop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/MainStreetUSAChristmas.mp3"
+            volume: .17
+            speaker: 'media_player.ha_blue'
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb24ba-0423-11eb-adc1-0242ac120002
+    alias: Epcot Christmas
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.disneyland_christmas_loop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.disneyland_christmas_loop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/EpcotChristmas.mp3"
+            volume: .17
+            speaker: 'media_player.ha_blue'
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb2348-0423-11eb-adc1-0242ac120002
+    alias: Disney Park Christmas Loop
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.disney_park_christmas_loop
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.disney_park_christmas_loop
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/DisneyParkHoliday.mp3"
+            volume: .17
+            speaker: 'media_player.ha_blue'
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb228a-0423-11eb-adc1-0242ac120002
+    alias: Christmas Around Disneyland
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.christmas_around_disneyland
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.christmas_around_disneyland
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/ChristmasAroundDisneyland.mp3"
+            volume: .17
+            speaker: 'media_player.ha_blue'
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: e1cb21cc-0423-11eb-adc1-0242ac120002
+    alias: Disney Springs Christmas
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.disney_springs_xmas
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.disney_springs_xmas
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/Disney_Springs_Xmas_Loop.mp3"
+            volume: .17
+            speaker: 'media_player.ha_blue'
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+  
+  - id: e1cb166e-0423-11eb-adc1-0242ac120002
+    alias: Christmas Background
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.christmas_background
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.christmas_background
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.turn_on
+          entity_id: script.christmas_music
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.ha_blue
+        - service: script.turn_off
+          entity_id: script.local_audio
+        - service: script.turn_off
+          entity_id: script.christmas_music
+      default: []
+    initial_state: true
+    mode: single
+
+  
+sensor:
+  - platform: rest
+    name: Halloween Countdown
+    resource: !secret WA_HALLOWEEN
+    value_template: "{{ (value|replace(' days', '')) | int }}"
+    unit_of_measurement: Days
+    scan_interval: 43200
+
+  - platform: rest
+    name: Christmas Countdown
+    resource: !secret WA_XMAS
+    value_template: "{{ (value|replace(' days', '')) | int }}"
+    unit_of_measurement: Days
+    scan_interval: 43200    
+
+
+script:
+  christmas_music:
+    sequence:
+      - service: script.local_audio
+        data:
+          media: "/media/disney/DisneyParkHoliday.mp3"
+          volume: .17
+          speaker: 'media_player.ha_blue'
+      - delay: 02:50:00
+      - service: script.local_audio
+        data:
+          media: "/media/disney/ChristmasAroundDisneyland.mp3"
+          volume: .17
+          speaker: 'media_player.ha_blue'
+      - delay: 04:02:00
+      - service: script.local_audio
+        data:
+          media: "/media/disney/EpcotChristmas.mp3"
+          volume: .17
+          speaker: 'media_player.ha_blue'
+  normal_xmas: 
+    sequence:
+    - service: light.turn_on
+      target:
+        entity_id: light.wled_tree
+      data:
+        effect: "Solid"
+        brightness: 51  
+    - service: input_number.set_value
+      target:
+        entity_id: number.wled_tree_intensity
+      data:
+        value: 255
+    - service: select.select_option
+      target:
+        entity_id: select.wled_tree_color_palette
+      data: 
+        option: 'Color 1'
+  sparkle_xmas: 
+    sequence:
+    - service: light.turn_on
+      target:
+        entity_id: light.wled_tree
+      data:
+        effect: "Candle Multi"
+        brightness: 13  
+    - service: input_number.set_value
+      target:
+        entity_id: number.wled_tree_intensity
+      data:
+        value: 75
+    - service: select.select_option
+      target:
+        entity_id: select.wled_tree_color_palette
+      data: 
+        option: 'Color 1'
+  fireworks1d_xmas:
+    sequence:
+    - service: light.turn_on
+      target:
+        entity_id: light.wled_tree
+      data:
+        effect: "Fireworks 1D"
+        brightness: 51
+    - service: input_number.set_value
+      target:
+        entity_id: number.wled_tree_intensity
+      data:
+        value: 51
+    - service: select.select_option
+      target:
+        entity_id: select.wled_tree_color_palette
+      data: 
+        option: 'C9 New'
+  blends_xmas:
+    sequence:
+    - service: light.turn_on
+      target:
+        entity_id: light.wled_tree
+      data:
+        effect: "Blends"
+        brightness: 43 
+    - service: input_number.set_value
+      target:
+        entity_id: number.wled_tree_intensity
+      data:
+        value: 43
+    - service: select.select_option
+      target:
+        entity_id: select.wled_tree_color_palette
+      data: 
+        option: 'C9 New'
+  aurora_xmas:
+    sequence:
+    - service: light.turn_on
+      target:
+        entity_id: light.wled_tree
+      data:
+        effect: "Aurora"
+        brightness: 255
+    - service: input_number.set_value
+      target:
+        entity_id: number.wled_tree_intensity
+      data:
+        value: 128
+    - service: select.select_option
+      target:
+        entity_id: select.wled_tree_color_palette
+      data: 
+        option: 'C9 New'
+  twinklefox_xmas:
+    sequence:
+    - service: light.turn_on
+      target:
+        entity_id: light.wled_tree
+      data:
+        effect: "Twinklefox"
+        brightness: 127
+    - service: input_number.set_value
+      target:
+        entity_id: number.wled_tree_intensity
+      data:
+        value: 128
+    - service: select.wled_tree_color_palette
+      target:
+        entity_id: light.wled_tree
+      data: 
+        option: 'C9 New'
+        
+        
