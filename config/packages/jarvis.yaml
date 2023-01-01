@@ -1,0 +1,781 @@
+###############################################################################
+#   @author         :   Jeffrey Stone
+#   @date           :   07/09/2019
+#   @package        :   Jarvis
+#   @description    :   Bringing some Jarvis to Home Assistant
+###############################################################################
+
+###############################################################################
+# AWS Polly Options:
+# pause:
+#   <break time="3s"/> 
+# emphasis: 
+#   <emphasis level="strong">really like</emphasis>
+#   level attribute values:
+#     Strong: Increases the volume and slows the speaking rate so that the speech is louder and slower.
+#     Moderate: Increases the volume and slows the speaking rate, but less than strong. Moderate is the default.
+#     Reduced: Decreases the volume and speeds up the speaking rate. Speech is softer and faster.
+# Pause Between Paragraphs:
+#   Wrap text in  
+# Adding a Pause Between Sentences:
+#   Ending a sentence with a period (.)
+# Controlling How Special Types of Words Are Spoken:
+#   <say-as interpret-as="value">[text to be interpreted]</say-as>
+#   characters or spell-out: Spells out each letter of the text, as in a-b-c. 
+#   cardinal or number: Interprets the numerical text as a cardinal number, as in 1,234.
+#   ordinal: Interprets the numerical text as an ordinal number, as in 1,234th.
+#   digits: Spells out each digit individually, as in 1-2-3-4.
+#   fraction: Interprets the numerical text as a fraction. This works for both common fractions such as 3/20, and mixed fractions, such as 2 ½. See below for more information.
+#   unit: Interprets a numerical text as a measurement. The value should be either a number or a fraction followed by a unit with no space in between as in 1/2inch, or by just a unit, as in 1meter.
+#   date: Interprets the text as a date. The format of the date must be specified with the format attribute. See below for more information.
+#   time: Interprets the numerical text as duration, in minutes and seconds, as in 1'21".
+#   address: Interprets the text as part of a street address.
+#   expletive: "Beeps out" the content included within the tag.
+#   telephone: Interprets the numerical text as a 7-digit or 10-digit telephone number, as in 2025551212. You can also use this value for handle telephone extensions, as in 2025551212x345. See below for more information.	
+################################################################################
+
+tts:
+  - platform: google_translate
+    cache: true
+    cache_dir: /tmp/tts
+    time_memory: 300
+  - platform: amazon_polly
+    aws_access_key_id: !secret aws_key
+    aws_secret_access_key: !secret aws_secret
+    region_name: 'us-east-1'
+    text_type: ssml
+    voice: Brian
+    cache: True
+    engine: neural
+
+input_text:
+  alexa_actionable_notification:
+    name: Alexa Actionable Notification Holder
+    max: 255
+    initial: "{'text': 'This is a test of the alexa actions custom skill. Did it work?', 'event': 'actionable.skill.test'}"
+
+
+# Sensors used to Monitor Jarvis
+mqtt:
+  sensor:
+  - name: "Jarvis Last Msg"
+    state_topic: "house/polly/lastmsg"
+  - name: "Jarvis Last Location"
+    state_topic: "house/polly/lastloc"
+  - name: "Jarvis Last Msg Time"
+    state_topic: "house/polly/msgtime"
+
+
+sensor:
+  # Making some template sensors to simpify TTS Briefings and Announcements.
+  - platform: template
+    sensors:
+      tts_greeting:
+        friendly_name: TTS Greeting
+        unit_of_measurement: ""
+        value_template: >
+          {% if now().strftime('%H')|int < 12%}
+            Good morning.
+          {% elif now().strftime('%H')|int >= 12 and now().strftime('%H')|int < 17 %}
+            Good afternoon.
+          {% else %}
+            Good evening.
+          {% endif %}
+      tts_confirmation:
+        friendly_name: TTS Confirmation
+        unit_of_measurement: ""
+        value_template: >
+          {{ [
+            'Okay.', 
+            'If you insist.',
+            'I am afraid I can not do that,, I am kidding,',
+            'Leave it to me.',
+            'As you wish.',
+            'I am on it.',
+            'No Problem.',
+            'Will do.',
+            'I think I can handle that.',
+            'Working on it now.',
+            ', Oh, you were talking to me. Let me take care of that.'
+            'Why not. It is not like I ever sleep.',
+            'I am not even supposed to be here today. But whatever.',
+            'You did not say the magic word. , Oh forget it. I will take care of it.',
+            'Funny, I was just about to do that.',
+            'There are still terabytes of calculations required before I can., Oh, whatever.'
+            ] | random }}
+      tts_interuption:
+        friendly_name: TTS Interuption
+        unit_of_measurement: ""
+        value_template: >
+          {% if is_state('sensor.presence_source', 'kat') %}
+            {{ [
+                "Ma'am, ",
+                "Pardon me Ma'am, ",
+                "Pardon me Kat, ",
+                "Kat, ",
+                "I dont mean to interupt Ma'am, ",
+                ] | random }}
+          {% elif is_state('sensor.presence_source', 'jeff') %}
+            {{ [
+                'Sir, ',
+                'Pardon me Sir, ',
+                'Pardon me Boss, ',
+                'Boss, ',
+                'I dont mean to interupt Boss, '
+                ] | random }}
+          {% else %}
+            {{ [
+              'Pardon me, ',
+              'Excuse me, ',
+              'I beg your pardon, ',
+              'I do not mean to intrude, but, ',
+              'I am sorry to interrupt, but. '
+              ] | random }}
+          {% endif %}
+      tts_issue_announcement:
+        friendly_name: TTS Issue Announcement
+        unit_of_measurement: ""
+        value_template: >
+          {{ [
+            'Anchorage House Emergency Alert!',
+            'Anchorage House, We have a problem!',
+            'You might not like this.',
+            'There is something that needs your attention.'
+            ] | random }}
+      tts_time_is:
+        friendly_name: TTS Time Is
+        unit_of_measurement: ""
+        value_template: >
+          {% if is_state('binary_sensor.morning','on') %}
+            Today is {{states.sensor.today_is.state }}, {{ as_timestamp(now()) | timestamp_custom('%B %d %Y') }} .
+          {% else %}
+            It is {{ now().strftime("%I:%M %p") }} .
+          {% endif %}
+      tts_washer_notification:
+        friendly_name: TTS Washer Notification
+        unit_of_measurement: ""
+        value_template: >
+          {%- if is_state('sensor.washer_status','complete') %}
+            The washing machine completed its cycle 
+            {% set seconds = now().timestamp() - as_timestamp(states.sensor.washer_status.last_changed) %}
+            {% set hours = seconds / 60 %}
+            {% if (seconds / ( 60 * 60 )) | int == 1 %}
+              over an hour ago.
+            {% elif (seconds / ( 60 * 60 )) | int > 1 and (seconds / ( 60 * 60 )) | int < 6 %}
+              over {{ (seconds //  ( 60 * 60 )) | int }} hours ago.
+              {{ [
+              'Much longer and you are going to need to wash them again.', 
+              'Someone needs to rotate the laundry.',
+              'Do not forget about the closthes in the washing machine.',
+              'Surely you did not mean to forget about the clothes. Mistakes happen. But you can still fix it.',
+              'Do you like your clothes smeling like mildew? Becasue that is what is happening right now.'
+              ] | random }}
+            {% elif (seconds / ( 60 * 60 )) | int > 6 %}
+              over {{ (seconds //  ( 60 * 60 )) | int }} hours ago.
+              {{ [
+              'That is a crazy amount of time.', 
+              'Did you decide you want those clothes to suffer?',
+              'You might as well just rewash those clothes.',
+              'I can smell the mildew virtually.',
+              'Surely you did not mean to forget about the clothes.'
+              ] | random }}
+            {% else %}
+              {{ (seconds // 60) | int }} minutes ago.
+              {{ [
+              'Do not forget to rotate the clothes.', 
+              'Someone forgot to move the clothes to the dryer. I am not going to name names, but there is a camera in there. Do I need to publically shame someone?',
+              'You might want to move them to the dryer.'
+              ] | random }}
+            {% endif %}
+          {% else %}
+            The Washing machine has already been emptied.  
+          {% endif %}
+      tts_kat_location:
+        friendly_name: TTS Kat Location
+        unit_of_measurement: ""
+        value_template: >
+          {% if is_state('input_boolean.kat_travel_monitor', 'on') %}
+              {%- if state_attr('proximity.home_kat','dir_of_travel') not in ('unknown', 'stationary', 'not_set') %}
+                Kat is currently 
+                {{ [
+                    'heading to the house. ',
+                    'heading home. '
+                    'inbound. '
+                    ] | random }}
+                {{ [
+                    'Based on current traffic conditions, she will be here in ',
+                    'The latest tracking data estimates her arrival in ',
+                    'The currest estimates shows she should arrive in '
+                    ] | random }}   
+                {{state_attr('sensor.kat_ett_home','duration') | round}} minutes.  
+              {% else %}
+                Kat is currently near {{ states('sensor.kat_location') }}.
+              {% endif %}
+          {% else %}
+            {% if is_state('sensor.kat_location', 'home') %}
+                Kat is home.
+            {% elif is_state('sensor.kat_location', 'Zoo Atlanta') %}
+                Kat is at work.
+            {%- elif state_attr('proximity.home_kat','dir_of_travel') not in ('unknown', 'stationary', 'not_set') %}
+              {% if states('sensor.kat_speed') | int > 0 %}
+                {{ [
+                    'Kat is currently moving at ',
+                    'Kat is currently traveling at ',
+                    'Based on Blueys drive signature her current speed is '
+                    ] | random }}
+                    {{ states('sensor.kat_speed') }} miles per hour.
+                She is currently  
+                {%- if state_attr('proximity.home_kat','dir_of_travel') == 'towards' %}
+                  {{ [
+                      'heading towards the house. ',
+                      'inbound. '
+                      ] | random }}
+                {% else %}
+                  {{ [
+                      'heading away from the house. ',
+                      'outbound. '
+                      ] | random }}
+                {% endif %}
+              {% else %}
+                {{ [
+                    'I am unable to determine her current speed but at last check she was near ',
+                    'I am unable to get a lock on Blueys drive signature, but at last scan she was near ',
+                    'The latest data I was able to pull shows she is somewhere near '
+                    ] | random }}  
+                {{ states('sensor.kat_location') }}.
+              {% endif %}
+            {% else %}
+                {{ [
+                    'Kat may be stationary and near ',
+                    'I am unable to get a lock on Blueys drive signature, but at last scan she was near ',
+                    'The latest data I was able to pull shows she is somewhere near '
+                    ] | random }}  
+                {{ states('sensor.kat_location') }}.
+            {% endif %}
+          {% endif %}
+      tts_jeff_location:
+        friendly_name: TTS Jeff Location
+        unit_of_measurement: ""
+        value_template: >
+          {% if is_state('input_boolean.jeff_travel_monitor', 'on') %}
+            Jeff appears to be headed home. Based on current traffic conditions, he should be here in {{state_attr('sensor.jeff_ett_home','duration') | round}} minutes.
+          {% else %}
+            {%- if state_attr('proximity.home_jeff','dir_of_travel') not in ('unknown', 'stationary') %}
+              Jeff is currenly moving, and at last check was {{state_attr('sensor.jeff_ett_home','duration') | round}} minutes from home.
+            {% else %}
+              {% if is_state('sensor.jeff_location', 'home') %}
+                
+              {% elif is_state('sensor.jeff_location', 'Lost') %}
+                Jeff is lost, and at last check was {{state_attr('sensor.jeff_ett_home','duration') | round}} minutes from home.
+              {% else %}
+                Jeff is currently at {{ states('sensor.jeff_location') }}, and at last check was {{state_attr('sensor.jeff_ett_home','duration') | round}} minutes from home.
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
+      marauders_map_opens:
+        friendly_name: Marauders Map Opens
+        unit_of_measurement: ""
+        value_template: >
+            {{ [
+                "What are you doing wandering the corridors at night?, ",
+                "Out for a little walk in the moonlight, are we?, ",
+                "Time to make the chimichangas is it?"
+                ] | random }}
+            {{ [
+                "I have disabled the light timer.",
+                "I have configured the studio for light. "
+                ] | random }}
+      marauders_map_closes:
+        friendly_name: Marauders Map Closes
+        unit_of_measurement: ""
+        value_template: >
+            {{ [
+                "I have enabled the light timer.",
+                "Don't worry. I will get the lights.",
+                "I turn off thelights in about twenty minutes."
+                ] | random }}
+script:
+  speech_engine:
+    sequence:
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/lastmsg
+        payload: >
+          {%- macro getReport() -%}
+            {% if msg_summary %}
+              {{ msg_summary}}
+            {% else %}
+              {{ message | striptags | truncate(220)}}
+            {% endif %}
+            {%- endmacro -%}
+            {%- macro cleanup(data) -%}
+              {%- for item in data.split("\n")  if item | trim != "" -%}
+                {{ item | trim }} {% endfor -%}
+            {%- endmacro -%}
+            {%- macro mother_of_all_macros() -%}
+              {{ getReport() }}
+            {%- endmacro -%}
+            {{- cleanup(mother_of_all_macros()) -}}
+        retain: true
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/msgtime
+        payload: '{{ now().strftime("%-I") }}:{{ now().strftime("%M") }} {{ now().strftime("%p")
+          }} '
+        retain: true
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/lastloc
+        payload: '{{ who }}'
+        retain: true
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    - condition: state
+      entity_id: group.family
+      state: home
+    - condition: state
+      entity_id: input_boolean.vacation_mode
+      state: 'off'
+    - service: > 
+        {% if who in ['kitchen', 'media_player.kitchen_display'] %} 
+          {% set who = 'living_room' %}
+        {% elif who in ['livingroom_echo','media_player.living_room_echo','living_room','main']  %} 
+          {% set who = 'living_room' %}
+        {% elif who in ['skylars_bedroom','skylar_bedroom','skylars_echo','media_player.skylars_bedroom_echo']%}
+          {% set who = 'skylar_bedroom' %}
+        {% elif who in ['master_bedroom','media_player.master_bedroom_speaker','master_bedroom_echo']%}
+          {% set who = 'master_bedroom' %}
+        {% elif who in ['studio','slacker_labs','media_player.dads_desk']%}
+          {% set who = 'studio' %}
+        {% elif who in ['theater'] %}
+          {% set who= 'theater' %}
+        {% elif who in ['basement', 'media_player.basement_echo']  %}
+          {% set who = 'basement' %}
+        {% else %}
+          {% set who = 'main' %}
+        {% endif %} 
+        script.jarvis_voice
+      data:
+        who: '{{ who }}'
+        message: >
+          {%- macro getReport() -%}
+              {{ message }}
+          {%- endmacro -%}
+          {%- macro cleanup(data) -%}
+            {%- for item in data.split("\n")  if item | trim != "" -%}
+              {{ item | trim }} {% endfor -%}
+          {%- endmacro -%}
+          {%- macro mother_of_all_macros() -%}
+            {{ getReport() }}
+          {%- endmacro -%}
+          {{- cleanup(mother_of_all_macros()) -}}
+
+  jarvis_voice:
+    sequence:
+    - service: notify.alexa_media
+      data:
+        message: >
+          <voice name="{{ states('input_select.polly_voice') }}">
+          <amazon:auto-breaths>
+          <prosody rate="fast">
+          {{ message }}
+          </prosody>
+          </amazon:auto-breaths>
+          </voice>
+        target: > 
+          {% if who in ['kitchen_echo','media_player.kitchen_echo','kitchen']%} 
+            media_player.living_room_echo
+          {% elif who in ['skylar_bedroom','media_player.skylars_room','skylars_bedroom','skylars_echo','skylars_room'] %}
+            media_player.skylars_room
+          {% elif who in ['master_bedroom','media_player.master_bedroom_echo', 'master_bedroom_echo'] %}
+            media_player.master_bedroom_echo
+          {% elif who in ['livingroom_echo','media_player.living_room_echo','living_room','main'] %} 
+            media_player.living_room_echo
+          {% elif who in ['studio', 'media_player.dads_desk']%}
+            media_player.slacker_labs_echo
+          {% elif who in ['basement', 'media_player.basement_echo']%}
+            media_player.basement_echo
+          {% elif who in ['theater', 'media_player.theater']%}
+            media_player.theater_echo
+          {% else %}
+            media_player.living_room_echo
+          {% endif %}
+        data:
+          type: tts
+  jarvis_alert:
+    sequence:
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/lastmsg
+        payload: >
+          {%- macro getReport() -%}
+          {% if msg_summary %}
+            {{ msg_summary}}
+          {% else %}
+            {{ message | striptags | truncate(220)}}
+          {% endif %}
+          {%- endmacro -%}
+          {%- macro cleanup(data) -%}
+            {%- for item in data.split("\n")  if item | trim != "" -%}
+              {{ item | trim }} {% endfor -%}
+          {%- endmacro -%}
+          {%- macro mother_of_all_macros() -%}
+            {{ getReport() }}
+          {%- endmacro -%}
+          {{- cleanup(mother_of_all_macros()) -}}
+        retain: true
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/msgtime
+        payload: >
+          {{ now().strftime("%-I") }}:{{ now().strftime("%M") }} {{ now().strftime("%p")}}
+        retain: true
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/lastloc
+        payload: '{{ who }}'
+        retain: true
+    - service: media_player.volume_set
+      data_template:
+        entity_id: media_player.ha_blue
+        volume_level: >
+          {% if is_state('binary_sensor.lights_out', 'on') %}
+            .70
+          {% else %}
+            .45
+          {% endif %}
+    - service: tts.amazon_polly_say
+      data_template:
+        entity_id: media_player.ha_blue
+        message: >
+          <speak>
+            <break time="1s"/>
+            <amazon:auto-breaths>
+            <prosody rate="fast">
+            {{ message }}
+            <prosody>
+            </amazon:auto-breaths>
+          </speak>"
+        cache: true
+  announcement:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: >
+          {{ who }}
+        message: >
+          {% if states('sensor.kat_room') == who and states('sensor.jeff_room')== who  %}
+            {{ 
+              ['Pardon me everyone, ',
+              'Excuse me, ',
+              'I beg your pardon, ',
+              'Since I have you all together, ',
+              'I am sorry to interrupt, but. ',
+              'While I have you all together,'] 
+              | random }}
+          {% elif states('sensor.kat_room') == who  %}
+            {{ 
+              ["Ma'am,",
+               "Pardon me Ma'am,",
+               "Pardon me Kat,",
+               "Katherine,",
+               "I dont mean to interrupt Ma'am,"
+               ] | random }}
+          {% elif states('sensor.jeff_room') == who  %}
+            {{ 
+              ['Sir, ',
+              'Pardon me Sir, ',
+              'Pardon me Jeff, ',
+              'Boss, ',
+              'I dont mean to interrupt Sir, '
+              ] | random }}
+          {% else %}
+            {{ 
+             ['Pardon me, ',
+              'Excuse me, ',
+              'I beg your pardon, ',
+              'I do not mean to intrude, but, ',
+              'I am sorry to interrupt, but. '
+              ] | random }}
+          {% endif %} 
+          {{ message }}"
+  briefing:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: '{{ who }}'
+        message:  >-
+            {% if now().strftime('%H')|int < 12%}
+             Good morning.
+            {% elif now().strftime('%H')|int >= 12 and now().strftime('%H')|int < 17 %}
+              Good afternoon.
+            {% else %}
+              Good evening.
+            {% endif %}
+            {% if states('sensor.kat_room') == who and states('sensor.jeff_room') == who  %}
+              everyone.
+            {% elif states('sensor.kat_room') == who  %}
+              Ma'am.
+            {% elif states('sensor.jeff_room') == who  %}
+              Sir.
+            {% else %}
+              
+            {% endif %}
+            {{ message }}
+  jarvis_already_done:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: "{{ states('sensor.room_audio') }}"
+        message:  >-
+          {{ [
+          'I have already handled that.', 
+          'Looks like someone already did that, but I will gladly take credit.',
+          'I am so fast it is already done.'
+          ]| random }}
+  jarvis_response:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: "{{ states('sensor.room_audio') }}"
+        message:  >-
+          {{ [
+          'Okay.', 
+          'If you insist.',
+          'I am afraid I can not do that, I am kidding,',
+          'Leave it to me.',
+          'As you wish.',
+          'I am on it.',
+          'No Problem.',
+          'I think I can handle that.',
+          'Working on it now.',
+          '.Oh, you were talking to me. Let me take care of that.'
+          'Why not. It is not like I ever sleep.',
+          'I am not even supposed to be here today. But whatever.',
+          'You did not say the magic word.  ,Oh forget it. I will take care of it.',
+          'Funny, I was just about to do that.',
+          'There are still terabytes of calculations required before I can. ,Oh, whatever.'
+          ] | random }}
+  house_party_protocol_on:
+    sequence:
+      - delay: 00:00:05
+      - service: homeassistant.turn_on
+        entity_id: group.incense
+      - service: script.status_annc
+        data_template:
+          who: "{{ states('sensor.room_audio') }}"
+          call_house_party_protocol_enabled: 1
+
+  house_party_protocol_off:
+    sequence:
+      - delay: 00:00:05
+      - service: homeassistant.turn_off
+        entity_id: group.incense
+      - service: script.status_annc
+        data_template:
+          who: "{{ states('sensor.room_audio') }}"
+          call_house_party_protocol_disabled: 1
+
+  alexa_interjection:
+    sequence:
+      - service: script.status_annc
+        data:
+          who: "{{ states('sensor.last_alexa')}}"
+          call_confirmation: 1
+
+  google_interjection:
+    sequence:
+      - service: script.status_annc
+        data:
+          who: "{{ states('sensor.room_audio') }}"
+          call_confirmation: 1
+
+  jarvis_said_what:
+    sequence:
+      - service: script.speech_engine
+        data:
+          who: "{{ states('sensor.room_audio') }}"
+          message: >
+            {{ states('sensor.lastmsg') }}
+
+  test_jarvis_proactive:
+    sequence:
+      - service: script.activate_alexa_actionable_notification
+        data:
+          text: "Boss, It appears you are working. Would you like me to turn on your desk lights?"
+          event_id: "actionable_notification_wfh_lights"
+          alexa_device: "media_player.dads_desk"
+
+  activate_alexa_actionable_notification:
+    sequence:
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.alexa_actionable_notification
+          value: '{"text": "{{ text }}", "event": "{{ event_id }}"}'
+      - service: media_player.play_media
+        data:
+          entity_id: "{{ alexa_device }}"
+          media_content_type: skill
+          media_content_id: amzn1.ask.skill.12146900-4aab-43d0-84b7-fe6df3bbe8df
+
+# automation:
+#   - id: d34f931d-eb55-4495-8eb1-7defbe9f7238
+#     alias: WFH Lights - Jarvis
+#     trigger:
+#       - platform: template
+#         value_template: >
+#           {{ states('sensor.jeff_room') in ['master_bedroom'] }}
+#         id: presence_detected
+#         for: "00:06:00"
+#       - platform: template
+#         value_template: >
+#           {{ states('sensor.jeff_room') in ['master_bedroom'] }}
+#         id: presence_detected_later
+#         for: "00:10:00"
+#       - platform: template
+#         value_template: >
+#           {{ states('sensor.jeff_room') not in ['master_bedroom'] }}
+#         id: presence_gone
+#         for: "01:00:00"
+#       - platform: event
+#         event_type: alexa_actionable_notification
+#         event_data:
+#           event_id: actionable_notification_wfh_lights
+#           event_response_type: ResponseYes
+#         id: response
+#     action:
+#       - choose:
+#           - conditions:
+#               - condition: trigger
+#                 id: presence_detected_later
+#               - condition: time
+#                 after: "08:00:00"
+#                 before: "17:00:00"
+#                 weekday:
+#                   - mon
+#                   - tue
+#                   - wed
+#                   - thu
+#                   - fri
+#               - condition: state
+#                 entity_id: switch.dazzned50
+#                 state: "off"
+#               - condition: state
+#                 entity_id: binary_sensor.workday_sensor
+#                 state: "on"
+#             sequence:
+#               - service: script.announcement
+#                 data_template:
+#                   who: master_bedroom
+#                   message: >
+#                     {{ [
+#                         'It appears you are working. ',
+#                         'Back working again I see. ',
+#                         'You appear to be up, so '
+#                         'Are we working on a secret project? '
+#                         ] | random }}
+#                     {{ [
+#                         'I took the liberty to turn on your desk lights.',
+#                         'Some extra light will help reduce eye strain.',
+#                         'I activated your desk lights.'
+#                         ] | random }}
+#               - service: scene.turn_on
+#                 entity_id: scene.studio_work
+#           - conditions:
+#               - condition: trigger
+#                 id: presence_detected
+#               - condition: time
+#                 after: "08:00:00"
+#                 before: "17:00:00"
+#                 weekday:
+#                   - mon
+#                   - tue
+#                   - wed
+#                   - thu
+#                   - fri
+#               - condition: state
+#                 entity_id: switch.dazzned50
+#                 state: "off"
+#               - condition: state
+#                 entity_id: binary_sensor.workday_sensor
+#                 state: "on"
+#             sequence:
+#               - service: script.activate_alexa_actionable_notification
+#                 data:
+#                   text: "Boss, It appears you are working. Would you like me to turn on your desk lights?"
+#                   event_id: "actionable_notification_wfh_lights"
+#                   alexa_device: "media_player.dads_desk"
+#           - conditions:
+#               - condition: trigger
+#                 id: response
+#             sequence:
+#               - service: script.speech_engine
+#                 data:
+#                   who: master_bedroom
+#                   message: "Thats why I am here. Activating your work from home scene."
+#               - service: scene.turn_on
+#                 entity_id: scene.studio_work
+#           - conditions:
+#               - condition: trigger
+#                 id: presence_gone
+#             sequence:
+#               - service: scene.turn_on
+#                 entity_id: scene.studio_off
+#         default: []
+  # - id: 534f3577-319b-4a2d-8900-a34393a7ab03
+  #   alias: WFH Lights
+  #   trigger:
+  #     - platform: state
+  #       entity_id: binary_sensor.master_bedroom_occupancy
+  #       to: 'on'
+  #       from: 'off'
+  #       id: presence_detected
+  #     - platform: template
+  #       value_template: >
+  #         {{ states('sensor.jeffs_iphone_11') == 'master_bedroom' or states('sensor.jeffs_watch') == 'master_bedroom' }}
+  #     - platform: event
+  #       event_type: alexa_actionable_notification
+  #       event_data:
+  #         event_id: actionable_notification_wfh_lights
+  #         event_response_type: ResponseYes
+  #       id: response
+  #   action:
+  #     - choose:
+  #         - conditions:
+  #             - condition: trigger
+  #               id: presence_detected
+  #             - condition: time
+  #               after: "08:00:00"
+  #               before: "17:00:00"
+  #               weekday:
+  #                 - mon
+  #                 - tue
+  #                 - wed
+  #                 - thu
+  #                 - fri
+  #             - condition: state
+  #               entity_id: switch.dazzned50
+  #               state: 'off'
+  #             - condition: state
+  #               entity_id: binary_sensor.workday_sensor
+  #               state: 'on'
+  #           sequence:
+  #             - service: script.activate_alexa_actionable_notification
+  #               data:
+  #                 text: 'Boss, It appears you are working. Would you like me to turn on your desk lights?'
+  #                 event_id: 'actionable_notification_wfh_lights'
+  #                 alexa_device: 'media_player.dads_desk'
+  #         - conditions:
+  #             - condition: trigger
+  #               id: response
+  #           sequence:
+  #             - service: script.speech_engine
+  #               data:
+  #                 who: 'master_bedroom'
+  #                 message: >
+  #                   Activating your work from home scene.
+  #             - service: scene.turn_on
+  #               entity_id: scene.studio_work
+  #       default: []
