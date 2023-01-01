@@ -1418,7 +1418,7 @@ automation:
       - service: script.text_notify
         data_template:
           who: jeff
-          title: "Weather Alert for Anchorage House"
+          title: "Weather Alert for Maison De Lune"
           message: >
             Current NWS Weather Alerts:
               
@@ -1462,7 +1462,7 @@ automation:
   #   action:
   #     - service: script.text_notify
   #       data_template:
-  #         title: "Weather Alert for Anchorage House"
+  #         title: "Weather Alert for Maison De Lune"
   #         message: >
   #           There are currently {{ state_attr('sensor.weatheralerts_active_alerts', 'warning_count') | int }} active warnings and {{ state_attr('sensor.weatheralerts_active_alerts', 'watch_count') | int }} watches for our area.
   
@@ -1487,14 +1487,14 @@ automation:
         sequence:
         - service: script.text_notify
           data_template:
-            message: "Tornado Watch Issued for Anchorage House"
+            message: "Tornado Watch Issued for Maison De Lune"
       - conditions:
         - condition: trigger
           id: cancel
         sequence:
         - service: script.text_notify
           data_template:
-            message: "Tornado Watch no longer in effect for Anchorage House"
+            message: "Tornado Watch no longer in effect for Maison De Lune"
       default: []
 
   - alias: NWS TStorm Watch Notification
@@ -1518,14 +1518,14 @@ automation:
         sequence:
         - service: script.text_notify
           data_template:
-            message: "Severe Thunderstorm Watch Issued for Anchorage House"
+            message: "Severe Thunderstorm Watch Issued for Maison De Lune"
       - conditions:
         - condition: trigger
           id: cancel
         sequence:
         - service: script.text_notify
           data_template:
-            message: "Severe Thunderstorm no longer in effect for Anchorage House"
+            message: "Severe Thunderstorm no longer in effect for Maison De Lune"
       default: []
       
   
@@ -1548,7 +1548,7 @@ automation:
     action:
       - service: script.text_notify
         data_template:
-          message: "Severe Thunderstorm Warning Issued for Anchorage House"
+          message: "Severe Thunderstorm Warning Issued for Maison De Lune"
       - service: script.status_annc
         data_template:
           who: '{{ states.sensor.room_presence.state }}'
@@ -1557,9 +1557,9 @@ automation:
             The National Weather Service Has issued a severe thunderstorm warning for our area. 
       - service: script.twitter_notify_image
         data_template:
-          tweet: '{{ [ "Anchorage House is battening down the hatches. Servere Weather is imminent. #homeassistant #weather ", 
+          tweet: '{{ [ "Maison De Lune is battening down the hatches. Servere Weather is imminent. #homeassistant #weather ", 
           "The weather outside is getting intense, so I just made a weather announcement. #homeassistant #weather ", 
-          "Anchorage House monitors the NWS for severe weather using #homeAssistant just for these occasions. Thanks for the heads up @NWSAtlanta #homeassistant #weather " ] | random }}'
+          "Maison De Lune monitors the NWS for severe weather using #homeAssistant just for these occasions. Thanks for the heads up @NWSAtlanta #homeassistant #weather " ] | random }}'
           image: >-
             {{ [ "/config/www/tweet_images/lightning.jpg",
                  "/config/www/tweet_images/lightning-bolt.jpg"] | random }}
@@ -1586,8 +1586,8 @@ automation:
           message: "Attention!,,,Attention!,,,The National Weather Service Has issued a Tornado Warning for our area."
       - service: script.twitter_notify_image
         data_template:
-          tweet: '{{ [ "NWS is sounding the Tornado alarm, so I am too. Anchorage House is taking cover. #homeassistant #weather ", 
-          "Anchorage House is heading to the closet because the NWS just issued a tornado warning for our area. #homeassistant #weather ", 
+          tweet: '{{ [ "NWS is sounding the Tornado alarm, so I am too. Maison De Lune is taking cover. #homeassistant #weather ", 
+          "Maison De Lune is heading to the closet because the NWS just issued a tornado warning for our area. #homeassistant #weather ", 
           "I just activated the internal Tornado Alarm. Thanks for the heads up @NWSAtlanta #homeassistant #weather " ] | random }}'
           image: >-
             "/config/www/tweet_images/tornado.jpg"
@@ -1666,9 +1666,28 @@ automation:
         entity_id: sensor.weatheralerts_active_alerts
         attribute: freeze_warning_count
         above: 0
+        id: warn_on
+      - platform: numeric_state
+        entity_id: sensor.weatheralerts_active_alerts
+        attribute: freeze_warning_count
+        below: 1
+        id: warn_off
     action:
-      - service: input_boolean.turn_on
-        entity_id: input_boolean.freeze_warning
+      - choose:
+        - conditions:
+          - condition: trigger
+            id: warn_on
+          sequence:
+          - service: input_boolean.turn_on
+            entity_id: input_boolean.freeze_warning
+        - conditions:
+          - condition: trigger
+            id: warn_off
+          sequence:
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.freeze_warning
+        default: []
+      
 
   
 
@@ -1685,9 +1704,9 @@ script:
       - service: script.twitter_notify_image
         data_template:
           tweet: '{{ [ "Did you see that flash? I did. Letting everyone know there is lightning nearby.", 
-          "When Lightning is near I notify the residents of Anchorage House to keep them safe.", 
-          "If the residents of Anchorage House didnt hear the thunder I just gave them a heads up.",
-          "Everyone inside! If you are near Anchorage House that is. Lightning is near." ] | random }}'
+          "When Lightning is near I notify the residents of Maison De Lune to keep them safe.", 
+          "If the residents of Maison De Lune didnt hear the thunder I just gave them a heads up.",
+          "Everyone inside! If you are near Maison De Lune that is. Lightning is near." ] | random }}'
           image: >-
             {{ [ "/config/www/tweet_images/lightning.jpg",
                  "/config/www/tweet_images/lightning-bolt.jpg"] | random }}
@@ -1697,7 +1716,7 @@ script:
           call_interuption: 1
           speech_message: >-
               {{ [
-                  'I have detected lightning withing 20 miles of Anchorage House.',
+                  'I have detected lightning withing 20 miles of Maison De Lune.',
                   'Did you see that flash? I did. Lightning is near.',
                   'If you didnt hear the thunder you will soon. '
                 ]|random }}

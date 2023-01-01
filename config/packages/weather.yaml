@@ -51,22 +51,27 @@ input_boolean:
 
 utility_meter:
   daily_rainfall_in:
-    source: sensor.acurite_rain899_2743_rt
+    source: sensor.acurite_rain899_rain_gauge_rt
     cycle: daily
   weekly_rainfall_in:
-    source: sensor.acurite_rain899_2743_rt
+    source: sensor.acurite_rain899_rain_gauge_rt
+    cycle: weekly
+  daily_rainfall_in_ws:
+    source: sensor.acurite_5n1_865_rt
+    cycle: daily
+  weekly_rainfall_in_ws:
+    source: sensor.acurite_5n1_865_rt
     cycle: weekly
   recent_lightning_strikes:
     source: sensor.acurite_6045m_3078_strcnt
     cycle: quarter-hourly
 
 sensor:
-  # - platform: nws_alerts
-  #   zone_id: 'GAZ034,GAC135'
   - platform: weatheralerts
     state: GA
     zone: 54
-    county: 113
+    #county: 113
+    scan_interval: 30
   - platform: pirateweather
     api_key: !secret pirate_weather_api
     scan_interval: "00:15:00"
@@ -84,6 +89,20 @@ sensor:
     entity_id: sensor.current_inside_humidity
     state_characteristic: mean
     sampling_size: 500
+  
+  - platform: statistics
+    name: "Daily Avg Wind Speed"
+    entity_id: sensor.acurite_5n1_865_ws
+    state_characteristic: mean
+    max_age:
+      hours: 24
+  - platform: statistics
+    name: "Daily Max Wind Speed"
+    entity_id: sensor.acurite_5n1_865_ws
+    state_characteristic: value_max
+    max_age:
+      hours: 24
+  
 
   - platform: template
     sensors:
@@ -373,28 +392,28 @@ sensor:
         value_template: >-
           {%- macro getReport() -%}
             The Weather in Fayetteville
-             {{ [
+            {{ [
               ' is ', 
               ' is currently '
               ] | random }}
-             {{states('sensor.acurite_6045m_3078_f')|round}} degrees 
-            {% if is_state('weather.home', 'rainy') %}
+            {{states('sensor.ecowitt_wh53_back_porch_f')|round}} degrees 
+            {% if is_state('weather.maison_de_lune', 'rainy') %}
               {{ [
               'with rain.', 
               'with showers.'
               ] | random }}
-            {% elif is_state('weather.home', 'cloudy') %}
+            {% elif is_state('weather.maison_de_lune', 'cloudy') %}
               {{ [
               'with clouds.', 
               'with cloudy skies.'
               ] | random }}
-            {% elif is_state('weather.home', 'partlycloudy') %}
+            {% elif is_state('weather.maison_de_lune', 'partlycloudy') %}
               {{ [
               'with some clouds.', 
               'with partly cloudy skies.',
               'with scattered clouds.'
               ] | random }}
-            {% elif is_state('weather.home', 'sunny') %}
+            {% elif is_state('weather.maison_de_lune', 'sunny') %}
               {% if is_state('sun.sun', 'above_horizon') %}
                 {{ [
                 'and sunny.', 
@@ -407,7 +426,7 @@ sensor:
                 ] | random }}
               {% endif %}
             {% else %}
-              and {{ states.weather.home.state }}
+              and {{ states.weather.maison_de_lune.state }}
             {% endif %}
           {%- endmacro -%}
           {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
@@ -591,7 +610,7 @@ sensor:
             {{- cleanup(mother_of_all_macros()) -}}
       outside_pressure:
         friendly_name: "outisde pressure"
-        value_template: "{{ state_attr('weather.home','pressure') }}"
+        value_template: "{{ state_attr('weather.kffc_daynight','pressure') }}"
         unit_of_measurement: ""
       todays_high_temp:
         friendly_name: "Today's High Temp"
@@ -753,7 +772,6 @@ sensor:
             Safe
           {%- endif %}
 
-  
 script:
   refresh_weather_alert_sensors:
     sequence:
