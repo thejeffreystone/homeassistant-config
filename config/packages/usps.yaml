@@ -57,13 +57,13 @@ sensor:
                     USPS packages are
                   {%- endif -%}
                 {{' '}}in transit.{{' '}}
-                  {%- if states("sensor.mail_fedex_delivering_2")|int == 0 -%}
+                  {%- if states("sensor.mail_fedex_delivering")|int == 0 -%}
                     No
                   {%- else -%}
-                    {{states("sensor.mail_fedex_delivering_@")|int}}
+                    {{states("sensor.mail_fedex_delivering")|int}}
                   {%- endif -%}
                 {{' '}} 
-                  {%- if states("sensor.mail_fedex_delivering_2")|int == 1 -%}
+                  {%- if states("sensor.mail_fedex_delivering")|int == 1 -%}
                     FedEx package is
                   {%- else -%}
                     Fedex packages are
@@ -105,3 +105,176 @@ camera:
     file_path: /config/images/mail_today.gif
     name: mail_usps
 
+automation:
+
+  - id: update_usps_camera_path
+    alias: "Update USPS Mail Camera"
+    trigger:
+      - platform: state
+        entity_id: sensor.mail_usps_mail
+    action:
+      - service: local_file.update_file_path
+        data_template:
+          entity_id: camera.mail_usps
+          file_path: >
+            {% if state_attr('sensor.mail_usps_mail','image') == None  %}
+            /config/custom_components/mail_and_packages/mail_none.gif
+            {% else %}
+            /config/www/mail_and_packages/{{ state_attr('sensor.mail_usps_mail','image') }}
+            {% endif %}
+
+# Notify USPS mails via TTS, and iOS notification with attachment
+###############################################################################
+  - id: notify_usps_mail
+    alias: Notify USPS Mail
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.usps_mail
+    condition:
+      - condition: template
+        value_template: '{{ states.sensor.usps_mail.state | int > 0 }}'
+      - condition: template
+        value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
+    action:
+      - service: script.announcement
+        data:
+          who: '{{ states(''sensor.room_audio'') }}'
+          message: >-
+            {%- if states.sensor.usps_mail.state | int == 1 -%} 
+              {{ [ 
+                "USPS is delivering", 
+                "The postal service will be leaving",
+                "The nice lady in the mail truck is bringing us ",
+                "I have scanned the incoming mail, eliminated the junk, and determined there is"
+                  ] | random }}
+              {{ states.sensor.usps_mail.state }} piece of mail today.
+            {%- else -%}
+              {{ [ 
+                "USPS is delivering", 
+                "The postal service will be leaving",
+                "The nice lady in the mail truck is bringing us ",
+                "I have scanned the incoming mail, eliminated the junk, and determined there are"
+                  ] | random }} 
+              {{ states.sensor.usps_mail.state }} pieces of mail today.
+            {%- endif -%}
+      - service: script.text_notify
+        data_template:
+          who: "jeff"
+          title: "USPS Delivering Today"
+          message: "USPS will be delivering {{ states.sensor.usps_mail.state }} piece(s) of mail today."
+          # data:
+          #   push:
+          #     category: camera
+          #   entity_id: "camera.usps_mail_pictures"
+          #   attachment:
+          #     url: "{{ states.camera.usps_mail_pictures.attributes.entity_picture }}"
+          #     content-type: jpg
+      # - service: script.twitter_notify
+      #   data_template:
+      #     message: >-
+      #       {{ [ 
+      #       "I just let Anchorage House know how much mail the USPS is leaving in the mailbox today. For the code checkout https://github.com/thejeffreystone/usps2mqtt #automation", 
+      #       "One of the things I know is how much mail is being delivered because I am integrated with USPS Informed Delivery using https://github.com/thejeffreystone/usps2mqtt #automation.",
+      #       "There is a letter in the mailbox. Or will be when the USPS gets here. If you want to know how I know checkout https://github.com/thejeffreystone/usps2mqtt #automation.",
+      #       "Neither snow nor rain nor heat nor gloom of night prevents me from letting Anchorage House know what to expect from the USPS thanks to https://github.com/thejeffreystone/usps2mqtt #automation."
+      #       ] | random }}
+
+# Notify USPS packages via TTS. Usually there are no pictures for packages
+###############################################################################
+  - id: notify_usps_packages
+    alias: Notify USPS Packages
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.usps_mail
+    condition:
+      - condition: template
+        value_template: '{{ states.sensor.usps_mail.state | int > 0 }}'
+      - condition: template
+        value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
+    action:
+      - service: script.announcement
+        data_template:
+          who: '{{ states.sensor.room_audio.state }}'
+          message: >
+            {%- if states.sensor.usps_packages.state | int == 1 -%}
+              USPS is delivering {{ states.sensor.usps_packages.state }} package today.
+            {%- else -%}
+              USPS is delivering {{ states.sensor.usps_packages.state }} packages today.
+            {%- endif -%}
+      
+  - alias: "Mail Notif - Mail Delieveries"
+    trigger:
+      - platform: time
+        at: '10:05:00'
+    #Trigger if mail or packages get updated
+      # - platform: state
+      #   entity_id: sensor.mail_usps_mail
+      # - platform: state
+      #   entity_id: sensor.mail_usps_delivering
+    #send only if mail or packages are more than 0
+    condition:
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ states('sensor.mail_usps_mail') | int > 0 }}"
+          - condition: template
+            value_template: "{{ states('sensor.mail_usps_delivering') | int > 0 }}"
+    action:
+      - service: script.text_notify
+        data_template:
+          who: "jeff"
+          title: "Delivering Today"
+          message: "{{ states('sensor.mail_deliveries_message')}}"
+      - service: script.announcement
+        data_template:
+          who: '{{ states(''sensor.room_audio'')}}'
+          message: >-
+            {%- if states.sensor.mail_usps_mail.state | int == 1 -%} 
+              {{ [ 
+                "USPS is delivering", 
+                "The postal service will be leaving",
+                "The nice lady in the mail truck is bringing us ",
+                "I have scanned the incoming mail,and there is"
+                  ] | random }}
+              {{ states.sensor.mail_usps_mail.state }} piece of mail today.
+            {%- else -%}
+              {{ [ 
+                "USPS is delivering", 
+                "The postal service will be leaving",
+                "The nice lady in the mail truck is bringing us ",
+                "I have scanned the incoming mail, and determined there are"
+                  ] | random }} 
+              {{ states.sensor.mail_usps_mail.state }} pieces of mail today.
+            {%- endif -%}
+        
+
+  - alias: "Delivered Package Notification"
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: sensor.mail_fedex_delivered
+      - platform: state
+        entity_id: sensor.mail_ups_delivered
+      - platform: state
+        entity_id: sensor.mail_amazon_packages_delivered
+    #send only if mail or packages are more than 0
+    condition:
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ states('sensor.mail_fedex_delivered_2') | int > 0 }}"
+          - condition: template
+            value_template: "{{ states('sensor.mail_ups_delivered') | int > 0 }}"
+    action:
+      - service: script.text_notify
+        data_template:
+          who: "jeff"
+          title: "Package Delivered"
+          message: "Fedex/UPS just made a delivery"
+      - service: script.announcment
+        data_template:
+          who: '{{ states.sensor.room_audio.state }}'
+          message: >-
+              A package was just left on the porch.
