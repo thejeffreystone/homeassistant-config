@@ -5,7 +5,8 @@ automations:
 welcome_greeting:
   name: Welcome Greeting
   icon: mdi:speaker-wireless
-
+house_party_protocol_switch:
+  name: House Party Switch
 kat_heading_home:
   name: Kat Heading Home
   icon: mdi:car

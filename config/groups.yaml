@@ -44,6 +44,8 @@ occupancy:
   - binary_sensor.cricut_desk_motion
   - binary_sensor.dungeon_motion
   - binary_sensor.pottery_studio_motion
+  - binary_sensor.back_door_motion_occupancy
+  - binary_sensor.theater_motion_occupancy
   
 occupancy_night:
   - binary_sensor.living_room_motion_occupancy
@@ -80,10 +82,12 @@ audio_devices:
   - media_player.theater
 
 all_echos:
-  - media_player.livingroom_echo
-  - media_player.skylars_echo
-  - media_player.dads_desk
-  - media_player.kitchen_echo
+  - media_player.living_room_echo
+  - media_player.skylars_room
+  - media_player.slacker_labs_echo
+  - media_player.theater_echo
+  - media_player.basement_echo
+  - media_player.master_bedroom_echo
 
 Outside Lights:
   - switch.driveway_light
