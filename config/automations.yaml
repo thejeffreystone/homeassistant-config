@@ -619,6 +619,24 @@
         data: {}
         target:
           entity_id: switch.deck_lights
+      - if:
+        - condition: state
+          entity_id: input_boolean.christmas_season
+          state: 'on'
+        then:
+        - service: scene.turn_on
+          data: {}
+          target:
+            entity_id: scene.front_porch_christmas
+      - if:
+        - condition: state
+          entity_id: input_boolean.christmas_season
+          state: 'off'
+        then:
+        - service: scene.turn_on
+          data: {}
+          target:
+            entity_id: scene.front_porch_normal_lighting
     - conditions:
       - condition: trigger
         id: sunup
@@ -628,6 +646,10 @@
         data: {}
         target:
           entity_id: light.outdoor_spotlights
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.front_porch_lights
     - conditions:
       - condition: trigger
         id: closing_time
@@ -649,10 +671,6 @@
     event: sunset
     offset: 0
     id: sundown
-  - platform: sun
-    event: sunset
-    offset: +00:30:00
-    id: effects_on
   - platform: time
     at: '22:00:00'
     id: effects_off
@@ -673,6 +691,8 @@
           - switch.graveyard_one
           - switch.scene_2a
           - switch.scene_2b
+          - switch.graveyard_two
+          device_id: 07d4fe8c84ce700fef00f4c75a6c1811
       - service: light.turn_on
         data:
           brightness_pct: 100
@@ -690,6 +710,9 @@
           - switch.fromt_yard2
           - switch.graveyard_one
           - switch.scene_2a
+          - switch.graveyard_two
+          - switch.scene_2b
+          device_id: 07d4fe8c84ce700fef00f4c75a6c1811
       - service: light.turn_off
         data: {}
         target:
@@ -713,6 +736,7 @@
           entity_id:
           - switch.graveyard_two
           - switch.scene_2b
+        enabled: false
   mode: single
 - id: '1664669337778'
   alias: Pottery Studio Lighting
@@ -1205,7 +1229,6 @@
   mode: single
 - id: skylar_is_awake
   alias: Skylar is Awake
-  initial_state: true
   trigger:
   - platform: state
     entity_id: binary_sensor.skylars_bedroom_motion_occupancy
@@ -1225,6 +1248,11 @@
       time: '{{ now().strftime(''%H:%M'') }}'
   - service: input_boolean.turn_on
     entity_id: input_boolean.skylar_awake
+  - service: scene.turn_on
+    data: {}
+    target:
+      entity_id: scene.skylar_bedroom_morning
+  initial_state: true
 - id: skylar_early_morning_tv
   alias: Skylar Early Morning TV
   initial_state: true
@@ -1683,7 +1711,7 @@
       - service: media_player.volume_set
         data_template:
           entity_id: media_player.ha_blue
-          volume_level: 0.12
+          volume_level: 0.2
       - service: media_player.play_media
         entity_id: media_player.ha_blue
         data:
@@ -1886,137 +1914,7 @@
         is something that needs your attention.'\n      ] | random }}\n  {{ [\n    location
         + \" is detecting a leak.\",\n    location + \" has detected water.\",\n    location
         + \" is picking up water.\"\n    ] | random }}\n{%- endmacro -%} {{issue_report(location)}}\n"
-- id: update_usps_camera_path
-  alias: Update USPS Mail Camera
-  trigger:
-  - platform: state
-    entity_id: sensor.mail_usps_mail
-  action:
-  - service: local_file.update_file_path
-    data_template:
-      entity_id: camera.mail_usps
-      file_path: '{% if state_attr(''sensor.mail_usps_mail'',''image'') == None  %}
-        /config/custom_components/mail_and_packages/mail_none.gif {% else %} /config/www/mail_and_packages/{{
-        state_attr(''sensor.mail_usps_mail'',''image'') }} {% endif %}
 
-        '
-- id: notify_usps_mail
-  alias: Notify USPS Mail
-  initial_state: true
-  trigger:
-  - platform: state
-    entity_id: sensor.usps_mail
-  condition:
-  - condition: template
-    value_template: '{{ states.sensor.usps_mail.state | int > 0 }}'
-  - condition: template
-    value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
-  action:
-  - service: script.announcement
-    data:
-      who: '{{ states(''sensor.room_audio'') }}'
-      message: "{%- if states.sensor.usps_mail.state | int == 1 -%} \n  {{ [ \n    \"USPS
-        is delivering\", \n    \"The postal service will be leaving\",\n    \"The
-        nice lady in the mail truck is bringing us \",\n    \"I have scanned the incoming
-        mail, eliminated the junk, and determined there is\"\n      ] | random }}\n
-        \ {{ states.sensor.usps_mail.state }} piece of mail today.\n{%- else -%}\n
-        \ {{ [ \n    \"USPS is delivering\", \n    \"The postal service will be leaving\",\n
-        \   \"The nice lady in the mail truck is bringing us \",\n    \"I have scanned
-        the incoming mail, eliminated the junk, and determined there are\"\n      ]
-        | random }} \n  {{ states.sensor.usps_mail.state }} pieces of mail today.\n{%-
-        endif -%}"
-  - service: script.text_notify
-    data_template:
-      who: jeff
-      title: USPS Delivering Today
-      message: USPS will be delivering {{ states.sensor.usps_mail.state }} piece(s)
-        of mail today.
-  - service: script.twitter_notify
-    data_template:
-      message: '{{ [  "I just let Anchorage House know how much mail the USPS is leaving
-        in the mailbox today. For the code checkout https://github.com/thejeffreystone/usps2mqtt
-        #automation",  "One of the things I know is how much mail is being delivered
-        because I am integrated with USPS Informed Delivery using https://github.com/thejeffreystone/usps2mqtt
-        #automation.", "There is a letter in the mailbox. Or will be when the USPS
-        gets here. If you want to know how I know checkout https://github.com/thejeffreystone/usps2mqtt
-        #automation.", "Neither snow nor rain nor heat nor gloom of night prevents
-        me from letting Anchorage House know what to expect from the USPS thanks to
-        https://github.com/thejeffreystone/usps2mqtt #automation." ] | random }}'
-- id: notify_usps_packages
-  alias: Notify USPS Packages
-  initial_state: true
-  trigger:
-  - platform: state
-    entity_id: sensor.usps_mail
-  condition:
-  - condition: template
-    value_template: '{{ states.sensor.usps_mail.state | int > 0 }}'
-  - condition: template
-    value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
-  action:
-  - service: script.announcement
-    data_template:
-      who: '{{ states.sensor.room_audio.state }}'
-      message: "{%- if states.sensor.usps_packages.state | int == 1 -%}\n  USPS is
-        delivering {{ states.sensor.usps_packages.state }} package today.\n{%- else
-        -%}\n  USPS is delivering {{ states.sensor.usps_packages.state }} packages
-        today.\n{%- endif -%}\n"
-- alias: Mail Notif - Mail Delieveries
-  trigger:
-  - platform: time
-    at: '10:05:00'
-  condition:
-  - condition: or
-    conditions:
-    - condition: template
-      value_template: '{{ states(''sensor.mail_usps_mail'') | int > 0 }}'
-    - condition: template
-      value_template: '{{ states(''sensor.mail_usps_delivering'') | int > 0 }}'
-  action:
-  - service: script.text_notify
-    data_template:
-      who: jeff
-      title: Delivering Today
-      message: '{{ states(''sensor.mail_deliveries_message'')}}'
-  - service: script.status_annc
-    data_template:
-      who: '{{ states(''sensor.room_audio'')}}'
-      call_interuption: 1
-      speech_message: "{%- if states.sensor.mail_usps_mail.state | int == 1 -%} \n
-        \ {{ [ \n    \"USPS is delivering\", \n    \"The postal service will be leaving\",\n
-        \   \"The nice lady in the mail truck is bringing us \",\n    \"I have scanned
-        the incoming mail,and there is\"\n      ] | random }}\n  {{ states.sensor.mail_usps_mail.state
-        }} piece of mail today.\n{%- else -%}\n  {{ [ \n    \"USPS is delivering\",
-        \n    \"The postal service will be leaving\",\n    \"The nice lady in the
-        mail truck is bringing us \",\n    \"I have scanned the incoming mail, and
-        determined there are\"\n      ] | random }} \n  {{ states.sensor.mail_usps_mail.state
-        }} pieces of mail today.\n{%- endif -%}"
-  id: 4d51af857f1647e289ee2085c56e04d0
-- alias: Delivered Package Notification
-  initial_state: true
-  trigger:
-  - platform: state
-    entity_id: sensor.mail_fedex_delivered_2
-  - platform: state
-    entity_id: sensor.mail_ups_delivered
-  condition:
-  - condition: or
-    conditions:
-    - condition: template
-      value_template: '{{ states(''sensor.mail_fedex_delivered_2'') | int > 0 }}'
-    - condition: template
-      value_template: '{{ states(''sensor.mail_ups_delivered'') | int > 0 }}'
-  action:
-  - service: script.text_notify
-    data_template:
-      who: jeff
-      title: Package Delivered
-      message: Fedex/UPS just made a delivery
-  - service: script.announcment
-    data_template:
-      who: '{{ states.sensor.room_audio.state }}'
-      message: A package was just left on the porch.
-  id: fd99a245935b4d12aef7f4f36ae65b48
 - alias: record previous day rainfall
   trigger:
   - platform: time
@@ -2098,6 +1996,22 @@
           image: '{{ state_attr(''sensor.slackerlabs'', ''entity_picture'') }}
 
             '
+      - service: script.mastodon_notify
+        data:
+          message: '{{ [ "Brand New SlackerLabs Video! {{ states(''sensor.slackerlabs'')
+            }} - {{ state_attr(''sensor.slackerlabs'',''url'') }} #homeassistant #homeautomation
+            #smarthome ", "New SlackerLabs Video went Live! {{ states(''sensor.slackerlabs'')
+            }} - {{ state_attr(''sensor.slackerlabs'',''url'') }} #homeassistant #homeautomation
+            #smarthome ", "Boom! New SlackerLabs Video! {{ states(''sensor.slackerlabs'')
+            }} - {{ state_attr(''sensor.slackerlabs'',''url'') }} #homeassistant #homeautomation
+            #smarthome ", "Its time for a New SlackerLabs Video! {{ states(''sensor.slackerlabs'')
+            }} - {{ state_attr(''sensor.slackerlabs'',''url'') }} #homeassistant #homeautomation
+            #smarthome ", "Today is SlackerLabs Video Release Day! {{ states(''sensor.slackerlabs'')
+            }} - {{ state_attr(''sensor.slackerlabs'',''url'') }} #homeassistant #homeautomation
+            #smarthome " ] | random }}
+
+            '
+          who: slackerlabs "
       - delay: 00:10:00
       - service: script.twitter_notify_image
         data:
@@ -2294,13 +2208,22 @@
             entity_id: input_boolean.sentry_mode
         - service: script.text_notify
           data:
-            who: "jeff"
-            message: "Maison De Lune security is armed."
+            who: jeff
+            message: Maison De Lune security is armed.
         else:
         - service: script.text_notify
           data:
-            who: "jeff"
-            message: "Unable to lock down Maison De Lune due to issue"
+            who: jeff
+            message: Unable to lock down Maison De Lune due to issue
+      - if:
+        - condition: state
+          entity_id: cover.curtain_left
+          state: open
+        then:
+        - service: cover.close_cover
+          data: {}
+          target:
+            entity_id: cover.curtain_left
     - conditions:
       - condition: trigger
         id: family_home
@@ -2311,6 +2234,252 @@
           entity_id: input_boolean.sentry_mode
       - service: script.text_notify
         data:
-          who: "jeff"
-          message: "Maison De Lune security is disarmed."
+          who: jeff
+          message: Maison De Lune security is disarmed.
+      - if:
+        - condition: time
+          before: '21:30:00'
+        then:
+        - service: cover.open_cover
+          data: {}
+          target:
+            entity_id: cover.curtain_left
+  mode: single
+- id: '1667171722597'
+  alias: Driveway Light
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.garage_door
+    from: 'off'
+    to: 'on'
+    id: garage_open
+  - platform: state
+    entity_id:
+    - binary_sensor.garage_door
+    from: 'on'
+    to: 'off'
+    id: garage_closed
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: garage_open
+      - condition: state
+        entity_id: sun.sun
+        state: below_horizon
+      sequence:
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.driveway_light
+    - conditions:
+      - condition: trigger
+        id: garage_closed
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.driveway_light
+  mode: single
+- id: '1667222853229'
+  alias: Skylar Bedroom Lights
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.sleep_aid
+    from: 'on'
+    to: 'off'
+    id: sleepaid_off
+  - platform: state
+    entity_id:
+    - input_boolean.skylar_school
+    from: 'off'
+    to: 'on'
+    id: skylar_gone
+  - platform: state
+    entity_id:
+    - binary_sensor.skylars_bedroom_motion_occupancy
+    from: 'off'
+    to: 'on'
+    id: motion
+  - platform: state
+    entity_id:
+    - binary_sensor.skylars_bedroom_motion_occupancy
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 20
+      seconds: 0
+    id: no_motion
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: sleepaid_off
+      sequence:
+      - service: scene.turn_on
+        data: {}
+        target:
+          entity_id: scene.skylar_bedroom_night
+    - conditions:
+      - condition: trigger
+        id: skylar_gone
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.skylars_dresser_lamp
+    - conditions:
+      - condition: trigger
+        id: motion
+      - condition: state
+        entity_id: input_boolean.skylar_awake
+        state: 'on'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
+          rgb_color:
+          - 255
+          - 255
+          - 255
+        target:
+          entity_id: light.skylars_dresser_lamp
+    - conditions:
+      - condition: trigger
+        id: no_motion
+      - condition: state
+        entity_id: input_boolean.skylar_awake
+        state: 'on'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.skylars_dresser_lamp
+  mode: restart
+- id: 9f428092882f410e8681ae505cacc9ac
+  alias: Door Notifications
+  mode: single
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.front_door_contact
+    from: 'off'
+    to: 'on'
+  condition:
+  - alias: sun condition
+    condition: state
+    entity_id: sun.sun
+    state: above_horizon
+  action:
+  - service: notify.mobile_app_jeffrey_ha_app
+- id: '1670357882397'
+  alias: Christmas Tree Display
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:30:00'
+    id: shutdown
+  - platform: sun
+    event: sunset
+    offset: 0
+    id: sundown
+  condition:
+  - condition: state
+    entity_id: input_boolean.holiday_mode
+    state: 'on'
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: sundown
+      sequence:
+      - if:
+        - condition: state
+          entity_id: cover.curtain_left
+          state: closed
+        then:
+        - service: cover.open_cover
+          data: {}
+          target:
+            entity_id: cover.curtain_left
+      - service: switch.turn_on
+        data: {}
+        target:
+          entity_id: switch.christmas_tree
+    - conditions:
+      - condition: trigger
+        id: shutdown
+      sequence:
+      - if:
+        - condition: state
+          entity_id: cover.curtain_left
+          state: open
+        then:
+        - service: cover.close_cover
+          data: {}
+          target:
+            entity_id: cover.curtain_left
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.christmas_tree
+  mode: single
+
+  
+- id: '1672256961409'
+  alias: Security Motion Notifications
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.front_door_motion
+    from: 'off'
+    to: 'on'
+    id: porch_motion
+  - platform: state
+    entity_id:
+    - binary_sensor.front_porch_motion
+    from: 'off'
+    to: 'on'
+    id: front_yard_motion
+  - platform: state
+    entity_id:
+    - binary_sensor.front_porch_person_detected
+    from: 'off'
+    to: 'on'
+    id: front_yard_person
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: input_boolean.barn_door_protocol
+      state: 'on'
+    - condition: state
+      entity_id: input_boolean.sentry_mode
+      state: 'on'
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: front_yard_person
+      sequence:
+      - service: script.text_notify
+        data:
+          who: jeff
+          message: People detected in front yard
+    - conditions:
+      - condition: trigger
+        id: porch_motion
+      sequence:
+      - service: script.text_notify
+        data:
+          who: jeff
+          message: Motion on the Front Porch
   mode: single
