@@ -55,44 +55,44 @@ input_boolean:
 
 automation:
 # Holiday Wishes
-  # - id: wishes_five_min
-  #   alias: Wishes Five Minute
-  #   initial_state: true
-  #   trigger:
-  #   - platform: template
-  #     value_template: "{{ states('sensor.time') == (state_attr('input_datetime.christmas_preshow', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-  #   condition:
-  #   - condition: state
-  #     entity_id: calendar.holidays_in_united_states
-  #     state: "on"
-  #   - condition: template
-  #     value_template: >
-  #       {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
-  #       {%- if event == 'Christmas Eve' %}
-  #         true
-  #       {%- endif -%}
-  #   action:
-  #   - service: script.holiday_wishes_preshow
+  - id: wishes_five_min
+    alias: Wishes Five Minute
+    initial_state: true
+    trigger:
+    - platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.christmas_preshow', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+    - condition: state
+      entity_id: calendar.holidays_in_united_states
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
+        {%- if event == 'Christmas Eve' %}
+          true
+        {%- endif -%}
+    action:
+    - service: script.holiday_wishes_preshow
 
-  # - id: wishes_show_start
-  #   alias: Wishes Show Start
-  #   initial_state: true
-  #   trigger:
-  #   - platform: template
-  #     value_template: "{{ states('sensor.time') == (state_attr('input_datetime.christmas_show', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-  #   condition:
-  #   - condition: state
-  #     entity_id: calendar.holidays_in_united_states
-  #     state: "on"
-  #   - condition: template
-  #     value_template: >
-  #       {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
-  #       {%- if event == 'Christmas Eve' %}
-  #         true
-  #       {%- endif -%}
-  #   action:
-  #   - service: input_boolean.turn_on
-  #     entity_id: input_boolean.holiday_wishes
+  - id: wishes_show_start
+    alias: Wishes Show Start
+    initial_state: true
+    trigger:
+    - platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.christmas_show', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+    - condition: state
+      entity_id: calendar.holidays_in_united_states
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
+        {%- if event == 'Christmas Eve' %}
+          true
+        {%- endif -%}
+    action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.holiday_wishes
 
 
   - id: e1cb2582-0423-11eb-adc1-0242ac120002
@@ -117,7 +117,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/MainStreetUSAChristmas.mp3"
-            volume: .17
+            volume: .27
             speaker: 'media_player.ha_blue'
       - conditions:
         - condition: trigger
@@ -153,7 +153,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/EpcotChristmas.mp3"
-            volume: .17
+            volume: .27
             speaker: 'media_player.ha_blue'
       - conditions:
         - condition: trigger
@@ -189,7 +189,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/DisneyParkHoliday.mp3"
-            volume: .17
+            volume: .27
             speaker: 'media_player.ha_blue'
       - conditions:
         - condition: trigger
@@ -225,7 +225,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/ChristmasAroundDisneyland.mp3"
-            volume: .17
+            volume: .27
             speaker: 'media_player.ha_blue'
       - conditions:
         - condition: trigger
@@ -261,7 +261,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/Disney_Springs_Xmas_Loop.mp3"
-            volume: .17
+            volume: .27
             speaker: 'media_player.ha_blue'
       - conditions:
         - condition: trigger
@@ -333,19 +333,19 @@ script:
       - service: script.local_audio
         data:
           media: "/media/disney/DisneyParkHoliday.mp3"
-          volume: .17
+          volume: .27
           speaker: 'media_player.ha_blue'
       - delay: 02:50:00
       - service: script.local_audio
         data:
           media: "/media/disney/ChristmasAroundDisneyland.mp3"
-          volume: .17
+          volume: .27
           speaker: 'media_player.ha_blue'
       - delay: 04:02:00
       - service: script.local_audio
         data:
           media: "/media/disney/EpcotChristmas.mp3"
-          volume: .17
+          volume: .27
           speaker: 'media_player.ha_blue'
   normal_xmas: 
     sequence:

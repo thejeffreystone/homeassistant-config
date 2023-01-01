@@ -227,6 +227,16 @@ group:
       - input_boolean.aroundmk
       - input_boolean.trainwdw
 
+  Christmas Background:
+    entities:
+      - input_boolean.disneyland_christmas_loop
+      - input_boolean.christmas_around_disneyland
+      - input_boolean.disney_park_christmas_loop
+      - input_boolean.christmas_background
+      - input_boolean.disney_springs_xmas
+
+
+
 automation:
   - id: 897eeeeb-44bf-43e0-a0cc-20b3aff1107e
     alias: Disney Scents
@@ -378,7 +388,7 @@ automation:
       state: 'on'
     action:
     - service: homeassistant.turn_off 
-      entity_id: group.disney_background
+      entity_id: group.disney_audio
 
 # If Main audio is off, turn off input_booleans and notify via notifications. 
   - id: audio_is_disabled
@@ -438,6 +448,7 @@ automation:
         sequence:
         - service: input_boolean.turn_off
           entity_id: input_boolean.disney_background
+        
       default: []
     initial_state: true
     mode: single   
@@ -447,6 +458,10 @@ automation:
   - id: 0e59cc3e-e55a-4442-b7d3-48b0fe19963a
     alias: Disney background Loop
     trigger: 
+    - platform: numeric_state
+      entity_id: sensor.power_switch_electric_consumption_w
+      below: 100
+      id: tv_off
     - platform: state
       entity_id: media_player.ha_blue
       to: 'idle'
@@ -462,6 +477,10 @@ automation:
       id: stop
       from: 'on'
       to: 'off'
+    - platform: numeric_state
+      entity_id: sensor.power_switch_electric_consumption_w
+      above: 100
+      id: tv_on
     condition:
     - condition: state
       entity_id: input_boolean.audible_notifications
@@ -474,7 +493,30 @@ automation:
         sequence:
         - service: input_boolean.turn_on
           data:
-            entity_id: "{{ expand('group.disney_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}"
+            entity_id: >-
+              {% if is_state('input_boolean.christmas_season','on') %}
+                {{ expand('group.christmas_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}
+              {% else %}
+                {{ expand('group.disney_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}
+              {% endif %}
+      - conditions:
+        - condition: trigger
+          id: tv_off
+        - condition: time
+          after: "07:00:00"
+          before: "19:00:00"
+          weekday:
+            - sat
+            - sun
+        sequence:
+        - service: input_boolean.turn_on
+          data:
+            entity_id: >-
+              {% if is_state('input_boolean.christmas_season','on') %}
+                {{ expand('group.christmas_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}
+              {% else %}
+                {{ expand('group.disney_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}
+              {% endif %}
       - conditions:
         - condition: trigger
           id: restart
@@ -489,17 +531,28 @@ automation:
         - delay: '00:01:00'
         - service: input_boolean.turn_on
           data:
-            entity_id: "{{ expand('group.disney_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}"
+            entity_id: >-
+              {% if is_state('input_boolean.christmas_season','on') %}
+                {{ expand('group.christmas_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}
+              {% else %}
+                {{ expand('group.disney_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}
+              {% endif %}
       - conditions:
-        - condition: trigger
-          id: stop
+        - condition: or
+          conditions:
+          - condition: trigger
+            id: stop
+          - condition: trigger
+            id: tv_on
         sequence:
         - service: media_player.media_stop
           entity_id: media_player.ha_blue
         - service: script.turn_off
           entity_id: script.local_audio
         - service: homeassistant.turn_off
-          entity_id: group.disney_background
+          entity_id: group.disney_audio
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.disney_background
       default: []
     initial_state: true
     mode: restart      
@@ -526,7 +579,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/PolynesianLoop.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -562,7 +615,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/TrainWDW.mp3"
-            volume: .18
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -598,7 +651,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/PiratesTown.mp3"
-            volume: .15
+            volume: .20
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -634,7 +687,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/EpcotFountainofNationsLoop.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -670,7 +723,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/TheCrystalPalaceAreaMusic.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -706,7 +759,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/KilamanjaroSafariRadio.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -742,7 +795,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/TrollyParade.mp3"
-            volume: .20
+            volume: .35
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -778,7 +831,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/JungleCruise.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -814,7 +867,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/AKLoop1.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -850,7 +903,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/SevenDwarfs.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -890,7 +943,7 @@ automation:
                 "/media/disney/GalaxyEdge.mp3",
                 "/media/disney/GalaxyEdgeNight.mp3"
               ] | random }}
-            volume: .20
+            volume: .35
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -926,7 +979,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/PiratesRideDL.mp3"
-            volume: .20
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -962,7 +1015,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/tiki_statues.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -998,7 +1051,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/HogwartsExpress.mp3"
-            volume: .18
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1070,7 +1123,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/IslandsofAdventure.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1106,7 +1159,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/HogsmeadeMusicLoop.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1142,7 +1195,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/UnderTheSea.mp3"
-            volume: .18
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1178,7 +1231,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/SorinAroundTheWorld.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1214,7 +1267,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/JourneyIntoImagination.mp3"
-            volume: .18
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1250,7 +1303,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/FrozenEverAfter.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1286,7 +1339,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/PiratesQueue.mp3"
-            volume: .17
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1326,7 +1379,7 @@ automation:
                 "/media/disney/PiratesRide.mp3",
                 "/media/disney/PiratesRideDL.mp3"
                 ] | random }}
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1362,7 +1415,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/SoarinQueueArea.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1398,7 +1451,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/LivingWithTheLand.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1434,7 +1487,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/EpcotGateway.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1510,7 +1563,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/TestTrack.mp3"
-            volume: .20
+            volume: .35
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1546,7 +1599,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/PeterPanFlight.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1582,7 +1635,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/PeoplemoverAudio.mp3"
-            volume: .20
+            volume: .35
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1618,7 +1671,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/HauntedMansionChristmas.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1654,7 +1707,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/TheSeasNemo.mp3"
-            volume: .20
+            volume: .35
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1690,7 +1743,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/SplashMountainRide.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1726,7 +1779,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/be_our_guest.mp3"
-            volume: .20
+            volume: .35
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1762,7 +1815,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/Liberty_square_audio.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1834,7 +1887,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/DisneylandMainstreetLoop.mp3"
-            volume: .18
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1906,7 +1959,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/HauntedMansionQueue.mp3"
-            volume: .17
+            volume: .30
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1942,7 +1995,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/WorldShowcaseLoop.mp3"
-            volume: .18
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1978,7 +2031,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/ToyStorylandLoop.mp3"
-            volume: .20
+            volume: .35
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -2086,7 +2139,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/epcot_entrance_loop.mp3
-        volume: .17
+        volume: .30
   - id: epcotentrance_loop_off
     alias: Epcot Entrance Loop Off
     initial_state: true
@@ -2114,7 +2167,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/PixarPier.mp3
-        volume: .20
+        volume: .35
   - id: pixar_pier_loop_off
     alias: Pixar Pier Loop Off
     initial_state: true
@@ -2141,7 +2194,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/tiki_room_audio.mp3
-        volume: .22
+        volume: .35
   - id: tiki_room_off
     alias: Tiki Room Off
     initial_state: true
@@ -2196,7 +2249,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/Happily_Ever_After_Audio.mp3
-        volume: .25
+        volume: .4
   - id: happy_ever_after_show_off
     alias: Happy Ever After Show Off
     initial_state: true
@@ -2289,7 +2342,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/spaceship_earth_ride.mp3
-        volume: .20
+        volume: .35
   - id: spaceship_earth_off
     alias: Spaceship Earth Off
     initial_state: true
@@ -2327,7 +2380,7 @@ automation:
           data_template:
             speaker: media_player.ha_blue
             media: /media/disney/boo_to_you_audio.mp3
-            volume: .2
+            volume: .35
       - conditions:
         - condition: trigger
           id: end
@@ -2387,7 +2440,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/ML_Welcome_Show.mp3
-        volume: .25
+        volume: .4
     - delay:
         minutes: 8
     - service: media_player.media_stop
@@ -2422,7 +2475,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/music/Voctave_Trolly_Song.mp3
-        volume: .20
+        volume: .35
   - id: trolly_audio_show_off
     alias: Trolly Audio Show Off
     initial_state: true
@@ -2449,7 +2502,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/Pandora_Area_Loop.mp3
-        volume: .20
+        volume: .35
   - id: pandora_audio_off
     alias: Pandora Audio Off
     initial_state: true
@@ -2477,7 +2530,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/WDW_Resort_TV.mp3
-        volume: .20
+        volume: .35
   - id: resort_room_audio_off
     alias: Resort Room Off
     initial_state: true
@@ -2505,7 +2558,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/The_American_Adventure.mp3
-        volume: .25
+        volume: .4
   - id: american_adventure_off
     alias: American Adventure Off
     initial_state: true
@@ -2559,7 +2612,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/move_it_shake_dance_audio.mp3
-        volume: .2
+        volume: .35
   - id: move_dance_off
     alias: Move It Shake It Off
     initial_state: true

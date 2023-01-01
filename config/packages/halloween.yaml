@@ -1,0 +1,395 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   09/25/2020
+#   @package        :   Halloween
+#   @description    :   Config used to cause a haunting
+# 
+#   This package requires that you have some way to determine thats its Halloween
+#   You can do this in any way you want, but two options are:
+#
+#   1. Enable the Google Calendar (https://www.home-assistant.io/integrations/calendar.google/) and setup a Holiday Calendar
+#   2. Use Wolfram Alpha to create a sensor that tells you how many days until Halloween. I have one at the bottom of this package.
+#      @CCOSTAN did a video on setting it up -> https://www.youtube.com/watch?_continue=0time&v=ulBeifhWBxY&feature=emb_logo
+#
+###############################################################################
+# Here is a lovelace card that can be used with this package:
+#  type: entities
+#  entities:
+#   - entity: sensor.halloween_countdown
+#     icon: 'mdi:ghost'
+#   - entity: automation.this_is_halloween
+#   - entity: input_boolean.this_is_halloween
+#   - entity: input_datetime.halloween_show
+#   - entity: input_boolean.haunted_sounds
+#   - entity: input_boolean.scary_sounds
+# title: Halloween
+# show_header_toggle: false
+# state_color: true
+###############################################################################
+  
+
+############################
+# input_booleans (https://www.home-assistant.io/integrations/input_boolean/)
+# 
+input_boolean:
+  # Main switch for the effects. This acts as both the on switch and the kill switch
+  this_is_halloween:
+    name: This is Halloween
+  # Enables Haunted Sounds. If on, basic haunted house effect happens
+  haunted_sounds:
+    name: Haunted Sounds
+  # Enables More Intense Haunted Sounds. If on, scarier haunted house effect happens
+  scary_sounds:
+    name: Intense Hauntings
+
+
+############################
+# input_datetime (https://www.home-assistant.io/integrations/input_datetime/)
+# 
+# This is simply so we can schedule the time the effect happens in the UI.     
+input_datetime:
+  halloween_show:
+    name: Halloween Show
+    has_date: true
+    has_time: true
+
+################################
+# Media extractor is used for playing youtube audio. For more info ->https://www.home-assistant.io/integrations/media_extractor/
+#
+# If you have this enabled in another package or in your configuration.yaml comment out the line below
+#media_extractor:
+
+############################
+# Automations (https://www.home-assistant.io/integrations/automation/)
+#     
+automation:
+
+  # This is Main Halloween Trigger. The purpose of this is to turn on the show at the time set in the input_datetime.halloween_show. 
+  #
+  - id: this_is_halloween
+    alias: This is Halloween
+    initial_state: true
+    trigger:
+    # When the current time matches input_datetime.halloween_show, light this candle
+    - platform: time
+      at: input_datetime.halloween_show
+    action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.this_is_halloween  
+    - delay: '02:00:00'
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.this_is_halloween
+
+
+
+  - id: operation haunted house
+    alias: Operation Haunted House
+    trigger:
+    # If this_is_halloween switch is turned on then we start the show. 
+    - platform: state
+      entity_id: input_boolean.this_is_halloween
+      to: 'on'
+      from: 'off'
+      id: start
+    # If this_is_halloween switch is turned off then we stop the show. 
+    - platform: state
+      entity_id: input_boolean.this_is_halloween
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    # Choose provides decision logic
+    - choose:
+      # Start the show
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/haunted_sounds/This_is_Halloween.mp3"
+            volume: .4
+            speaker: 'media_player.ha_blue'
+        - delay: '00:04:00'
+        - service: script.turn_on
+          target:
+            entity_id: script.haunted_house
+      # Stop the show
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        # And finally we turn off the haunted house script so no more sounds play. 
+        - service: script.turn_off
+          target:
+            entity_id: script.haunted_house
+        - service: scene.turn_on
+          target:
+            entity_id: scene.before_haunting
+      default: []
+    initial_state: true
+    mode: single
+
+
+script:
+
+  # This is where the magic happens. This is the script that handles all the haunted sounds. 
+  # 
+  haunted_house:
+    sequence:
+    - repeat:
+        while:
+          - condition: state
+            entity_id: input_boolean.this_is_halloween
+            state: 'on'
+        sequence:
+        # Take a snap shot of current state
+        # - service: scene.create
+        #   data:
+        #     scene_id: before_haunting
+        #     snapshot_entities:
+        #     - light.front_door_lamp
+        #     - light.living_room_lamp
+        #     - light.living_room_tower_lamp
+        #     - light.skylars_dresser_lamp
+        #     - light.kitchen_sink
+        #     - light.jeff_lamp
+        # # Change a random Random Light              
+        # - service: light.toggle
+        #   data:
+        #     entity_id: >
+        #       {{['light.front_door_lamp',
+        #          'light.living_room_lamp',
+        #          'light.living_room_tower_lamp',
+        #          'light.skylars_dresser_lamp',
+        #          'light.kitchen_sink',
+        #          'light.master_bedroom_tower_lamp',
+        #          'light.jeff_lamp'] 
+        #          | random}}
+        # Start playing a random selection from our haunted sounds.
+        - service: script.haunted_sounds
+        # Then another delay. This one is a random delay between 2 and 5 minutes. A delay of at least 2 minutes ensures the previous effect is done before the next one.
+        - delay: '00:0{{ range(2,5) | random | int }}:00'
+        # After the delay, change the state of the lights back to what they were 
+        - service: scene.turn_on
+          target:
+            entity_id: scene.before_haunting
+        # play more random haunted sounds. This time though, if we have scary sounds on we play one from there, if not, back to haunted sounds. 
+        - service: >
+            {% if is_state('input_boolean.scary_sounds', 'on') %}
+              script.more_haunted_sounds
+            {% else %}
+              script.haunted_sounds
+            {% endif %}
+        # Then delay again, and when that is done start over.
+        - delay: '00:0{{ range(2,5) | random | int }}:00'
+        
+        
+  # Update this script with your youtube sounds. 
+  # Each time this script is called it will play a random sound
+  more_haunted_sounds:
+    sequence:
+    - service: script.youtube_audio # This script is in the audio.yaml in the packages folder. 
+      data:
+        speaker: >
+          {{ ['media_player.kitchen_display',
+              'media_player.master_bedroom_speaker',
+              'media_player.studio_speaker',
+              'media_player.ha_blue',
+              'media_player.skylars_bedroom_speaker',
+              'media_player.theater_speaker'
+              ] | random }} 
+        volume: .4
+        # I try to ensure each of the following links is 60 seconds or less. 
+        media: >
+          {{- [
+           "https://www.youtube.com/watch?v=-s04sbIViJQ",
+           "https://www.youtube.com/watch?v=vF681VBX_oo",
+           "https://www.youtube.com/watch?v=WQVnOSj8DWI",
+           "https://www.youtube.com/watch?v=DaOnw_kCcYU",
+           "https://www.youtube.com/watch?v=E9VFB_0nSbA",
+           "https://www.youtube.com/watch?v=_A1yK0YU6U0",
+           "https://www.youtube.com/watch?v=AQ1SE4tLICg",
+           "https://www.youtube.com/watch?v=SsVj21c9isA",
+           "https://www.youtube.com/watch?v=nKltUaCxZPc",
+           "https://www.youtube.com/watch?v=G3JlB47fzV4",
+           "https://www.youtube.com/watch?v=_24O4vb-KWk",
+           "https://www.youtube.com/watch?v=oeLcHIpTlHU"
+            ] | random -}}
+
+
+  #Update this script with your local sounds.
+  #Each time this script is called it will play a random sound
+  haunted_sounds:
+    sequence:
+    # Ensure that haunted sounds are allowed. Comment out if not needed.
+    - condition: state
+      entity_id: input_boolean.haunted_sounds
+      state: 'on'
+    - service: script.local_audio # This script is in the audio.yaml in the packages folder. 
+      data:
+        speaker: >
+          {{ ['media_player.kitchen_display',
+              'media_player.master_bedroom_speaker',
+              'media_player.studio_speaker',
+              'media_player.ha_blue',
+              'media_player.skylars_bedroom_speaker',
+              'media_player.theater_speaker'
+              ] | random }} 
+        volume: .4
+         # I try to ensure each of the following links is 60 seconds or less. 
+        media: >
+          {{- [
+            "/media/haunted_sounds/haunted_guest_welcome.mp3",
+            "/media/haunted_sounds/ChainsRattling.mp3",
+            "/media/haunted_sounds/CreakingDoorSpooky.mp3",
+            "/media/haunted_sounds/DemonHaunting.mp3",
+            "/media/haunted_sounds/Evil_Laugh_2.mp3",
+            "/media/haunted_sounds/Evillaugh.mp3",
+            "/media/haunted_sounds/Scary.mp3",
+            "/media/haunted_sounds/raven.mp3",
+            "/media/haunted_sounds/EvilLaughCackle.mp3",
+            "/media/haunted_sounds/Haunted-CatScream.mp3",
+            "/media/haunted_sounds/Haunted-DragonRoaring.mp3",
+            "/media/haunted_sounds/Haunted-Heart.mp3",
+            "/media/haunted_sounds/Haunted-ScaryScream.mp3",
+            "/media/haunted_sounds/Haunted-TRexRoar.mp3",
+            "/media/haunted_sounds/Haunted-TollingBell.mp3",
+            "/media/haunted_sounds/Haunted-Vocals.mp3"
+            ] | random -}}
+
+  # haunted_sounds_git:
+  #   sequence:
+  #   # Ensure that haunted sounds are allowed. Comment out if not needed.
+  #   - condition: state
+  #     entity_id: input_boolean.haunted_sounds
+  #     state: 'on'
+  #   - service: script.youtube_audio # This script is in the audio.yaml in the packages folder. 
+  #     data:
+  #       speaker: >
+  #         {{ ['media_player.kitchen_display',
+  #             'media_player.upstairs_speaker',
+  #             'media_player.master_bedroom_speaker',
+  #             'media_player.croft_speaker',
+  #             'media_player.ha_blue',
+  #             'media_player.skylars_bedroom_speaker',
+  #             'media_player.theater'
+  #             ] | random }} 
+  #       volume: .5
+  #        # I try to ensure each of the following links is 60 seconds or less. 
+  #       media: >
+  #         {{ [
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/EvilLaughCackle.mp3'.
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/ChainsRattling.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/CreakingDoorSpooky.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Evil_Laugh_2.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Evillaugh.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Haunted-CatScream.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Haunted-DragonRoaring.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Haunted-Heart.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Haunted-ScaryScream.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Haunted-TollingBell.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/Scary.mp3',
+  #           'https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/media/haunted_sounds/raven.mp3'
+  #         ] | random }}
+ 
+
+################################
+  # local_audio is meant to be used to play audio in your media folder. (https://www.home-assistant.io/integrations/media_source/)
+  # 
+  # Before using make sure you update as needed.
+  # 
+  # To call this using in the action section of your automation:
+  # 
+  # - service: script.local_audio
+  #   data:
+  #     speaker: media_player.ha_blue
+  #     volume: .5
+  #     media: /media/local_audio.mp3
+  #
+  # local_audio:
+  #   sequence:
+  #   # Ensure that audible notifications are allowed. Comment out if not needed.
+  #   - condition: state
+  #     entity_id: input_boolean.audible_notifications
+  #     state: 'on'
+  #   # Ensure the family is home. If you are using a group to track the family, or a person just update as needed. Comment out if not needed.
+  #   - condition: state
+  #     entity_id: group.family
+  #     state: 'home'
+  #   # Update the media player with the one you want to use
+  #   - service: media_player.turn_on
+  #     data:
+  #       entity_id: >
+  #         {{ speaker }}
+  #   # This sets the voume via a parameter when the script is called, and should be a value between .1 and 1.0
+  #   - service: media_player.volume_set
+  #     data:
+  #       entity_id: >
+  #         {{ speaker }}
+  #       volume_level: >
+  #         {{ volume }}
+  #   - delay: 00:00:05
+  #   # This tells it to play the media and is set when the script is called. 
+  #   - service: media_player.play_media
+  #     data:
+  #       entity_id: >
+  #         {{ speaker }}
+  #       media_content_type: "music"
+  #       media_content_id: >
+  #         {{ media }}
+  
+  
+  ################################
+  # youtube_audio is meant to be used to play audio from well youtube. 
+  # This scrtip requires the media_extractor integration.
+  # 
+  # Before using make sure you update as needed.
+  # 
+  # To call this using in the action section of your automation:
+  # 
+  # - service: script.youtube_audio
+  #   data:
+  #     speaker: media_player.ha_blue
+  #     volume: .5
+  #     media: https://www.youtube.com/watch?v=pVeX4C9B1Lk
+  #
+  # youtube_audio:
+  #   sequence:
+  #   # Ensure that audible notifications are allowed. Comment out if not needed.
+  #   - condition: state
+  #     entity_id: input_boolean.audible_notifications
+  #     state: 'on'
+  #   # Ensure the family is home. If you are using a group to track the family, or a person just update as needed. Comment out if not needed.
+  #   - condition: state
+  #     entity_id: group.family
+  #     state: 'home'
+  #   # Update the media player with the one you want to use
+  #   - service: media_player.turn_on
+  #     data:
+  #       entity_id: >
+  #         {{ speaker }}
+  #   # This sets the voume via a parameter when the script is called, and should be a value between .1 and 1.0
+  #   - service: media_player.volume_set
+  #     data:
+  #       entity_id: >
+  #         {{ speaker }}
+  #       volume_level: >
+  #         {{ volume }}
+  #   # This tells it to play the media and is set when the script is called. 
+  #   - service: media_extractor.play_media
+  #     data:
+  #       entity_id: >
+  #         {{ speaker }}
+  #       media_content_type: video/youtube
+  #       media_content_id: >
+  #         {{ media }}
+  
+# sensor:
+#   # Halloween Countdown Sensor using Wolfram Alpha. See the note at the top for a link to how to set it up
+#   - platform: rest
+#     name: Halloween Countdown
+#     resource: !secret WA_HALLOWEEN
+#     value_template: "{{ (value|replace(' days', '')) | int }}"
+#     unit_of_measurement: Days
+#     scan_interval: 43200
