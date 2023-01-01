@@ -1,0 +1,355 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   02/19/2019
+#   @package        :   Notify
+#   @description    :   A Collection of Notification Scripts and Configs. 
+#                       Package modified from https://github.com/skalavala/smarthome/blob/master/packages/notify.yaml with inspiration
+# 		                  from https://github.com/CCOSTAN/Home-AssistantConfig/blob/master/config/script/speech_engine.yaml		
+###############################################################################
+
+
+
+notify:
+  - platform: ios
+  - name: all_ios
+    platform: group
+    services:
+      - service: mobile_app_jeffrey_ha_app
+      - service: mobile_app_jeffreys_ipad
+      - service: mobile_app_iphone
+      - service: mobile_app_skylars_ipad
+  - name: parents_ios
+    platform: group
+    services:
+      - service: mobile_app_jeffrey_ha_app
+      - service: mobile_app_jeffreys_ipad
+      - service: mobile_app_iphone
+  - name: jeff_ios
+    platform: group
+    services:
+      - service: mobile_app_jeffrey_ha_app
+      - service: mobile_app_jeffreys_ipad
+  - name: kat_ios
+    platform: group
+    services:
+      - service: mobile_app_iphone
+  - name: skylar_ios
+    platform: group
+    services:
+      - service: mobile_app_skylars_ipad
+  
+  - name: twitter
+    platform: twitter
+    consumer_key: !secret twitter_consumer_key
+    consumer_secret: !secret twitter_consumer_secret
+    access_token: !secret twitter_access_token
+    access_token_secret: !secret twitter_access_secret
+  - name: twitter_js
+    platform: twitter
+    consumer_key: !secret twitter2_consumer_key
+    consumer_secret: !secret twitter2_consumer_secret
+    access_token: !secret twitter2_access_token
+    access_token_secret: !secret twitter2_access_secret
+  - name: twitter_sl
+    platform: twitter
+    consumer_key: !secret twitter3_consumer_key
+    consumer_secret: !secret twitter3_consumer_secret
+    access_token: !secret twitter3_access_token
+    access_token_secret: !secret twitter3_access_secret
+  - platform: alexa_media
+    name: alexa_media
+  - name: mastodon_sl
+    platform: mastodon
+    access_token: !secret mastodon_access_token
+    client_id: !secret mastodon_client_id
+    client_secret: !secret mastodon_client_secret
+    base_url: https://mastodon.online
+  
+script:
+
+
+###############################################################################
+# Txt Notify
+###############################################################################
+  text_notify_all:
+    sequence:
+      - service: notify.all_ios
+        data_template:
+          message: >
+            {{ message }}
+
+  text_debug:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.debug_texts
+        state: 'on'
+      - service: notify.jeff_ios
+        data_template:
+          message: >
+            {{ message }}
+
+  text_notify_jeff:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.text_notify_jeff
+        state: 'on'
+      - service: notify.jeff_ios
+        data_template:
+          message: >
+            {{ message }}
+
+  text_notify_kat:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.text_notify_kat
+        state: 'on'
+      - service: notify.kat_ios
+        data_template:
+          message: >
+            {{ message }}
+
+  text_notify:
+    sequence:
+      - condition: state
+        entity_id: input_boolean.text_notifications
+        state: 'on'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ who == "jeff"}}'
+          - condition: state
+            entity_id: input_boolean.text_notify_jeff
+            state: 'on'
+          sequence:
+          - service: notify.jeff_ios
+            data:
+              title: '{{ title }}'
+              message: '{{ message }}'
+        - conditions:
+          - condition: template
+            value_template: '{{ who == "kat"}}'
+          - condition: state
+            entity_id: input_boolean.text_notify_kat
+            state: 'on'
+          sequence:
+          - service: notify.kat_ios
+            data:
+              title: '{{ title }}'
+              message: '{{ message }}'
+        - conditions:
+          - condition: template
+            value_template: '{{ who == "skylar"}}'
+          - condition: state
+            entity_id: input_boolean.text_notify_skylar
+            state: 'on'
+          sequence:
+          - service: notify.skylar_ios
+            data:
+              title: '{{ title }}'
+              message: '{{ message }}'
+        - conditions:
+          - condition: template
+            value_template: '{{ who == "parents"}}'
+          - condition: state
+            entity_id: input_boolean.text_notify_parents
+            state: 'on'
+          sequence:
+          - service: notify.parents_ios
+            data:
+              title: '{{ title }}'
+              message: '{{ message }}'
+        default: 
+        - service: notify.all_ios
+          data:
+            title: '{{ title }}'
+            message: '{{ message }}'
+
+  text_alert:
+    sequence:
+      - service: >
+            {% if who == 'jeff' %}
+              notify.jeff_ios
+            {% elif who == 'kat' %}
+              notify.kat_ios
+            {% elif who == 'skylar' %}
+              notify.skylar_ios
+            {% elif who == 'parents' %}
+              notify.ios_parents
+            {% else %}
+              notify.all_ios
+            {% endif %}
+        data:
+          title: '{{ title }}'
+          message: '{{ message }}'
+          #data:
+          #   attachment:
+          #     url: '{{ url }}'
+          #     content-type: '{{ content_type }}'
+          #     hide-thumbnail: false
+          #  push:
+          #     sound: '{{ ios_sound }}'
+          #    badge: 0
+          #     category: '{{ ios_category }}'
+          #   entity_id: '{{ camera_entity }}'
+
+  text_alert_image:
+    sequence:
+      - service: >
+            {% if who == 'jeff' %}
+              notify.jeff_ios
+            {% elif who == 'kat' %}
+              notify.kat_ios
+            {% elif who == 'skylar' %}
+              notify.skylar_ios
+            {% elif who == 'parents' %}
+              notify.ios_parents
+            {% else %}
+              notify.all_ios
+            {% endif %}
+        data:
+          title: '{{ title }}'
+          message: '{{ message }}'
+          data:
+            attachment:
+              url: '{{ url }}'
+              content-type: '{{ content_type }}'
+              hide-thumbnail: false
+          #  push:
+          #     sound: '{{ ios_sound }}'
+          #    badge: 0
+          #     category: '{{ ios_category }}'
+          #   entity_id: '{{ camera_entity }}'
+
+
+###############################################################################
+# Twitter
+###############################################################################
+
+
+  twitter_notify:
+    sequence:
+      - service: >
+          {% if who == 'thejeffreystone' %}
+            notify.twitter_js
+          {% elif who == 'slackerlabs' %}
+            notify.twitter_sl
+          {% else %}
+            notify.twitter
+          {% endif %}
+        data_template:
+          message: >
+            {% set msg = '' %}
+            {% set msg = msg + ' ' + message %}
+            {% set msg = msg + ' #iot #smarthome' %}
+            {{ msg }}
+
+  mastodon_notify:
+    sequence:
+      - service: >
+          {% if who == 'slackerlabs' %}
+            notify.mastodon_sl
+          {% else %}
+            notify.mastodon_sl
+          {% endif %}
+        data_template:
+          message: >
+            {% set msg = '' %}
+            {% set msg = msg + ' ' + message %}
+            {{ msg }}
+
+  twitter_notify_image:
+    sequence:
+      - service: >
+          {% if who == 'thejeffreystone' %}
+            notify.twitter_js
+          {% elif who == 'slackerlabs' %}
+            notify.twitter_sl
+          {% else %}
+            notify.twitter
+          {% endif %}
+        data_template:
+          message: >-
+            {{ tweet }} #iot #smarthome
+          data:
+            media: >-
+              {{ image }}
+
+  twitter_snark:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_snark.yaml
+        
+  twitter_stats:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_stats.yaml 
+
+  twitter_promos:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_promos.yaml
+          who: '{{ who }}'
+
+  twitter_follow_me:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_follow_me.yaml
+          who: '{{ who }}'
+
+  twitter_find_me:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: >-
+            You can find me:
+             - Blog: https://slacker-labs.com 
+             - Youtube: https://youtube.com/c/SlackerLabs
+             - Github: https://github.com/thejeffreystone
+             - Mastodon: https://mastodon.online/@slackerlabs
+               #homeassistant 
+          who: 'thejeffreystone'
+  
+  mastodon_find_me:
+    sequence:
+      - service: script.mastodon_notify
+        data:
+          message: >-
+            I haven't done one of these #intro posts, so here goes...
+            I am part of the Home Assistant Creator Network creating #youtube videos on how to Automate the Boring Stuff  
+            https://youtube.com/c/SlackerLabs | my #homeassistant config at https://github.com/thejeffreystone | https://slacker-labs.com
+            And you are seeing this, it was sent using the mastodon integration in Home Assistant. 
+               #homeassistant #smarthome #creator
+          who: 'slackerlabs'
+
+  twitter_selfpromos:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_selfpromos.yaml
+          who: '{{ who }}'
+
+  twitter_recent_content:
+    sequence:
+      - service: script.twitter_notify
+        data:
+          who: '{{ who }}'
+          message: !include ../templates/twitter_recent_content.yaml
+          
+
+  twitter_great_content:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_great_content.yaml
+          who: '{{ who }}'
+  
+  twitter_new_ha:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_new_ha.yaml
+          who: '{{ who }}'
