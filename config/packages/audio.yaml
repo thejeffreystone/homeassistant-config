@@ -312,32 +312,73 @@ sensor:
         value_template: >-
           {% set sensor = 'main' %}
           {% if is_state('input_boolean.audible_notifications', 'on') %}
-            {% set sensor = expand('group.occupancy') | selectattr('state', 'eq', 'on') | sort(attribute='last_changed') | last %}
+            {% if expand('group.occupancy') | selectattr('state', 'eq', 'on') | list | count >= 1 %}
+              {% set sensor = expand('group.occupancy') | selectattr('state', 'eq', 'on') | sort(attribute='last_changed') | last %}
+            {% endif %}
             
+            {% if sensor != 'main' and ((as_timestamp(now()) - (as_timestamp(sensor.last_changed)) | float ) % 3600) | round(0) <= 120 %}
+              {% set sensor = expand('group.occupancy') | selectattr('state', 'eq', 'on') | sort(attribute='last_changed') | last %}
+            {% elif sensor == 'main' and expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | count > 0 %}
+              {% set sensor = expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | last %}
+              {% set sensor = states(sensor) %}
+            {% else %}
+                {% if is_state('group.family', 'home') %}
+                  {% set sensor = states('sensor.room_presence') %}
+                {% endif %}
+            {% endif %}
           {% else %}
 
-            {% set sensor = expand('group.occupancy_night') | sort(attribute='last_changed') | last %}
-
+            {% if sensor == 'main' and expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | count > 0 %}  
+            {% set sensor = expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | last %}
+            {% set sensor = states(sensor) %}
+            {% else %}
+              {% set sensor = expand('group.occupancy_night') | sort(attribute='last_changed') | last %}
+            {% endif %}
           {% endif %}
 
-          {% if sensor.name in ['Master Bedroom Motion'] or sensor == 'master_bedroom' %}
+          {% if sensor.name in ['Master Bedroom Motion'] or sensor in ['master_bedroom','bedrooms'] %}
             master_bedroom
-          {% elif sensor.name in ['Kitchen Motion', 'Kitchen Motion', 'Bar Motion', 'Pantry Motion'] or sensor == 'kitchen' %}
+          {% elif sensor.name in ['Bar Motion','Pantry Motion', 'Kitchen Motion'] or sensor == 'kitchen' %}
             kitchen
           {% elif sensor.name in ['Living Room Motion','main'] or sensor == 'living_room' %}
             living_room
-          {% elif sensor.name in ['Skylars Bedroom Motion' ] %}
-            skylars_room
-          {% elif sensor.name in ['Master Bedroom Motion' ] %}
-            master_bedroom
-          {% elif sensor.name in ['Studio Motion' ] %}
+          {% elif sensor.name in ['Skylars Room Motion' ] %}
+            skylar_bedroom
+          {% elif sensor.name in ['Studio Motion' ] or sensor == 'studio' %}
             studio
-          {% elif is_state('media_player.theater_tv', 'on') or sensor == 'theater' or sensor.name in ['Theater Motion'] %}
+          {% elif sensor.name in ['Pottery Studio Motion', 'Dungeon Motion' ] %}
+            pottery_studio
+          {% elif sensor.name in ['Theater Motion' ] or is_state('media_player.theater_tv', 'on') or sensor == 'theater' %}
             theater
           {% else %}
             {{ states('sensor.room_presence') }}
           {% endif %}
-        
+        attribute_templates:
+          presence_source: >
+            {% set sensor = 'NA' %}
+            {% if expand('group.occupancy') | selectattr('state', 'eq', 'on') | list | count >= 1 %}
+              {% set sensor = expand('group.occupancy') | selectattr('state', 'eq', 'on') | sort(attribute='last_changed') | last %}
+            {% endif %}
+            {% if sensor != 'NA' and ((as_timestamp(now()) - (as_timestamp(sensor.last_changed)) | float ) % 3600) | round(0) <= 120 %}
+              motion sensor
+            {% else %}
+              {% set sensor = expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | last %}
+              {% if states(sensor) == states('sensor.room_presence') %}
+                {% if 'jeffs' in sensor %}
+                  jeff
+                {% elif 'kats' in sensor %} 
+                  kat
+                {% else %}
+                  {{ states('sensor.presence_source') }} 
+                {% endif %}
+              {% else %}
+                {% if is_state('group.family', 'home') %}
+                  {{ states('sensor.presence_source') }}
+                {% else %}
+                  none
+                {% endif %}
+              {% endif %}
+            {% endif %}
             
       alexa_audio:
         friendly_name: "Alexa Audio"
@@ -352,7 +393,7 @@ sensor:
               master_bedroom
             {% else %}
               main
-            {%- endif %}sb
+            {%- endif %}
       last_alexa:
         value_template: >
-          {{ states.media_player | selectattr('attributes.last_called','eq',True) | map(attribute='entity_id') | first }}
+          {{ expand('group.all_echos') | selectattr('attributes.last_called','eq',True) | map(attribute='entity_id') | first }}
