@@ -1,0 +1,1078 @@
+input_boolean:
+  productivity_music:
+    name: Productivty
+  pixar_pier_loop_studio:
+    name: Pixar Pier Loop
+  toystoryland_loop_studio:
+    name: Toy Story Land
+  aroundwdw_studio:
+    name: Around WDW
+  arounddisneyland_studio:
+    name: Around Disneyland
+  aroundmk_studio:
+    name: Around Magic Kingdom
+  be_our_guest_studio:
+    name: Be Our Guest
+  polynesian_studio:
+    name: Polynesian Loop
+  tangled_loop_studio:
+    name: Tangled Rest Area
+  epcot_gateway_studio:
+    name: Epcot Gateway
+  test_track_loop_studio:
+    name: Test Track Loop
+  tiki_statues_studio:
+    name: Tiki Statues
+  hogwartsexpress_studio:
+    name: hogwartsexpress_studio
+  forbiddenjourney_studio:
+    name: forbiddenjourney_studio
+  islandsofadventure_studio:
+    name: islandsofadventure_studio
+  hogsmeadeloop_studio:
+    name: hogsmeadeloop_studio
+  work_background:
+    name: Work Background
+  piratesqueue_studio:
+    name: Pirate Queue Studio
+  piratestownsquare_studio:
+    name: Pirate Town Square
+  galaxyedge_studio:
+    name: Galaxys Edge Studio
+  hauntedmansionqueue_studio:
+    name: Haunted Mansion queue
+  mk_adventureland_loop_studio:
+    name: mk_adventureland_loop_studio
+  mk_frontierland_loop_studio:
+    name: mk_frontierland_loop_studio
+  mk_mainstreet_audio_studio:
+    name: mk_mainstreet_audio_studio
+
+group:
+
+  Work Background:
+    entities:
+      - input_boolean.be_our_guest_studio
+      - input_boolean.toystoryland_loop_studio
+      - input_boolean.polynesian_studio
+      - input_boolean.tangled_loop_studio
+      - input_boolean.test_track_loop_studio
+      - input_boolean.pixar_pier_loop_studio
+      - input_boolean.hogwartsexpress_studio
+      - input_boolean.forbiddenjourney_studio
+      - input_boolean.islandsofadventure_studio
+      - input_boolean.hogsmeadeloop_studio
+      - input_boolean.piratesqueue_studio
+      - input_boolean.tiki_statues_studio
+      - input_boolean.hauntedmansionqueue_studio
+      - input_boolean.arounddisneyland_studio
+      - input_boolean.piratestownsquare_studio
+      - input_boolean.galaxyedge_studio
+      - input_boolean.mk_adventureland_loop_studio
+      - input_boolean.mk_frontierland_loop_studio
+      - input_boolean.mk_mainstreet_audio_studio
+      - input_boolean.productivity_music
+      - input_boolean.aroundmk_studio
+      - input_boolean.aroundwdw_studio
+      - input_boolean.epcot_gateway_studio
+
+automation:
+     
+  # - id: 76a225da-5e35-46c3-aa50-b0af6e9cf471
+  #   alias: Work Lighting
+  #   initial_state: true
+  #   trigger:
+  #   - platform: state
+  #     entity_id: binary_sensor.studio_motion
+  #     from: "off"
+  #     to: "on"
+  #     id: motion
+  #   - platform: time
+  #     at: "23:00:00"
+  #     id: late
+  #   action:
+  #   - choose:
+  #     - conditions:
+  #       - condition: trigger
+  #         id: motion
+  #       - condition: state
+
+  #       sequence:
+  #         action
+  #     - conditions:
+  #         condition
+  #       sequence:
+  #         action
+  #     default:
+  #         []
+      
+
+
+# Turn off input booleans when audio is over:
+  - id: f4e265bf-ac16-427d-a680-24c981f5067f
+    alias: work_audio_auto_off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: media_player.studio_speaker
+      to: 'idle'
+      from: 'playing'
+    - platform: state
+      entity_id: media_player.studio_speaker
+      to: 'idle'
+      from: 'paused'
+    condition:
+    - condition: state
+      entity_id: group.work_background
+      state: 'on'
+    action:
+    - service: homeassistant.turn_off 
+      entity_id: group.work_background
+
+# If Main audio is off, turn off input_booleans and notify via notifications. 
+  - id: 63cf74cb-a6af-42d1-ad6c-546df8d575e6
+    alias: Work Audio is Disabled 
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: group.work_background
+      to: 'on'
+    condition:
+      condition: or
+      conditions:
+      - condition: state 
+        entity_id: input_boolean.audible_notifications
+        state: 'off'
+      - condition: state
+        entity_id: group.family
+        state: 'not_home'
+    action:
+    - service: homeassistant.turn_off 
+      entity_id: group.work_background
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: "audioissue"
+    - service: persistent_notification.create
+      data_template:
+        notification_id: "audioissue"
+        message: "Disney audio functions are disabled because the audible notifications are off."
+        title: "Audio Not Available"
+
+
+  - id: 20056f40-5491-4e6e-ae21-e05dcc2a17b2
+    alias: Work Background Music 
+    trigger:
+      - platform: time
+        at: input_datetime.work_background_start
+        id: start
+      - platform: time
+        at: input_datetime.work_background_stop
+        id: stop
+    condition:
+      - condition: time
+        weekday:
+          - mon
+          - tue
+          - wed
+          - thu
+          - fri
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: input_boolean.turn_on
+          entity_id: input_boolean.work_background
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: input_boolean.turn_off
+          entity_id: input_boolean.work_background
+      default: []
+    initial_state: true
+    mode: single   
+
+
+
+  - id: ae4cb721-07b7-4dd9-ab92-1b800a41f9c1
+    alias: Work background Loop
+    trigger: 
+    - platform: state
+      entity_id: media_player.studio_speaker
+      to: 'idle'
+      from: 'playing'
+      id: restart 
+    - platform: state
+      entity_id: input_boolean.work_background
+      id: start
+      from: 'off'
+      to: 'on'
+    - platform: state
+      entity_id: input_boolean.work_background
+      id: stop
+      from: 'on'
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.audible_notifications
+      state: 'on'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: input_boolean.turn_on
+          data:
+            entity_id: "{{ expand('group.work_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}"
+      - conditions:
+        - condition: trigger
+          id: restart
+        - condition: state
+          entity_id: input_boolean.work_background
+          state: 'on'
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+        - delay: '00:01:00'
+        - service: input_boolean.turn_on
+          data:
+            entity_id: "{{ expand('group.work_background') | selectattr('state', 'eq', 'off') | map(attribute='entity_id') | list | random }}"
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+        - service: homeassistant.turn_off
+          entity_id: group.work_background
+      default: []
+    initial_state: true
+    mode: restart      
+
+  - id: 1afc0959-be5c-4f72-903a-d4ade7c854de
+    alias: Polynesian Loop Studio 
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.polynesian_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.polynesian_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PolynesianLoop.mp3"
+            volume: .17
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single     
+
+  - id: 1619533d-dcfb-402e-bafc-a8ba7d52a7b0
+    alias: Productivity Suite Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.productivity_music
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.productivity_music
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/music/Productivity_Suite.mp3"
+            volume: .40
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single 
+
+
+  - id: a285e001-f1bc-4a8f-a6a3-1f5766b4a710
+    alias: Pirates Town Square Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.piratestownsquare_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.piratestownsquare_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PiratesTown.mp3"
+            volume: .15
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+
+
+  - id: f774d233-5dfe-476f-aa40-bd8f869a6a89
+    alias: Galaxy Edge Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.galaxyedge_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.galaxyedge_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: >
+              {{ [
+                "/media/disney/GalaxyEdge.mp3",
+                "/media/disney/GalaxyEdgeNight.mp3"
+              ] | random }}
+            volume: .20
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+
+  - id: 15b0e21e-0f81-445e-a543-a5a90e5846c5
+    alias: Tiki Statues Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.tiki_statues_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.tiki_statues_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/tiki_statues.mp3"
+            volume: .17
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single     
+
+  - id: 312e81b4-1372-417d-9def-f229bbd46964
+    alias: Hogwarts Express Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hogwartsexpress_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hogwartsexpress_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HogwartsExpress.mp3"
+            volume: .18
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single   
+
+  - id: 5fd236c8-4ac0-408f-9f28-d8a52e86b75e
+    alias: Forbidden Journey Queue Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.forbiddenjourney_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.forbiddenjourney_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/ForbiddenJourney.mp3"
+            volume: .15
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 22166120-20af-4caf-8793-ff57a1919810
+    alias: Islands of Adventure Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.islandsofadventure_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.islandsofadventure_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/IslandsofAdventure.mp3"
+            volume: .17
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single   
+
+  - id: 2b50e373-9038-42f9-9448-6e7cb981ce3f
+    alias: Hogsmeade Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hogsmeadeloop_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hogsmeadeloop_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HogsmeadeMusicLoop.mp3"
+            volume: .17
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single      
+
+  - id: 30eacb5f-205a-40bf-9ec3-f1cea10e3191
+    alias: Pirate Queue Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.piratesqueue_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.piratesqueue_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/PiratesQueue.mp3"
+            volume: .17
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single  
+
+  - id: 764e72b4-5046-4499-80a1-f692e3bafce6
+    alias: Epcot Gateway Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.epcot_gateway_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.epcot_gateway_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/EpcotGateway.mp3"
+            volume: .17
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single    
+
+  - id: 4c2394b6-c44a-47ad-87ed-a0966609d17c
+    alias: Tangled Rest Area Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.tangled_loop_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.tangled_loop_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: >
+              {{[
+                "/media/disney/TangledRestArea.mp3",
+                "/media/disney/TangledRestArea2.mp3"
+                ] | random }}     
+            volume: .15
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single    
+  
+  - id: 5238bfd5-7a9a-4fb5-ab8c-4fff4f6bb6b9
+    alias: Test Track Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.test_track_loop_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.test_track_loop_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/TestTrack.mp3"
+            volume: .20
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single 
+
+
+  - id: 1417d9c0-b8f6-4b85-b149-3ee0d645d9f7
+    alias: Be Our Guest Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.be_our_guest_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.be_our_guest_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/be_our_guest.mp3"
+            volume: .20
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single      
+
+  - id: 4a6e9c11-baa4-4a15-b03c-3a44067f62c7
+    alias: Around WDW Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.aroundwdw_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.aroundwdw_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/Liberty_square_audio.mp3"
+            volume: .20
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: 66455737-8ee2-436d-a129-a7b24c8508a6
+    alias: Around Magic Kingdom Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.aroundmk_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.aroundmk_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/aroundmk.mp3"
+            volume: .20
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: 51ddd9d0-84b9-4b71-8f62-2de51a7583f1
+    alias: Around Disneyland Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.arounddisneyland_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.arounddisneyland_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/DisneylandMainstreetLoop.mp3"
+            volume: .18
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: 5905572c-10a6-4322-94df-5292612832c5
+    alias: Haunted Mansion Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionqueue_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.hauntedmansionqueue_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/HM_Loop.mp3"
+            volume: .30
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+  - id: d5d565ce-75a4-4033-bd4e-422f127bf01e
+    alias: Toystory Land Loop Studio
+    trigger: 
+    - platform: state
+      entity_id: input_boolean.toystoryland_loop_studio
+      to: 'on'
+      from: 'off'
+      id: start 
+    - platform: state
+      entity_id: input_boolean.toystoryland_loop_studio
+      id: stop
+      from: 'on'
+      to: 'off'
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: start
+        sequence:
+        - service: script.local_audio
+          data:
+            media: "/media/disney/ToyStorylandLoop.mp3"
+            volume: .20
+            speaker: media_player.studio_speaker
+      - conditions:
+        - condition: trigger
+          id: stop
+        sequence:
+        - service: media_player.media_stop
+          entity_id: media_player.studio_speaker
+        - service: script.turn_off
+          entity_id: script.local_audio
+      default: []
+    initial_state: true
+    mode: single
+
+# MK Mainstreet Audio
+  - id: 2e8a76c5-33ea-49df-8def-660e34303cb8
+    alias: MK Loop On Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_mainstreet_audio_studio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.studio_speaker
+        media: /media/disney/MK_MainStreet_Loop.mp3
+        volume: .12
+  - id: 155f9ee8-5cad-41f3-b32b-8e9217f338b4
+    alias: MK Loop Off Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_mainstreet_audio_studio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.studio_speaker
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Frontier Audio
+  - id: ee1a9fbb-ac36-40a3-903a-f15b2396444a
+    alias: Frontier Loop On Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_frontierland_loop_studio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.studio_speaker
+        media: /media/disney/frontierland_loop.mp3
+        volume: .12
+  - id: 1025d841-9581-4b1a-a7f0-c51bf80c1eb9
+    alias: Frontier Loop Off Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_frontierland_loop_studio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.studio_speaker
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Adventure Audio
+  - id: ccb365ab-cfea-4afe-9294-e9e9b73db091
+    alias: Adventure Land Loop On Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_adventureland_loop_studio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.studio_speaker
+        media: /media/disney/adventureland_loop.mp3
+        volume: .12
+  - id: 79715b44-e5e1-4f47-8d67-fa9e891e4e57
+    alias: Adventure Loop Off Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.mk_adventureland_loop_studio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.studio_speaker
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+# Pixar Pier Audio
+  - id: dba3fdae-706e-4660-852e-35bcd41da5e7
+    alias: Pixar Pier Loop On Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.pixar_pier_loop_studio
+      to: 'on'
+    action:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.studio_speaker
+        media: /media/disney/PixarPier.mp3
+        volume: .20
+  - id: e876b184-ec4f-4379-8f37-a65db0ca722b
+    alias: Pixar Pier Loop Off Studio
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.pixar_pier_loop_studio
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.studio_speaker
+    - service: script.turn_off
+      entity_id: script.local_audio
+
+
+
+script:
+  
+# Big Kill show script - This is my E-Stop
+  kill_work_audio:
+    sequence:
+    - service: media_player.media_stop
+      entity_id: media_player.studio_speaker
+    - service: script.turn_off
+      entity_id: script.local_audio
+    - service: script.turn_off
+      entity_id: script.local_audio
+    - service: homeassistant.turn_off 
+      entity_id: group.work_background
