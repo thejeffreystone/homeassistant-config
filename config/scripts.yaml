@@ -1,136 +1,4 @@
-speech_engine:
-  sequence:
-  - service: mqtt.publish
-    data_template:
-      topic: house/polly/lastmsg
-      payload: "{%- macro getReport() -%} {% if msg_summary %}\n  {{ msg_summary}}\n{%
-        else %}\n  {{ message | striptags | truncate(220)}}\n{% endif %} {%- endmacro
-        -%} {%- macro cleanup(data) -%}\n  {%- for item in data.split(\"\\n\")  if
-        item | trim != \"\" -%}\n    {{ item | trim }} {% endfor -%}\n{%- endmacro
-        -%} {%- macro mother_of_all_macros() -%}\n  {{ getReport() }}\n{%- endmacro
-        -%} {{- cleanup(mother_of_all_macros()) -}}\n"
-      retain: true
-  - service: mqtt.publish
-    data_template:
-      topic: house/polly/msgtime
-      payload: '{{ now().strftime("%-I") }}:{{ now().strftime("%M") }} {{ now().strftime("%p")
-        }} '
-      retain: true
-  - service: mqtt.publish
-    data_template:
-      topic: house/polly/lastloc
-      payload: '{{ who }}'
-      retain: true
-  - condition: state
-    entity_id: input_boolean.audible_notifications
-    state: 'on'
-  - condition: state
-    entity_id: group.family
-    state: home
-  - condition: state
-    entity_id: input_boolean.vacation_mode
-    state: 'off'
-  - service: "{% if who in ['kitchen', 'media_player.kitchen_display'] %}\n  {% set
-      who = 'living_room' %}\n{% elif who in ['livingroom_echo','media_player.living_room_echo','living_room',
-      'main']  %}  \n  {% set who = 'living_room' %}\n{% elif who in ['skylars_bedroom','skylar_bedroom','skylars_echo','media_player.skylars_bedroom_echo']
-      \ %}\n  {% set who = 'skylar_bedroom' %}\n{% elif who in ['master_bedroom','media_player.master_bedroom_speaker','master_bedroom_echo']
-      \ %}\n  {% set who = 'master_bedroom' %}\n{% elif who in ['studio','slacker_labs','media_player.dads_desk']
-      \ %}\n  {% set who = 'studio' %}\n{% elif who in ['theater'] %}\n  {% set who
-      = 'theater' %}\n{% elif who in ['basement', 'media_player.basement_echo']  %}\n
-      \ {% set who = 'basement' %}       \n{% else %}\n  {% set who = 'main' %}  \n{%
-      endif %} script.jarvis_voice \n"
-    data:
-      who: '{{ who }}'
-      message: "{%- macro getReport() -%}\n  {{ message }}\n{%- endmacro -%} {%- macro
-        cleanup(data) -%}\n  {%- for item in data.split(\"\\n\")  if item | trim !=
-        \"\" -%}\n    {{ item | trim }} {% endfor -%}\n{%- endmacro -%} {%- macro
-        mother_of_all_macros() -%}\n  {{ getReport() }}\n{%- endmacro -%} {{- cleanup(mother_of_all_macros())
-        -}}\n"
-jarvis_voice:
-  sequence:
-  - service: notify.alexa_media
-    data:
-      message: '<voice name="{{ states(''input_select.polly_voice'') }}"> <amazon:auto-breaths>
-        <prosody rate="fast"> {{ message }} </prosody> </amazon:auto-breaths> </voice>
 
-        '
-      target: "{% if who in ['kitchen_echo','media_player.kitchen_echo','kitchen']
-        %}\n  media_player.living_room_echo\n{% elif who in ['skylar_bedroom','media_player.skylars_room','skylars_bedroom','skylars_echo',
-        'skylars_room'] %}\n  media_player.skylars_room\n{% elif who in ['master_bedroom',
-        'media_player.master_bedroom_echo', 'master_bedroom_echo'] %}\n  media_player.master_bedroom_echo\n{%
-        elif who in ['livingroom_echo','media_player.living_room_echo','living_room',
-        'main'] %}\n  media_player.living_room_echo\n{% elif who in ['studio', 'media_player.dads_desk']
-        %}\n  media_player.slacker_labs_echo\n{% elif who in ['basement', 'media_player.basement_echo']
-        %}\n  media_player.basement_echo\n{% elif who in ['theater', 'media_player.theater']
-        %}\n  media_player.theater_echo\n{% else %}\n  media_player.living_room_echo\n{%
-        endif %}\n"
-      data:
-        type: tts
-jarvis_alert:
-  sequence:
-  - service: mqtt.publish
-    data_template:
-      topic: house/polly/lastmsg
-      payload: "{%- macro getReport() -%} {% if msg_summary %}\n  {{ msg_summary}}\n{%
-        else %}\n  {{ message | striptags | truncate(220)}}\n{% endif %} {%- endmacro
-        -%} {%- macro cleanup(data) -%}\n  {%- for item in data.split(\"\\n\")  if
-        item | trim != \"\" -%}\n    {{ item | trim }} {% endfor -%}\n{%- endmacro
-        -%} {%- macro mother_of_all_macros() -%}\n  {{ getReport() }}\n{%- endmacro
-        -%} {{- cleanup(mother_of_all_macros()) -}}\n"
-      retain: true
-  - service: mqtt.publish
-    data_template:
-      topic: house/polly/msgtime
-      payload: '{{ now().strftime("%-I") }}:{{ now().strftime("%M") }} {{ now().strftime("%p")
-        }}
-
-        '
-      retain: true
-  - service: mqtt.publish
-    data_template:
-      topic: house/polly/lastloc
-      payload: '{{ who }}'
-      retain: true
-  - service: media_player.volume_set
-    data_template:
-      entity_id: media_player.ha_blue
-      volume_level: "{% if is_state('binary_sensor.lights_out', 'on') %}\n  .70\n{%
-        else %}\n  .45\n{% endif %}\n"
-  - service: tts.amazon_polly_say
-    data_template:
-      entity_id: media_player.ha_blue
-      message: "<speak>\n  <break time=\"1s\"/>\n  <amazon:auto-breaths>\n  <prosody
-        rate=\"fast\">\n  {{ message }}\n  <prosody>\n  </amazon:auto-breaths>\n</speak>"
-      cache: true
-announcement:
-  sequence:
-  - service: script.speech_engine
-    data:
-      who: '{{ who }}'
-      message: "{% if states('sensor.kat_room') == who and states('sensor.jeff_room')
-        == who  %}\n  {{ [\n    'Pardon me everyone, ',\n    'Excuse me, ',\n    'I
-        beg your pardon, ',\n    'Since I have you all together, ',\n    'I am sorry
-        to interrupt, but. ',\n    'While I have you all together, '\n    ] | random
-        }}\n{% elif states('sensor.kat_room') == who  %}\n  {{ [\n      \"Maam, \",\n
-        \     \"Pardon me Ma'am, \",\n      \"Pardon me Kat, \",\n      \"Katherine,
-        \",\n      \"I dont mean to interrupt Ma'am, \"\n      ] | random }}\n{% elif
-        states('sensor.jeff_room') == who  %}\n  {{ [\n      'Sir, ',\n      'Pardon
-        me Sir, ',\n      'Pardon me Jeff, ',\n      'Boss, ',\n      'I dont mean
-        to interrupt Sir, '\n      ] | random }}\n{% else %}\n  {{ [\n    'Pardon
-        me, ',\n    'Excuse me, ',\n    'I beg your pardon, ',\n    'I do not mean
-        to intrude, but, ',\n    'I am sorry to interrupt, but. '\n    ] | random
-        }}\n{% endif %} {{ message }}"
-briefing:
-  sequence:
-  - service: script.speech_engine
-    data:
-      who: '{{ who }}'
-      message: "{% if now().strftime('%H')|int < 12%}\n  Good morning.\n{% elif now().strftime('%H')|int
-        >= 12 and now().strftime('%H')|int < 17 %}\n  Good afternoon.\n{% else %}\n
-        \ Good evening.\n{% endif %} {% if states('sensor.kat_room') == who and states('sensor.jeff_room')
-        == who  %}\n  everyone.\n{% elif states('sensor.kat_room') == who  %}\n  Ma'am.\n{%
-        elif states('sensor.jeff_room') == who  %}\n  Sir.\n{% else %}\n  \n{% endif
-        %} {{ message }}"
 activate_work_time:
   alias: Activate Work time
   sequence:
@@ -195,3 +63,19 @@ art_done:
       entity_id: input_boolean.chimichanga_mode
   mode: single
   icon: mdi:artstation
+madame_leotta:
+  alias: Madame Leotta
+  sequence:
+  - service: switch.toggle
+    data: {}
+    target:
+      entity_id: switch.madame_leotta
+  mode: single
+haunted_clock:
+  alias: Haunted Clock
+  sequence:
+  - service: switch.toggle
+    data: {}
+    target:
+      entity_id: switch.haunted_clock
+  mode: single

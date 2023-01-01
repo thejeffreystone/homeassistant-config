@@ -255,11 +255,55 @@
       state: 'off'
     light.galaxy_lamp:
       state: 'on'
+    switch.disco_ball:
+      state: 'off'
+    light.wled_skylarsbed:
+      state: 'on'
+      brightness: 255
+      rgb_color:
+      - 64
+      - 255
+      - 112
+    switch.wled_skylarsbed_nightlight:
+      state: 'on'
   id: f4e8d2f594c446ee9f0e41cf46df3a53
+- name: skylar bedroom night
+  entities:
+    light.skylars_dresser_lamp:
+      state: 'on'
+      rgb_color:
+      - 64
+      - 255
+      - 112
+      brightness: 127
+    switch.sleep_aid:
+      state: 'off'
+    light.galaxy_lamp:
+      state: 'off'
+  id: e4b90a63-9417-46a9-980b-29c7c1e9c8ed
+- name: skylar bedroom morning
+  entities:
+    light.skylars_dresser_lamp:
+      state: 'on'
+      rgb_color:
+      - 255
+      - 255
+      - 255
+      brightness: 255
+    light.wled_skylarsbed:
+      state: 'on'
+      brightness: 255
+      rgb_color:
+      - 64
+      - 255
+      - 112
+  id: e1a09513-909a-4b31-ba21-247ff5885ec8
 - id: '1663677327698'
   name: Work Time
   entities:
     light.desk_lighting:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 9009
       min_mireds: 111
       max_mireds: 500
       supported_color_modes:
@@ -278,44 +322,30 @@
       - 0.151
       - 0.343
       rate_limit_total: 100
-      rate_limit_remaining: -6446
-      rate_limit_reset_seconds: -1665412450.26
+      rate_limit_remaining: -7865
+      rate_limit_reset_seconds: -1669924212.9
       rate_limit_reset: '1969-12-31T19:00:00'
       rate_limit_on: 5
       manufacturer: Govee
       model: H6056
       friendly_name: Desk Lighting
       supported_features: 19
+      assumed_state: true
       state: 'on'
     switch.work_desk_lamp:
       friendly_name: Work Desk Lamp
       state: 'on'
-    switch.studio_shelves:
-      linkquality: 123
-      update:
-        state: idle
-      update_available: false
-      friendly_name: Studio Shelves
-      state: 'on'
     light.sl_desk_lamp:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6666
       min_mireds: 150
       max_mireds: 500
       supported_color_modes:
       - color_temp
       - xy
-      color:
-        x: 0.372
-        y: 0.3713
-      energy: 72.69
-      linkquality: 160
-      power: 4.1
-      update:
-        state: available
-      update_available: true
-      friendly_name: SL Desk Lamp
-      supported_features: 40
       color_mode: color_temp
-      brightness: 1
+      brightness: 115
+      color_temp_kelvin: 4201
       color_temp: 238
       hs_color:
       - 26.743
@@ -327,13 +357,24 @@
       xy_color:
       - 0.409
       - 0.361
+      color:
+        x: 0.372
+        y: 0.3713
+      energy: 75.46
+      linkquality: 112
+      power: 1.9
+      update:
+        state: available
+      update_available: true
+      friendly_name: SL Desk Lamp
+      supported_features: 40
       state: 'on'
     switch.studio_airfreshener:
-      linkquality: 145
+      linkquality: 171
       friendly_name: Studio Airfreshener
       state: 'on'
     switch.accent_light_2:
-      linkquality: 182
+      linkquality: 178
       friendly_name: Accent Light 2
       state: 'off'
     switch.key_light:
@@ -341,10 +382,12 @@
       friendly_name: Key Light
       state: 'off'
     switch.desk_key_light:
-      icon: mdi:spotlight
-      friendly_name: Desk Key Light
+      linkquality: 80
+      friendly_name: 'Desk Key Light '
       state: 'on'
     light.studio_fan_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6493
       min_mireds: 154
       max_mireds: 500
       supported_color_modes:
@@ -369,12 +412,24 @@
       friendly_name: Studio Fan Lights
       supported_features: 40
       state: 'on'
+    light.studio_shelves:
+      supported_color_modes:
+      - brightness
+      friendly_name: Studio Shelves
+      supported_features: 32
+      color_mode: brightness
+      brightness: 255
+      state: 'on'
+    switch.monitor_lights:
+      last_run_success: true
+      switch_mode: true
+      device_class: switch
+      friendly_name: Monitor Lights
+      state: 'on'
   metadata:
     light.desk_lighting:
       entity_only: true
     switch.work_desk_lamp:
-      entity_only: true
-    switch.studio_shelves:
       entity_only: true
     light.sl_desk_lamp:
       entity_only: true
@@ -987,3 +1042,135 @@
       entity_only: true
     light.front_door_lamp:
       entity_only: true
+- name: wishes preshow
+  entities:
+    group.rgb_lr:
+      state: 'off'
+    switch.christmas_tree:
+      state: 'off'
+    light.warning_light:
+      state: 'on'
+      brightness: 128
+  id: 8fe178935ec747c6801fc3f367a10a49
+- name: wishes show
+  entities:
+    switch.christmas_tree:
+      state: 'on'
+    light.living_room_lamp:
+      state: 'on'
+      brightness: 20
+    light.front_door_lamp:
+      state: 'on'
+      brightness: 20
+    light.living_room_tower_lamp:
+      state: 'on'
+      brightness: 20
+  id: cf27a902be0f49c6bd1727c0d617065c
+- id: '1670550207507'
+  name: Front Porch Normal Lighting
+  entities:
+    light.front_porch_1:
+      min_color_temp_kelvin: 2702
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 370
+      supported_color_modes:
+      - color_temp
+      - rgb
+      color_mode: color_temp
+      brightness: 255
+      color_temp_kelvin: 4000
+      color_temp: 250
+      hs_color:
+      - 26.812
+      - 34.87
+      rgb_color:
+      - 255
+      - 205
+      - 166
+      xy_color:
+      - 0.421
+      - 0.364
+      last_run_success:
+      friendly_name: Front Porch 1
+      supported_features: 0
+      state: 'on'
+    light.front_porch_2:
+      min_color_temp_kelvin: 2702
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 370
+      supported_color_modes:
+      - color_temp
+      - rgb
+      color_mode: color_temp
+      brightness: 255
+      color_temp_kelvin: 4000
+      color_temp: 250
+      hs_color:
+      - 26.812
+      - 34.87
+      rgb_color:
+      - 255
+      - 205
+      - 166
+      xy_color:
+      - 0.421
+      - 0.364
+      last_run_success:
+      friendly_name: Front Porch 2
+      supported_features: 0
+      state: 'on'
+  metadata: {}
+- id: '1670554143546'
+  name: Front Porch Christmas
+  entities:
+    light.front_porch_1:
+      min_color_temp_kelvin: 2702
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 370
+      supported_color_modes:
+      - color_temp
+      - rgb
+      color_mode: rgb
+      brightness: 255
+      hs_color:
+      - 120
+      - 100
+      rgb_color:
+      - 0
+      - 254
+      - 0
+      xy_color:
+      - 0.172
+      - 0.747
+      last_run_success:
+      friendly_name: Front Porch 1
+      supported_features: 0
+      state: 'on'
+    light.front_porch_2:
+      min_color_temp_kelvin: 2702
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 370
+      supported_color_modes:
+      - color_temp
+      - rgb
+      color_mode: rgb
+      brightness: 255
+      hs_color:
+      - 0
+      - 100
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      xy_color:
+      - 0.701
+      - 0.299
+      last_run_success:
+      friendly_name: Front Porch 2
+      supported_features: 0
+      state: 'on'
+  metadata: {}
