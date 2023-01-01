@@ -192,22 +192,27 @@ script:
       - choose:
           - conditions:
               - condition: state
-                entity_id: input_boolean.sentry_mode
+                entity_id: input_boolean.barn_door_protocol
                 state: "on"
             sequence:
-              - service: script.speech_engine
-                data_template:
-                  who: "{{ states.sensor.room_audio.state }}"
-                  message: !include ../templates/speech/already_done.yaml
+              - service: script.jarvis_already_done
         default:
-          - service: script.speech_engine
-            data_template:
-              who: "{{ states.sensor.room_audio.state }}"
-              message: !include ../templates/speech/interjections.yaml
+          - service: script.jarvis_interjection
           - delay:
               seconds: 2
           - service: input_boolean.turn_on
-            entity_id: input_boolean.sentry_mode
+            entity_id: input_boolean.barn_door_protocol
+          - delay:
+              seconds: 5
+          - if:
+            - condition: state
+              entity_id: input_boolean.barn_door_protocol
+              state: 'on'
+            then:
+            - service: script.speech_engine
+              data_template:
+                who: "{{ states('sensor.room_audio.') }}"
+                message: "Barn door protocol has been activated."
 
   # Called via secret Alexa routine...adds a little interaction
   deactivate_barn_door_protocol:
@@ -215,22 +220,27 @@ script:
       - choose:
           - conditions:
               - condition: state
-                entity_id: input_boolean.sentry_mode
+                entity_id: input_boolean.barn_door_protocol
                 state: "off"
             sequence:
-              - service: script.speech_engine
-                data_template:
-                  who: "{{ states.sensor.room_audio.state }}"
-                  message: !include ../templates/speech/already_done.yaml
+              - service: script.jarvis_already_done
         default:
-          - service: script.speech_engine
-            data_template:
-              who: "{{ states.sensor.room_audio.state }}"
-              message: !include ../templates/speech/interjections.yaml
+          - service: script.jarvis_interjection
           - delay:
               seconds: 2
           - service: input_boolean.turn_off
-            entity_id: input_boolean.sentry_mode
+            entity_id: input_boolean.barn_door_protocol
+          - delay:
+              seconds: 5
+          - if:
+            - condition: state
+              entity_id: input_boolean.barn_door_protocol
+              state: 'off'
+            then:
+            - service: script.speech_engine
+              data_template:
+                who: "{{ states('sensor.room_audio.') }}"
+                message: "Barn door protocol has been deactivated."
 
   were_home:
     sequence:
