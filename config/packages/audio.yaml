@@ -316,7 +316,7 @@ sensor:
               {% set sensor = expand('group.occupancy') | selectattr('state', 'eq', 'on') | sort(attribute='last_changed') | last %}
             {% endif %}
             
-            {% if sensor != 'main' and ((as_timestamp(now()) - (as_timestamp(sensor.last_changed)) | float ) % 3600) | round(0) <= states('input_number.presence_threashold') | float %}
+            {% if sensor != 'main' and ((as_timestamp(now()) - (as_timestamp(sensor.last_changed)) | float ) % 3600) | round(0) <= states('input_number.presence_threshold') | float %}
               {% set sensor = expand('group.occupancy') | selectattr('state', 'eq', 'on') | sort(attribute='last_changed') | last %}
             {% elif sensor == 'main' and expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | count > 0 %}
               {% set sensor = expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | last %}
