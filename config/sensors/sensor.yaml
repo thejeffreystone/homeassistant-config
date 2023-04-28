@@ -1,0 +1,12 @@
+
+
+
+- platform: template
+  sensors:
+    desk_light_energy:
+      friendly_name: "Desk Light Energy"
+      value_template: "{{ state_attr('light.desk_backlight','energy')}}"
+    basement_temp_celsius:
+      friendly_name: Basement Temp C
+      value_template: >
+        {{ ((states('sensor.basement_air_device_temperature') | int - 32) / 1.8) | round }}
