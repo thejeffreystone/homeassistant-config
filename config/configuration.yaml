@@ -62,17 +62,18 @@ zha:
   enable_quirks: true
   custom_quirks_path: /config/zha_quirks
 
+ 
 
 binary_sensor:
-- platform: workday
-  country: US
-  province: GA
-  workdays: [mon, tue, wed, thu, fri]
-- platform: workday
-  name: jeff_workday
-  country: US
-  province: GA
-  workdays: [mon, tue, wed, thu, fri]
+# - platform: workday
+#   country: US
+#   province: GA
+#   workdays: [mon, tue, wed, thu, fri]
+# - platform: workday
+#   name: jeff_workday
+#   country: US
+#   province: GA
+#   workdays: [mon, tue, wed, thu, fri]
 # Times Of Day
 - platform: tod
   name: Night
@@ -118,6 +119,7 @@ input_select: !include input_select.yaml
 input_boolean: !include input_boolean.yaml
 input_datetime: !include input_datetime.yaml
 zone: !include zones.yaml
+template: !include template.yaml
 
 shell_command:
   google_token: sed -i -e 's/2client.client"}2client.client"}/2client.client"}/g' /config/.google.token
