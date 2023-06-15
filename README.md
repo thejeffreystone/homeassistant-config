@@ -1,19 +1,19 @@
 
 <h1 align="center">
-  <a name="logo" href="http://slacker-labs.com"><img src="https://github.com/thejeffreystone/homeassistant-config/blob/main/images/mdl_bw-2.png" alt="Maison de Lune HA" width="200"></a>
+  <a name="logo" href="http://slacker-labs.com"><img src="https://github.com/thejeffreystone/homeassistant-config/blob/main/images/mdl_bw-2.png" alt="Maison des Lunes HA" width="200"></a>
   <br>
-  Maison De Lune
+  Maison Des Lunes
   <br>
   Home Assistant Configuration
 </h1>
 
-This repo contains the working [Home Assistant](https://home-assistant.io/) configuration for **Maison De Lune**. Below are links to the devices currently being used, blog posts, and other HA enthusists that provided inspiration and configs to help build this config. All of the code is free to use.
+This repo contains the working [Home Assistant](https://home-assistant.io/) configuration for **Maison Des Lunes**. Below are links to the devices currently being used, blog posts, and other HA enthusists that provided inspiration and configs to help build this config. All of the code is free to use.
 
 Be sure to follow me on twitter [@thejeffreystone](https://twitter.com/thejeffreystone) and on [YouTube](https://www.youtube.com/channel/UCipZJ6748kd8TbelSxcvcVg) where I am starting to post videos of my Home Automation journey. I also post articles about this config and other Home Automation topics at [slacker-labs.com](https://slacker-labs.com)
 
 And of course, if you have hit that :star: at the top to follow this repo what are you waiting for? You can get updates right in your notification feed everytime I push updates. Which is at least once a week and some weeks quite a bit more.  
 
-#### Maison De Lune's Three Laws of Home Automation 
+#### Maison Des Lunes' Three Laws of Home Automation 
 
 When designing Maison De Lune's automations I have made every effort to prioritize the solution based on the following three laws. 
 
@@ -29,9 +29,9 @@ For more about how they are used visit [https://slacker-labs.com/2020/04/02/the-
 
 This is V6 of my config.
 
-#### General Information about Maison De Lune
+#### General Information about Maison Des Lunes
 
-Hassio is the flavor of Home Assistant powering Maison De Lune these days. Currently it is running on a Home Assistant Blue. 
+Hassio is the flavor of Home Assistant powering Maison Des Lunes these days. Currently it is running on a Home Assistant Blue. 
 
 The old configurations is stored in a different repo - [Older Version](https://github.com/thejeffreystone/home-assistant-configuration)
 
