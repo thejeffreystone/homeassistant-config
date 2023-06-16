@@ -11,7 +11,7 @@
 #   client_secret: !secret google_client_secret
 
 # Testing internet speedtest  
-speedtestdotnet:
+# speedtestdotnet:
 
 gdacs:
   categories:
@@ -41,10 +41,10 @@ tplink:
 ifttt:
   key: !secret IFTTT_API_KEY 
 
-# Using the HACS Daily Snapshot Clean Up Plugin 
-clean_up_snapshots_service:
-  host: !secret snapshot_url
-  token: !secret snapshot_token
-  number_of_snapshots_to_keep: 3
+# # Using the HACS Daily Snapshot Clean Up Plugin 
+# clean_up_snapshots_service:
+#   host: !secret snapshot_url
+#   token: !secret snapshot_token
+#   number_of_snapshots_to_keep: 3
 
 

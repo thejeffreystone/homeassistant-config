@@ -1,0 +1,457 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   02/19/2019
+#   @package        :   Announcements
+#   @description    :   Daily Announcements. 
+###############################################################################
+
+
+###############################
+# input_datetime - So the time report automation fires can be set in the UI
+###############################
+input_datetime:
+  morning_report:
+    name: Morning Report
+    has_date: false
+    has_time: true
+  nightly_report:
+    name: Nightly Report
+    has_date: false
+    has_time: true
+  daily_report:
+    name: Daily Report
+    has_date: false
+    has_time: true
+  skylar_morning_report:
+    name: Skylar Dressed Announcement
+    has_date: false
+    has_time: true
+  skylar_nightly_report:
+    name: Skylar Bedtime Announcement
+    has_date: false
+    has_time: true
+  # audible_notification_on:
+  #   name: Audible Notifications On
+  #   has_date: false
+  #   has_time: true
+  # audible_notification_off:
+  #   name: Audible Notifications Off
+  #   has_date: false
+  #   has_time: true
+    
+
+################################
+# Announcment Automation - fires at the time of the above input_datetimes
+################################
+automation:
+  
+  # - id: 81bee5ee-6820-4626-aebf-3deb8de69e4d
+  #   alias: Turn On Audible Notifications
+  #   initial_state: true
+  #   trigger:
+  #     platform: template
+  #     value_template: "{{ states('sensor.time') == (state_attr('input_datetime.audible_notification_on', 'timestamp') | int | timestamp_custom('%H:%M', True)) }}"
+  #   action:
+  #   - service: input_boolean.turn_on
+  #     entity_id: input_boolean.audible_notifications
+
+  # # Turn off audible notifications if they have't been turned off yet. 
+  # - id: e0e9c774-6abe-42aa-bdab-32108bebb0e9
+  #   alias: Turn Off Audible Notifications
+  #   initial_state: true
+  #   trigger:
+  #   - platform: template
+  #     value_template: "{{ states('sensor.time') == (state_attr('input_datetime.audible_notification_off', 'timestamp') | int | timestamp_custom('%H:%M', True)) }}"
+  #   condition:
+  #   - condition: state
+  #     entity_id: input_boolean.audible_notifications
+  #     state: 'on'
+  #   action:
+  #   - service: input_boolean.turn_off
+  #     entity_id: input_boolean.audible_notifications
+
+  - id: 1d8f396a-f6ec-460d-97e3-d11900418f95
+    alias: Good Morning Report
+    trigger:
+      - platform: state
+        entity_id: sensor.jeff_room
+        to: 'kitchen'
+    condition:
+      - condition: time
+        after: '06:45:00'
+        before: '08:30:00'
+      - condition: state
+        entity_id: input_boolean.good_morning_report
+        state: 'off'
+    action:
+    - service: script.morning_briefing
+    - service: script.twitter_notify
+      data:
+        message: >-
+          {{ [ "I just provided a morning briefing including weather, and traffic
+          conditions, and other things that ensure the residents of Maison Des Lunes know what to expect today.",
+                "Time for the daily update. It was like that scene in Ironman where JARVIS gives the daily briefing but no one was listening. ",
+                "I have prepared a safety briefing to present to my residents but they would just ignore it.",
+                "Do you like to be prepared for the day? So do my residents. So I provided them with an update on whats happening today.",
+                "Sometimes I just like to be snarky, but this morning I decided to just tell everyone what is going on in the world.",
+                "#Homeassistant gives me the ability to make daily announcements like the one I just did using #Amazon Polly.",
+                "Each day at this time I provide the residents of this house an update that includes everything they need to know about the upcoming day. But with more snark."
+             ] | random }}
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.good_morning_report
+
+  
+  - id: e8580ba4-fa76-4185-818b-fba3c3cea41c
+    alias: Master Bedroom Report
+    trigger:
+      platform: time
+      at: input_datetime.daily_report
+    condition:
+      condition: state 
+      entity_id: binary_sensor.jeff_workday_sensor
+      state: 'on'
+    action:
+    - service: script.morning_wakeup_report
+        
+  - id: 09bf89e7-180c-40fb-9543-5bd862e21049
+    alias: skylar morning alarm announcement
+    trigger:
+      platform: time
+      at: input_datetime.skylar_morning_report
+    condition:
+      - condition: state
+        entity_id: input_boolean.school_in_session
+        state: 'on'
+    action:
+    - service: scene.turn_on
+      entity_id: scene.skylar_room_morning
+    - service: script.turn_on 
+      entity_id: script.skylar_morning_briefing
+
+  - id: a6fd654b-e2f8-4f36-9f71-7ab2cbc94b61
+    alias: skylar bedtime announcement
+    trigger:
+      - platform: time
+        at: input_datetime.skylar_school_bedtime
+        id: school_night
+      - platform: time
+        at: input_datetime.skylar_bedtime_holiday
+        id: holiday_night
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: school_night
+        - condition: state
+          entity_id: binary_sensor.school_tomorrow
+          state: 'on'
+        sequence:
+        - service: scene.turn_on
+          entity_id: scene.bedtime_lights
+        - service: media_player.volume_set
+          data_template:
+            entity_id: media_player.ha_blue
+            volume_level: 0.25
+        - service: media_player.play_media
+          entity_id: media_player.ha_blue
+          data:
+            media_content_id: /media/sounds/ES_Clock_Chime_Bell.mp3
+            media_content_type: music
+        - service: script.text_notify
+          data_template:
+            who: "all_ios"
+            message: "Time for Skylar to get ready for bed."
+      - conditions:
+        - condition: trigger
+          id: holiday_night
+        - condition: or
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.school_tomorrow
+            state: 'off'
+          - condition: state
+            entity_id: input_boolean.school_in_session
+            state: 'off'
+        sequence:
+        - service: scene.turn_on
+          entity_id: scene.bedtime_lights
+        - service: media_player.volume_set
+          data_template:
+            entity_id: media_player.ha_blue
+            volume_level: 0.25
+        - service: media_player.play_media
+          entity_id: media_player.ha_blue
+          data:
+            media_content_id: /media/sounds/ES_Clock_Chime_Bell.mp3
+            media_content_type: music
+        - service: script.text_notify
+          data_template:
+            who: "all_ios"
+            message: "Time for Skylar to get ready for bed."
+      default: []
+    
+  - id: bbbafc52-eab1-44cd-ac24-4f9b7f4210b6
+    alias: set skylar morning report time
+    trigger:
+    - platform: time
+      at: '05:30:00'
+    action:
+    - service: input_datetime.set_datetime
+      entity_id: input_datetime.skylar_morning_report
+      data_template:
+        time: >
+          {% if states('input_boolean.school_today', 'on') %}
+            05:58
+          {% else %}
+            07:15
+          {% endif %}
+
+  - id: e1cb2f28-0423-11eb-adc1-0242ac120002
+    alias: Skylar Event Starting soon
+    trigger:
+    - platform: state
+      entity_id: calendar.skylar_events
+      attribute: offset_reached
+      to: True
+    action:
+      - service: script.status_annc
+        data:
+          who: '{{ states(''sensor.room_audio'') }}'
+          call_interuption: 1
+          call_skylar_events: 1
+      - service: script.text_notify
+        data_template:
+          who: "all_ios"
+          message: Skylar has {{ states.calendar.skylar_events.attributes.message }} in 45 minutes.
+
+  - id: e1cb2e6a-0423-11eb-adc1-0242ac120002
+    alias: School Pickup Reminder  
+    trigger:
+    - platform: time
+      at: input_datetime.school_day_start_reminder
+    - platform: time
+      at: input_datetime.school_day_end_reminder
+    condition:
+    - condition: state
+      entity_id: calendar.skylar_school
+      attribute: offset_reached
+      state: True
+    action:
+      - service: script.status_annc
+        data:
+          who: '{{ states(''sensor.room_audio'') }}'
+          call_interuption: 1
+          call_school_pickup_reminder: 1
+      - service: script.text_notify
+        data_template:
+          who: "all_ios"
+          message: It's almost time to head for school.
+
+  
+
+script:
+  reset_annc_switches:
+    sequence:
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.good_morning_report
+      
+  security_briefing:
+    sequence:
+    - service: script.status_annc
+      data_template:
+        who: '{{ states(''sensor.room_audio'') }}'
+        speech_message: !include ../templates/speech/security_briefing.yaml
+
+  welcome_briefing:
+    sequence:
+    - condition: state
+      entity_id: input_boolean.welcome_greeting
+      state: 'on'
+    - delay: 00:05:00
+    - service: script.speech_engine
+      data:
+        who: '{{ states(''sensor.room_audio'') }}'
+        message: !include ../templates/speech/welcome_briefing.yaml
+    - delay: 00:02:00
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.welcome_greeting
+
+  skylar_morning_briefing:
+    sequence:
+    - service: script.speech_engine
+      data: 
+          who: skylar_bedroom
+          message: !include ../templates/speech/skylar_morning_briefing.yaml
+          msg_summary: "Gave the Skylars morning briefing."
+    - service: script.text_notify
+      data:
+        who: "jeff"
+        message: "I just gave Skylars morning briefing."
+        
+
+    
+
+  sundown_briefing:
+    sequence:
+    # - service: script.speech_engine
+    #   data:
+    #     who: '{{ states(''sensor.room_audio'') }}'
+    #     message: !include ../templates/speech/sundown_briefing.yaml
+    - service: script.text_notify
+      data_template:
+        who: "all_ios"
+        message: "Sun is almost down. Time to call it a day."
+
+  morning_briefing:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: kitchen
+        message: !include ../templates/speech/daily_briefing.yaml
+        msg_summary: "the Morning Briefing."
+
+  daily_briefing:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: '{{ states(''sensor.room_audio'') }}'
+        message: !include ../templates/speech/daily_briefing.yaml
+        msg_summary: "the Daily Briefing"
+
+  morning_wakeup_report:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: master_bedroom
+        message: !include ../templates/speech/morning_wakeup_report.yaml
+        msg_summary: "the Morning Wakeup Report"
+  
+  haiku_day:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: main
+        message: >
+          I know a Haiku. This one is called,
+              {{ [
+              'Good Morning From the Cat. <break time="1s"/>In the morning light, You sleep despite my meow, I stand on your face.',
+              'Tee Rex Hug. <break time="1s"/> The Tee Rex likes you, But he cant give you a hug, His arms are too short.',
+              'It Fits. <break time="1s"/> It Fits perfectly, because every box is the, Right size for a cat.',
+              'Minecraft Creepers. <break time="1s"/> Creepers are so cruel, I hear a hiss from behind, Bam! There goes my stuff.'
+            ]|random }}
+
+  dinner_is_ready:
+    alias: Dinner Annonoucement
+    sequence:
+    - service: script.dinner_theater
+    - service: script.dinner_main
+    - service: script.dinner_skylar
+    - service: script.dinner_master  
+    mode: single 
+  dinner_main:
+    alias: Dinner Annonoucement Croft
+    sequence:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.croft_speaker
+        media: /media/sounds/ES_Gong.mp3
+        volume: .5
+    - delay: 00:00:07
+    - service: tts.amazon_polly_say
+      data:
+        entity_id: media_player.croft_speaker
+        message: > 
+          <speak>
+            {{ [
+                'Time to eat. Please wash up and head to the kitchen.',
+                'Food is now being served in the kitchen.',
+                'If you are hungry, the wait is over. Wash Up.',
+                'It is time to wash up and head to the kitchen.'
+              ]|random }}
+          </speak>
+    mode: single
+  dinner_theater:
+    alias: Dinner Annonoucement Theater
+    sequence:
+    - condition: state
+      entity_id: media_player.theater_tv
+      state: 'on' 
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.theater_speaker
+        media: /media/sounds/ES_Gong.mp3
+        volume: .5
+    - delay: 00:00:07
+    - service: tts.amazon_polly_say
+      data:
+        entity_id: media_player.theater_speaker
+        message: > 
+          <speak>
+            {{ [
+                'Time to eat. Please wash up and head to the kitchen.',
+                'Food is now being served in the kitchen.',
+                'If you are hungry, the wait is over. Wash Up.',
+                'It is time to wash up and head to the kitchen.'
+              ]|random }}
+          </speak>
+    mode: single 
+  dinner_skylar:
+    alias: Dinner Annonoucement Skylar
+    sequence:
+    - condition: or 
+      conditions: 
+      - condition: state
+        entity_id: binary_sensor.skylars_bedroom_motion
+        state: 'on' 
+      - condition: state 
+        entity_id: binary_sensor.skylar_bedroom_motion_occupancy
+        state: 'on' 
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.skylars_bedroom_speaker
+        media: /media/sounds/ES_Gong.mp3
+        volume: .5
+    - delay: 00:00:07
+    - service: tts.amazon_polly_say
+      data:
+        entity_id: media_player.skylars_bedroom_speaker
+        message: > 
+          <speak>
+            {{ [
+                'Time to eat. Please wash up and head to the kitchen.',
+                'Food is now being served in the kitchen.',
+                'If you are hungry, the wait is over. Wash Up.',
+                'It is time to wash up and head to the kitchen.'
+              ]|random }}
+          </speak>
+    mode: single
+  dinner_master:
+    alias: Dinner Annonoucement Master
+    sequence:
+    - condition: or 
+      conditions: 
+      - condition: state
+        entity_id: binary_sensor.master_bedroom_motion
+        state: 'on' 
+      - condition: state 
+        entity_id: binary_sensor.master_bedroom_motion_occupancy
+        state: 'on'
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.master_bedroom_speaker
+        media: /media/sounds/ES_Gong.mp3
+        volume: .5
+    - delay: 00:00:07
+    - service: tts.amazon_polly_say
+      data:
+        entity_id: media_player.master_bedroom_speaker
+        message: > 
+          <speak>
+            {{ [
+                'Time to eat. Please wash up and head to the kitchen.',
+                'Food is now being served in the kitchen.',
+                'If you are hungry, the wait is over. Wash Up.',
+                'It is time to wash up and head to the kitchen.'
+              ]|random }}
+          </speak>
+    mode: single             

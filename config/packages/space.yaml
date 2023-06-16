@@ -1,0 +1,118 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   02/19/2019
+#   @package        :   Space
+#   @description    :   Tracking space. Inspiration and code taking from https://github.com/CCOSTAN/Home-AssistantConfig#logo
+#   @original       :   https://github.com/CCOSTAN/Home-AssistantConfig/blob/master/config/packages/space.yaml 
+###############################################################################
+
+homeassistant:
+  customize:
+    binary_sensor.iss:
+      icon: mdi:satellite-variant
+      friendly_name: ISS Visibility
+
+      hidden: False
+      homebridge_hidden: true
+    sensor.launch_window:
+      hidden: False
+      icon: mdi:rocket
+      friendly_name: Rocket Launch Window
+
+
+sensor:
+  #ISS Coordinates
+  - platform: rest
+    name: ISS Coordinates #Latitude & Longitude
+    json_attributes:
+      - iss_position    
+      - latitude
+      - longitude
+      - timestamp    
+    resource: "http://api.open-notify.org/iss-now.json"
+    scan_interval:
+      seconds: 30
+ 
+
+device_tracker:
+  - platform: mqtt_json
+    devices:
+      iss: location/iss
+
+
+automation:
+  #Publish ISS Location data to MQTT Topic
+  - id: 2df7cfbe-fafc-477c-8420-812c759ba0e5
+    alias: 'ISS Location Publish'
+    trigger:
+      - platform: state
+        entity_id: sensor.iss
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: location/iss
+        payload_template: >
+          {"longitude": "{{ states.sensor.iss.attributes.long | float }}","latitude": "{{ states.sensor.iss.attributes.lat | float }}"}
+        retain: true
+  - id: iss_tweet
+    initial_state: true
+    alias: 'ISS Tweet'
+    trigger:
+      - platform: zone
+        event: enter
+        zone: zone.iss_overhead
+        entity_id: device_tracker.iss
+    action:
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: >-
+            {{ [
+            "The #ISS is passing over. Wave. #Space #theycanseeourhouse ",
+            "The #ISS just flew by with there are {{states.binary_sensor.iss.attributes.number_of_people_in_space}} people doing cool stuff. #Space #theycanseeourhouse",
+            "The #ISS just flew by with {{states.binary_sensor.iss.attributes.number_of_people_in_space}} people in it. #Space #theycanseeourhouse"
+            ] | random }}
+          image: >-
+            {{ [ "/config/www/tweet_images/iss.jpg",
+                 "/config/www/tweet_images/iss3.png",
+                 "/config/www/tweet_images/iss4.png",
+                 "/config/www/tweet_images/iss2.jpg"] | random }}  
+            
+  - id: full_moon_tweet
+    initial_state: true
+    alias: 'Full Moon -Tweet'
+    trigger:
+      - platform: sun
+        event: sunset
+        offset: -00:15:00
+    condition:
+      - condition: state
+        entity_id: sensor.moon
+        state: 'full_moon'
+    action:
+      # - service: script.speech_engine
+      #   data_template:
+      #     who: '{{ states.sensor.room_audio.state }}'
+      #     message: >
+      #       <p>
+      #         {{ [
+      #         'There is a Full Moon out tonight. and this time it is the <emphasis>actual</emphasis> moon. And <emphasis>not</emphasis> the neighbor. ',
+      #         'Hey look, There is the full moon. ',
+      #         'The moon is <emphasis>huge<e/mphasis>! And full. ',
+      #         'If you went outside right now you might see the full moon. <break time="2s"/> Of course if you wait long enough there will be one inside the house too. ',
+      #         'If you want to see the full moon, <emphasis>tonight is the night</emphasis>.'] 
+      #         | random }}
+      #       </p>
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: >-
+            {{ [
+            "There is a Full Moon out tonight, and this time it's the actual moon and not the neighbor. ",
+            "Hey look kids, There's the full moon. ",
+            "The moon is huge! And full. "] | random + "#Space #fullmoon"}}
+          image: >-
+            {{ [ "/config/www/tweet_images/full_moon.jpg",
+                "/config/www/tweet_images/moon2.jpeg",
+                "/config/www/tweet_images/moon3.jpeg",
+                "/config/www/tweet_images/moon4.jpeg",
+                "/config/www/tweet_images/moon1.jpeg"
+                ] | random }}

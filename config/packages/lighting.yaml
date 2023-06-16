@@ -16,9 +16,13 @@ input_number:
 
 script:
 
+  livingroom_lamps_on:
+    sequence:
+    - service: scene.turn_on 
+      entity_id: scene.normal_livingroom_lighting
 
   # Turn on Living Room Lights if sun is down or cloud coverage is above 70%
-  # livingroom_lamps_on:
+  # livingroom_lamps_on_dark:
   #   sequence:
   #   - condition: or
   #     conditions:

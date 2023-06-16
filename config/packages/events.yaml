@@ -87,25 +87,39 @@ input_datetime:
     has_date: true
     has_time: true
   
-
-
-sensor:
-  - platform: template
-    sensors:
-      school_start_days2go:
-        value_template: "{{ ((state_attr('input_datetime.school_first_day', 'timestamp')-as_timestamp(now())) | int /60/1440) | round(0) }}"
+template:
+  - sensor:
+      - name: school_start_days2go
+        state: "{{ ((state_attr('input_datetime.school_first_day', 'timestamp')-as_timestamp(now())) | int /86400) | round(0) }}"
         unit_of_measurement: 'Days'
-      school_end_days2go:
-        value_template: "{{ ((state_attr('input_datetime.school_last_day', 'timestamp')-as_timestamp(now())) | int /60/1440) | round(0) }}"
+      - name: school_end_days2go
+        state: "{{ ((state_attr('input_datetime.school_last_day', 'timestamp')-as_timestamp(now())) | int /86400) | round(0) + 1}}"
         unit_of_measurement: 'Days'
-      vacation_days2go:
-        value_template: >
+      - name: vacation_days2go
+        state: >
           {% if state_attr('calendar.vacation', 'start_time') %}
-            {{ ((as_timestamp(strptime(state_attr('calendar.vacation', 'start_time'), '%Y-%m-%d'))-as_timestamp(now())) | int /60/1440) | round(0) }}
+            {{ ((as_timestamp(strptime(state_attr('calendar.vacation', 'start_time'), '%Y-%m-%d'))-as_timestamp(now())) | int /86400) | round(0) }}
           {% else %}
             999
           {% endif %}
         unit_of_measurement: 'Days'
+  - binary_sensor:
+      - name: school_tomorrow
+        state: >
+          {% set next_event=as_timestamp(state_attr('calendar.school','start_time')) | timestamp_custom("%Y-%m-%d",true) %}
+          {% set tomorrow=(now().date() + timedelta(days=1)) | string %}
+          {{ next_event == tomorrow }}  
+
+sensor:
+  - platform: template
+    sensors:
+      school_today:
+        value_template: >
+            {% set today = states('sensor.date') %}
+            {% set next_event = as_timestamp(state_attr('calendar.school','start_time')) 
+                | timestamp_custom("%Y-%m-%d",true) %}
+            {{ today == next_event }}
+  
   - platform: rest
     resource: https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/packages/json_data/school.json
     name: School Lunch
@@ -167,19 +181,38 @@ automation:
         name: Our wedding
         type: anniversary
         date: !secret wed_anniversary
+    - service: python_script.special_events
+      data:
+        name: Maison Des Lunes
+        type: established
+        date: !secret maisondelune_est
+    - service: python_script.special_events
+      data:
+        name: Texas
+        type: trip
+        date: !secret texas_trip
+    - service: python_script.special_events
+      data:
+        name: Disney
+        type: vacation
+        date: !secret cruise_date
 
   - id: e1cb2d02-0423-11eb-adc1-0242ac120002
     alias: School today
     initial_state: true
     trigger:
     - platform: time
-      at: '06:00:00'
+      at: '05:00:00'
     condition:
     - condition: template
       value_template: >
-        {%- if as_timestamp(strptime(state_attr('calendar.skylar_school', 'start_time'), '%Y-%m-%d %H:%M:%S')) | timestamp_custom("%Y-%m-%d") == now().strftime("%Y-%m-%d") %}
+        {%- set next_event=as_timestamp(state_attr('calendar.school','start_time')) | timestamp_custom("%Y-%m-%d",true) %}
+        {%- set today=now().date() %}
+        {% if next_event == today %}
           true
-        {%- endif -%}
+        {% else %}
+          false
+        {% endif %}
     action:
     - choose:
       - conditions:
@@ -341,10 +374,10 @@ script:
             'I was just about to ask if it was time.',
             'I agree.'
             ] | random }} 
-            {% if is_state('sensor.school_tomorrow', 'on') %} 
+            {% if is_state('binary_sensor.school_tomorrow', 'on') %} 
               {{ [ 'It looks like you have school tomorrow. ',
                 'You do have to get up early tomorrow for school.',
-                'It does make sense. After all, you want to be ready for school tomorrow.',
+                'Well, ok then. You want to be ready for school tomorrow, after all.',
                 'According to the calendar, you have school tomorrow.'
               ] | random }}   
             {% else %}

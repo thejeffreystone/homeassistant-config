@@ -2,10 +2,6 @@
 activate_work_time:
   alias: Activate Work time
   sequence:
-  - service: scene.turn_on
-    data: {}
-    target:
-      entity_id: scene.work_time
   - service: input_select.select_option
     data:
       option: Work
@@ -15,10 +11,6 @@ activate_work_time:
 activate_film_time:
   alias: Activate Film Time
   sequence:
-  - service: scene.turn_on
-    data: {}
-    target:
-      entity_id: scene.film_time
   - service: input_select.select_option
     data:
       option: Film

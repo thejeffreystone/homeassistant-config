@@ -5,6 +5,21 @@
 #   @description    :   A collection of Home Assistant and Pi Sensors
 ###############################################################################
 
+command_line:
+  - sensor:
+      name: 'Lines of Code'
+      unique_id: lines_of_code
+      command: "find /config -name '*.yaml' | xargs cat | wc -l"
+      scan_interval: 20000
+  - sensor:
+      name: 'GitHub Stats'
+      command: 'curl https://api.github.com/repos/thejeffreystone/homeassistant-config'
+      scan_interval: 20000
+      value_template: '{{ value_json.name }}'
+      json_attributes:
+      - open_issues
+      - stargazers_count
+
 sensor:
   - platform: systemmonitor
     resources:
@@ -24,6 +39,7 @@ sensor:
     - 'date'
     - 'date_time'
     - 'time_date'
+    - 'date_time_iso'
     - 'time_utc'
     - 'beat'
   
@@ -34,42 +50,47 @@ sensor:
         friendly_name: Current HA Version
         value_template: >-
           {{ states.binary_sensor.attributes.newest_version }}
-  - platform: version
-    name: Installed version
-    source: local
-    #command: "head -5 /home/homeassistant/.homeassistant/.HA_VERSION"
-  - platform: version
-    name: Released Version
-    source: pypi
-  - platform: version
-    name: Released Hassio Ver
-    source: hassio 
+  # - platform: version
+  #   name: Installed version
+  #   source: local
+  #   #command: "head -5 /home/homeassistant/.homeassistant/.HA_VERSION"
+  # - platform: version
+  #   name: Released Version
+  #   source: pypi
+  # - platform: version
+  #   name: Released Hassio Ver
+  #   source: hassio 
 
   # unit of measurement deprecated in 2020.12.0
   # - platform: uptime
   #   name: Time Online
     #unit_of_measurement: days 
-  - platform: command_line
-    name: Lines of Code
-    command: "find /config -name '*.yaml' | xargs cat | wc -l"
-    scan_interval: 20000
+
   - platform: template
     sensors:
       open_pull_requests:
         friendly_name: Open Pull Requests
         value_template: >-
-          {{ states.sensor.home_assistant_configuration.attributes.open_pull_requests }}
+          {{ states('sensor.thejeffreystone_homeassistant_config_pull_requests') }}
           
   # For tracking number of times motion is detected 
   # at front door in last 7 days       
   - platform: history_stats
-    name: Front Door Motion
-    entity_id: binary_sensor.aarlo_motion_front_door
+    name: Front Door Motion Yesterday
+    entity_id: binary_sensor.front_door_motion
     state: 'on'
     type: count 
-    end: '{{ now() }}'
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
     duration:
-      days: 7
+      hours: 24
+  - platform: history_stats
+    name: Doorbell Presses Yesterday
+    entity_id: binary_sensor.front_door_ding
+    state: 'on'
+    type: count 
+    end: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}"
+    duration:
+      hours: 24
           
 utility_meter:
   # Use the 7 day history of motion at front door
@@ -80,7 +101,20 @@ utility_meter:
   daily_frontdoor_motion:
     source: sensor.front_door_motion
     cycle: daily
-    
+
+template:
+  - binary_sensor:  
+      - name: fridge_freezer_warming
+        unique_id: fridge_freezer_warming_sensor
+        state: >
+          {{ states('sensor.acurite_986_fridge_freezer_f')  | int > 15 }}
+        device_class: problem
+  - binary_sensor:  
+      - name: chest_freezer_warming
+        unique_id: chest_freezer_warming_sensor
+        state: >
+          {{ states('sensor.acurite_986_chest_freezer_f') | int > 15 }}
+        device_class: problem
     
     
     

@@ -70,20 +70,20 @@ sensor:
   # Making some template sensors to simpify TTS Briefings and Announcements.
   - platform: template
     sensors:
+
       tts_greeting:
         friendly_name: TTS Greeting
-        unit_of_measurement: ""
         value_template: >
-          {% if now().strftime('%H')|int < 12%}
-            Good morning.
-          {% elif now().strftime('%H')|int >= 12 and now().strftime('%H')|int < 17 %}
-            Good afternoon.
+          {% if now().hour < 12 %}
+          Good Morning.
+          {% elif now().hour >= 12 and now().hour < 17 %}
+          Good Afternoon.
           {% else %}
-            Good evening.
+          Good Evening.
           {% endif %}
+
       tts_confirmation:
         friendly_name: TTS Confirmation
-        unit_of_measurement: ""
         value_template: >
           {{ [
             'Okay.', 
@@ -103,9 +103,9 @@ sensor:
             'Funny, I was just about to do that.',
             'There are still terabytes of calculations required before I can., Oh, whatever.'
             ] | random }}
+
       tts_interuption:
         friendly_name: TTS Interuption
-        unit_of_measurement: ""
         value_template: >
           {% if is_state('sensor.presence_source', 'kat') %}
             {{ [
@@ -132,19 +132,19 @@ sensor:
               'I am sorry to interrupt, but. '
               ] | random }}
           {% endif %}
+
+
       tts_issue_announcement:
         friendly_name: TTS Issue Announcement
-        unit_of_measurement: ""
         value_template: >
           {{ [
-            'Anchorage House Emergency Alert!',
-            'Anchorage House, We have a problem!',
+            'Maison Des Lunes Emergency Alert!',
+            'Maison Des Lunes, We have a problem!',
             'You might not like this.',
             'There is something that needs your attention.'
             ] | random }}
       tts_time_is:
         friendly_name: TTS Time Is
-        unit_of_measurement: ""
         value_template: >
           {% if is_state('binary_sensor.morning','on') %}
             Today is {{states.sensor.today_is.state }}, {{ as_timestamp(now()) | timestamp_custom('%B %d %Y') }} .
@@ -153,7 +153,6 @@ sensor:
           {% endif %}
       tts_washer_notification:
         friendly_name: TTS Washer Notification
-        unit_of_measurement: ""
         value_template: >
           {%- if is_state('sensor.washer_status','complete') %}
             The washing machine completed its cycle 
@@ -192,7 +191,6 @@ sensor:
           {% endif %}
       tts_kat_location:
         friendly_name: TTS Kat Location
-        unit_of_measurement: ""
         value_template: >
           {% if is_state('input_boolean.kat_travel_monitor', 'on') %}
               {%- if state_attr('proximity.home_kat','dir_of_travel') not in ('unknown', 'stationary', 'not_set') %}
@@ -255,7 +253,6 @@ sensor:
           {% endif %}
       tts_jeff_location:
         friendly_name: TTS Jeff Location
-        unit_of_measurement: ""
         value_template: >
           {% if is_state('input_boolean.jeff_travel_monitor', 'on') %}
             Jeff appears to be headed home. Based on current traffic conditions, he should be here in {{state_attr('sensor.jeff_ett_home','duration') | round}} minutes.
@@ -273,28 +270,7 @@ sensor:
             {% endif %}
           {% endif %}
 
-      marauders_map_opens:
-        friendly_name: Marauders Map Opens
-        unit_of_measurement: ""
-        value_template: >
-            {{ [
-                "What are you doing wandering the corridors at night?, ",
-                "Out for a little walk in the moonlight, are we?, ",
-                "Time to make the chimichangas is it?"
-                ] | random }}
-            {{ [
-                "I have disabled the light timer.",
-                "I have configured the studio for light. "
-                ] | random }}
-      marauders_map_closes:
-        friendly_name: Marauders Map Closes
-        unit_of_measurement: ""
-        value_template: >
-            {{ [
-                "I have enabled the light timer.",
-                "Don't worry. I will get the lights.",
-                "I turn off thelights in about twenty minutes."
-                ] | random }}
+      
 script:
   speech_engine:
     sequence:
@@ -351,6 +327,8 @@ script:
           {% set who = 'studio' %}
         {% elif who in ['theater'] %}
           {% set who= 'theater' %}
+        {% elif who in ['exercise_room'] %}
+          {% set who= 'exercise_room' %}
         {% elif who in ['basement', 'media_player.basement_echo']  %}
           {% set who = 'basement' %}
         {% else %}
@@ -374,36 +352,97 @@ script:
 
   jarvis_voice:
     sequence:
-    - service: notify.alexa_media
-      data:
-        message: >
-          <voice name="{{ states('input_select.polly_voice') }}">
-          <amazon:auto-breaths>
-          <prosody rate="fast">
-          {{ message }}
-          </prosody>
-          </amazon:auto-breaths>
-          </voice>
-        target: > 
-          {% if who in ['kitchen_echo','media_player.kitchen_echo','kitchen']%} 
-            media_player.living_room_echo
-          {% elif who in ['skylar_bedroom','media_player.skylars_room','skylars_bedroom','skylars_echo','skylars_room'] %}
-            media_player.skylars_room
-          {% elif who in ['master_bedroom','media_player.master_bedroom_echo', 'master_bedroom_echo'] %}
-            media_player.master_bedroom_echo
-          {% elif who in ['livingroom_echo','media_player.living_room_echo','living_room','main'] %} 
-            media_player.living_room_echo
-          {% elif who in ['studio', 'media_player.dads_desk']%}
-            media_player.slacker_labs_echo
-          {% elif who in ['basement', 'media_player.basement_echo']%}
-            media_player.basement_echo
-          {% elif who in ['theater', 'media_player.theater']%}
-            media_player.theater_echo
-          {% else %}
-            media_player.living_room_echo
-          {% endif %}
+    - if:
+      - condition: template
+        value_template: "{{ who in ['studio', 'media_player.dads_desk','exercise_room'] }}"
+      then:
+      - service: media_player.volume_set
         data:
-          type: tts
+          entity_id: >
+            {% if who in ['exercise_room']%} 
+              media_player.exercise_room
+            {% else %}
+              media_player.studio_speaker
+            {% endif %}
+          volume_level: "{{ states('input_number.tts_high_volume') | float }}"
+      - service: tts.amazon_polly_say
+        data_template:
+          entity_id: >
+            {% if who in ['exercise_room']%}
+              media_player.exercise_room
+            {% else %}
+              media_player.studio_speaker
+            {% endif %}
+          message: >
+            <speak>
+              <break time="1s"/>
+              <prosody rate="fast">
+              {{ message }}
+              </prosody>
+            </speak>
+      - delay:
+          seconds: 20
+      - service: media_player.volume_set
+        data:
+          entity_id: >
+            {% if who in ['exercise_room']%} 
+              media_player.exercise_room
+            {% else %}
+              media_player.studio_speaker
+            {% endif %}
+          volume_level: "{{ states('input_number.tts_volume') | float }}"
+      else:
+      - service: media_player.volume_set
+        data:
+          entity_id: >
+            {% if who in ['kitchen_echo','media_player.kitchen_echo','kitchen']%} 
+              media_player.living_room_echo
+            {% elif who in ['skylar_bedroom','media_player.skylars_room','skylars_bedroom','skylars_echo','skylars_room'] %}
+              media_player.skylars_room
+            {% elif who in ['master_bedroom','media_player.master_bedroom_echo', 'master_bedroom_echo'] %}
+              media_player.master_bedroom_echo
+            {% elif who in ['livingroom_echo','media_player.living_room_echo','living_room','main'] %} 
+              media_player.living_room_echo
+            {% elif who in ['studio', 'media_player.dads_desk']%}
+              media_player.slacker_labs_echo
+            {% elif who in ['basement', 'media_player.basement_echo']%}
+              media_player.basement_echo
+            {% elif who in ['theater', 'media_player.theater']%}
+              media_player.theater_echo
+            {% else %}
+              media_player.living_room_echo
+            {% endif %}
+          volume_level: "{{ states('input_number.tts_volume') | float }}"
+      - service: notify.alexa_media
+        data:
+          message: >
+            <voice name="{{ states('input_select.polly_voice') }}">
+            <amazon:auto-breaths>
+            <prosody rate="fast">
+            {{ message }}
+            </prosody>
+            </amazon:auto-breaths>
+            </voice>
+          target: > 
+            {% if who in ['kitchen_echo','media_player.kitchen_echo','kitchen']%} 
+              media_player.living_room_echo
+            {% elif who in ['skylar_bedroom','media_player.skylars_room','skylars_bedroom','skylars_echo','skylars_room'] %}
+              media_player.skylars_room
+            {% elif who in ['master_bedroom','media_player.master_bedroom_echo', 'master_bedroom_echo'] %}
+              media_player.master_bedroom_echo
+            {% elif who in ['livingroom_echo','media_player.living_room_echo','living_room','main'] %} 
+              media_player.living_room_echo
+            {% elif who in ['studio', 'media_player.dads_desk']%}
+              media_player.slacker_labs_echo
+            {% elif who in ['basement', 'media_player.basement_echo']%}
+              media_player.basement_echo
+            {% elif who in ['theater', 'media_player.theater']%}
+              media_player.theater_echo
+            {% else %}
+              media_player.living_room_echo
+            {% endif %}
+          data:
+            type: tts
   jarvis_alert:
     sequence:
     - service: mqtt.publish
@@ -442,9 +481,9 @@ script:
         entity_id: media_player.ha_blue
         volume_level: >
           {% if is_state('binary_sensor.lights_out', 'on') %}
-            .70
+            {{ states('input_number.tts_high_volume') | float }}
           {% else %}
-            .45
+            {{ states('input_number.tts_volume') | float }}
           {% endif %}
     - service: tts.amazon_polly_say
       data_template:
@@ -457,14 +496,18 @@ script:
             {{ message }}
             <prosody>
             </amazon:auto-breaths>
-          </speak>"
+          </speak>
         cache: true
   announcement:
     sequence:
     - service: script.speech_engine
       data:
         who: >
-          {{ who }}
+          {% if who %}
+            {{ who }}
+          {% else %}
+            {{ states('sensor.room_audio') }}
+          {% endif %}
         message: >
           {% if states('sensor.kat_room') == who and states('sensor.jeff_room')== who  %}
             {{ 
@@ -619,7 +662,56 @@ script:
           entity_id: "{{ alexa_device }}"
           media_content_type: skill
           media_content_id: amzn1.ask.skill.12146900-4aab-43d0-84b7-fe6df3bbe8df
-
+  marauders_map_opens:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: basement
+        message: >
+          {{ [
+              "What are you doing wandering the corridors at night?, ",
+              "Out for a little walk in the moonlight, are we?, ",
+              "I am pretty sure you won't find Peter Pettigrew.",
+              "Training for the ballet, Potter? ",
+              "A wise man once said, Happiness can be found, even in the darkest of times, if one only remembers to turn on the light.",
+              "Nothing like a night time stroll to give you ideas. ",
+              "You ought to be careful. People will think you’re… up to something. "
+              ] | random }}
+          {{ [
+              "Oh well.",
+              "Guess we might as well get to it then. ",
+              "Right. ",
+              "So that is what I did. "
+              ] | random }}
+          {{ [
+              "I have disabled the light timer.",
+              "I have configured the studio for light. ",
+              "The lights are now on indefinately. "
+              ] | random }}
+  marauders_map_closes:
+    sequence:
+    - service: script.speech_engine
+      data:
+        who: basement
+        message: >
+          {{ [
+            "I have enabled the light timer. ",
+            "Wait. Was that Peter Pettigrew? Couldn't been. He is dead. ",
+            "Mischief Managed indeed. ",
+            "Yer a wizard. ",
+            "I hope you're pleased with yourself. We could all have been killed. Or worse, expelled. ",
+            ] | random }}
+          {{ [
+            "Guess thats it then. Lights out in 20 minutes. ",
+            "Anyway, I will get the lights. ",
+            "The clock is ticking. ",
+            "I will turn off the lights in about twenty minutes. "
+            ] | random }}
+          {{ [
+            "Watch out for Snape. ",
+            "Better scurry back to your house common room.",
+            "That should give you enough time to get back to your room."
+            ] | random }}
 # automation:
 #   - id: d34f931d-eb55-4495-8eb1-7defbe9f7238
 #     alias: WFH Lights - Jarvis
@@ -728,7 +820,7 @@ script:
   #   alias: WFH Lights
   #   trigger:
   #     - platform: state
-  #       entity_id: binary_sensor.master_bedroom_occupancy
+  #       entity_id: binary_sensor.master_bedroom_motion_occupancy
   #       to: 'on'
   #       from: 'off'
   #       id: presence_detected

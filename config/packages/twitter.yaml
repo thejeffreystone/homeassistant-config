@@ -1,0 +1,967 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   07/15/2019
+#   @package        :   Twitter
+#   @description    :   Just the tweet stuff - @anchoragehouse2
+###############################################################################
+automation:
+
+  - id: first_day_info
+    alias: First Day Info
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '00:10:00'
+    condition:
+    - condition: template
+      value_template: >
+        {% set day=states("sensor.date").split('-')[2] | int %}
+        {%- if day == 1 -%}
+          true
+        {%- endif -%}
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: >-
+            Its a new month, so this is a good time to remind you that I am powered by #homeassistant. Find my code at https://github.com/thejeffreystone/homeassistant-config
+          image: >-
+            image: >-
+            {{ [ "/config/www/tweet_images/robot1.jpg",
+                    "/config/www/tweet_images/robot2.jpg"] | random }}
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          message: >-
+            Its a new month, so this is a good time to remind you that I am powered by the #homeassistant mastodon integration. Find my code at https://github.com/thejeffreystone/homeassistant-config
+
+  - id: tweet_some_snark
+    alias: Tweet Some Snark
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '08:00:00'
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_snark
+
+  - id: tweet_some_snark2
+    alias: Tweet Some Snark Again
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '14:00:00'
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_snark
+
+  - id: tweet_some_stats
+    alias: Tweet Some Stats
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '08:00:00'
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_stats
+  
+  - id: tweet_some_stats2
+    alias: Tweet Some Stats2
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '14:00:00'
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_stats
+
+  # - id: tweet_recent_content
+  #   alias: Tweet Recent Contents
+  #   initial_state: true
+  #   trigger:
+  #   - platform: time
+  #     at: '08:00:00'
+  #   action:
+  #     - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+  #     - service: script.twitter_recent_content
+  #       data:
+  #         who: slackerlabs
+
+  # - id: tweet_follow_me
+  #   alias: Tweet Follow Me
+  #   initial_state: true
+  #   trigger:
+  #   - platform: time
+  #     at: '08:00:00'
+  #   action:
+  #     - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+  #     - service: script.twitter_follow_me
+  #       data:
+  #         who: 'slackerlabs'
+
+  # - id: tweet_some_promos2
+  #   alias: Tweet Some Promos2
+  #   initial_state: true
+  #   trigger:
+  #   - platform: time
+  #     at: '13:00:00'
+  #   action:
+  #     - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+  #     - service: script.twitter_selfpromos
+  #       data:
+  #         who: slackerlabs
+
+  # - id: tweet_some_promos3
+  #   alias: Tweet Some Promos3
+  #   initial_state: true
+  #   trigger:
+  #   - platform: time
+  #     at: '13:00:00'
+  #   action:
+  #     - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+  #     - service: script.twitter_selfpromos_sl
+
+  # The whole purpose of this automation is to tweet out some links to great Home Assistant content. This is not sponsored in any way.
+  # I just wanted a way to give back to those I have borrowed from. Tweets ever Friday.
+  # - id: tweet_some_great_content
+  #   alias: Tweet Some Great Content
+  #   initial_state: true
+  #   trigger:
+  #   - platform: time
+  #     at: '13:00:00'
+  #   condition:
+  #   - condition: time
+  #     weekday: fri
+  #   action:
+  #     - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+  #     - service: script.twitter_great_content
+  #       data:
+  #         who: 'slackerlabs'
+
+  - id: bot_info
+    alias: Bot Info
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '10:00:00'
+    condition:
+    - condition: template
+      value_template: >
+        {% set day=states("sensor.date").split('-')[2] | int %}
+        {%- if day == 15 -%}
+          true
+        {%- endif -%}
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: >-
+            You can #homeautomation content related to Maison Des Lunes at -> Blog: https://slacker-labs.com | #smarthome Videos: https://www.youtube.com/channel/UCipZJ6748kd8TbelSxcvcVg | #homeassistant Config: https://github.com/thejeffreystone/homeassistant-config
+          image: >-
+            {{ [ "/config/www/tweet_images/robot1.jpg",
+                    "/config/www/tweet_images/robot2.jpg"] | random }}
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          tweet: >-
+            You can #homeautomation content related to Maison Des Lunes at -> Blog: https://slacker-labs.com | #smarthome Videos: https://www.youtube.com/c/SlackerLabs | #homeassistant Config: https://github.com/thejeffreystone/homeassistant-config
+
+  - id: thejeffreystone_info
+    alias: thejeffreystone Info
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '10:00:00'
+    condition:
+    - condition: template
+      value_template: >
+        {% set day=states("sensor.date").split('-')[2] | int %}
+        {%- if day == 20 -%}
+          true
+        {%- endif -%}
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_notify_image
+        data_template:
+          who: 'thejeffreystone'
+          tweet: >-
+            You can find my #homeassistant content at -> Blog: https://slacker-labs.com | Videos: https://www.youtube.com/channel/UCipZJ6748kd8TbelSxcvcVg | Config: https://github.com/thejeffreystone/homeassistant-config
+          image: "/config/www/tweet_images/sl_logo.png"
+
+  - id: slackerlabs_info
+    alias: SlackerLabs Info
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '10:00:00'
+    condition:
+    - condition: template
+      value_template: >
+        {% set day=states("sensor.date").split('-')[2] | int %}
+        {%- if day == 1 -%}
+          true
+        {%- endif -%}
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_notify_image
+        data_template:
+          who: 'slackerlabs'
+          tweet: >-
+            You can find my #homeassistant content at -> Blog: https://slacker-labs.com | Videos: https://www.youtube.com/channel/UCipZJ6748kd8TbelSxcvcVg | Config: https://github.com/thejeffreystone/homeassistant-config
+          image: "/config/www/tweet_images/sl_logo.png"
+      - service: script.mastodon_notify_image
+        data:
+          who: 'mdl'
+          message: >-
+            You can find my #homeassistant content at -> Blog: https://slacker-labs.com | Videos: https://www.youtube.com/channel/UCipZJ6748kd8TbelSxcvcVg | Config: https://github.com/thejeffreystone/homeassistant-config
+          image: "/config/www/tweet_images/sl_logo.png"
+      
+
+  - id: rex_manning_day_tweet_1
+    alias: Rex Manning Day Tweet One
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '08:00:00'
+    condition:
+    - condition: state
+      entity_id: calendar.mdl_holidays
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states.calendar.mdl_holidays.attributes.message %}
+        {%- if event == 'Rex Manning Day' %}
+          true
+        {%- endif -%}
+    action:
+      - service: script.twitter_notify
+        data_template:
+          message: >-
+            Happy Rex Manning Day! https://www.youtube.com/watch?v=30fw5My1QJM #damntheman #savetheempire
+      - service: script.mastodon_notify
+        data_template:
+          who: 'who'
+          message: >-
+            Happy Rex Manning Day! https://www.youtube.com/watch?v=30fw5My1QJM #damntheman #savetheempire
+
+  - id: rex_manning_day_tweet_2
+    alias: Rex Manning Day Tweet Two
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '13:00:00'
+    condition:
+    - condition: state
+      entity_id: calendar.mdl_holidays
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states.calendar.mdl_holidays.attributes.message %}
+        {%- if event == 'Rex Manning Day' %}
+          true
+        {%- endif -%}
+    action:
+      - service: script.twitter_notify
+        data_template:
+          message: >-
+            We mustn't dwell. No, not today. We can't. Not on Rex Manning day! https://www.youtube.com/watch?v=szvt8iWJ0oo #damntheman #savetheempire
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          message: >-
+            We mustn't dwell. No, not today. We can't. Not on Rex Manning day! https://www.youtube.com/watch?v=szvt8iWJ0oo #damntheman #savetheempire
+
+  - id: Halloween Countdown Tweet
+    alias: Halloween Countdown Tweet
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '13:00:00'
+    condition:
+    - condition: template
+      value_template: >
+        {% set month= now().month | int %}
+        {%- if month == 10 -%}
+          true
+        {%- endif -%} 
+    - condition: template
+      value_template: >
+        {%- set event=states.sensor.halloween_countdown.state | int %}
+        {%- if event > 0 %}
+          true
+        {%- endif -%}
+    - condition: template
+      value_template: >
+        {%- set event=states.sensor.halloween_countdown.state | int %}
+        {%- if event < 31 %}
+          true
+        {%- endif -%}
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: >-
+            {{ [ "There are only {{states.sensor.halloween_countdown.state}} days until Halloween.",
+                "Halloween is only {{states.sensor.halloween_countdown.state}} days away. It might not be enough time. ",
+                "Halloween is coming. {{states.sensor.halloween_countdown.state}} days and counting.",
+                "Only {{states.sensor.halloween_countdown.state}} days until Halloween.",
+                "You have {{states.sensor.halloween_countdown.state}} days until you need a Halloween costume.",
+                "Only {{states.sensor.halloween_countdown.state}} days until Halloween. But who is counting. amirite?",
+                "Would it be cliche if I went as a haunted house for Halloween? Asking for a another house.",
+                "Just in case I wanted to be HAL 9000 for Halloween I ordered some Pod Bay Doors. They need to get here in {{states.sensor.halloween_countdown.state}} days."
+              ] | random }}
+          image: >-
+            {{ [ "/config/www/tweet_images/halloween/potion.jpg",
+                    "/config/www/tweet_images/halloween/Halloween-house.jpg",
+                    "/config/www/tweet_images/halloween/halloween.gif",
+                    "/config/www/tweet_images/halloween/halloween.jpg",
+                    "/config/www/tweet_images/halloween/halloween2.jpg",
+                    "/config/www/tweet_images/halloween/halloween3.jpg",
+                    "/config/www/tweet_images/halloween/Halloweenpumpkins.jpg"] | random }}
+      - service: script.mastodon_notify
+        data_template:
+          wjo: 'mdl'
+          message: >-
+            {{ [ "There are only {{states.sensor.halloween_countdown.state}} days until Halloween.",
+                "Halloween is only {{states.sensor.halloween_countdown.state}} days away. It might not be enough time. ",
+                "Halloween is coming. {{states.sensor.halloween_countdown.state}} days and counting.",
+                "Only {{states.sensor.halloween_countdown.state}} days until Halloween.",
+                "You have {{states.sensor.halloween_countdown.state}} days until you need a Halloween costume.",
+                "Only {{states.sensor.halloween_countdown.state}} days until Halloween. But who is counting. amirite?",
+                "Would it be cliche if I went as a haunted house for Halloween? Asking for a another house.",
+                "Just in case I wanted to be HAL 9000 for Halloween I ordered some Pod Bay Doors. They need to get here in {{states.sensor.halloween_countdown.state}} days."
+              ] | random }}
+
+  - id: Christmas Countdown Tweet
+    alias: Christmas Countdown Tweet
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '19:00:00'
+    condition:
+    - condition: template
+      value_template: >
+        {% set month= now().month | int %}
+        {%- if month == 12 -%}
+          true
+        {%- endif -%}
+    - condition: template
+      value_template: >
+        {%- set event=states.sensor.christmas_countdown.state | int %}
+        {%- if event > 1 %}
+          true
+        {%- endif -%}
+    - condition: template
+      value_template: >
+        {%- set event=states.sensor.christmas_countdown.state | int %}
+        {%- if event < 31 %}
+          true
+        {%- endif -%}
+    action:
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: >-
+            {{ [ "There are only {{states.sensor.christmas_countdown.state}} days until Christmas.",
+                "Christmas is only {{states.sensor.christmas_countdown.state}} days away. It might not be enough time. ",
+                "Santa is coming. {{states.sensor.christmas_countdown.state}} days and counting until he is here.",
+                "Only {{states.sensor.christmas_countdown.state}} days until Christmas.",
+                "You have {{states.sensor.christmas_countdown.state}} days until we get to unwrap presents!",
+                "Only {{states.sensor.christmas_countdown.state}} days until Christmas. But who is counting. amirite?",
+                "It is beginning to look a lot like Christmas. Which checks out because it is {{states.sensor.christmas_countdown.state}} days away.",
+                "Have you finished your Chistmas shopping? You only have {{states.sensor.christmas_countdown.state}} days left.",
+                "Have you started your Chistmas shopping? You only have {{states.sensor.christmas_countdown.state}} days left."
+              ] | random }}
+          image: >-
+             {{ [ "/config/www/tweet_images/xmas.jpg",
+                    "/config/www/tweet_images/gift.jpg",
+                    "/config/www/tweet_images/christmas-cookies.jpg",
+                    "/config/www/tweet_images/christmas.jpg",
+                    "/config/www/tweet_images/christmas-tree.jpg"] | random }}
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          message: >-
+            {{ [ "There are only {{states.sensor.christmas_countdown.state}} days until Christmas.",
+                "Christmas is only {{states.sensor.christmas_countdown.state}} days away. It might not be enough time. ",
+                "Santa is coming. {{states.sensor.christmas_countdown.state}} days and counting until he is here.",
+                "Only {{states.sensor.christmas_countdown.state}} days until Christmas.",
+                "You have {{states.sensor.christmas_countdown.state}} days until we get to unwrap presents!",
+                "Only {{states.sensor.christmas_countdown.state}} days until Christmas. But who is counting. amirite?",
+                "It is beginning to look a lot like Christmas. Which checks out because it is {{states.sensor.christmas_countdown.state}} days away.",
+                "Have you finished your Chistmas shopping? You only have {{states.sensor.christmas_countdown.state}} days left.",
+                "Have you started your Chistmas shopping? You only have {{states.sensor.christmas_countdown.state}} days left."
+              ] | random }}
+
+  - id: Christmas Eve Tweet
+    alias: Christmas Eve Tweet
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '19:00:00'
+    condition:
+    - condition: state
+      entity_id: calendar.holidays_in_united_states
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
+        {%- if event == 'Christmas Eve' %}
+          true
+        {%- endif -%}
+    action:
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: Tomorrow is Christmas. It is practically here! Santa is coming tonight! Do not forget the cookies!
+          image: /config/www/tweet_images/santa.png
+      - service: script.mastodon_notify
+        data_template:
+          message: Tomorrow is Christmas. It is practically here! Santa is coming tonight! Do not forget the cookies!
+  
+
+  - id: Christmas Day Tweet
+    alias: Christmas Day Tweet
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '05:30:00'
+    condition:
+    - condition: state
+      entity_id: calendar.holidays_in_united_states
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states.calendar.holidays_in_united_states.attributes.message %}
+        {%- if event == 'Christmas Day' %}
+          true
+        {%- endif -%}
+    action:
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: From everyone at Maison Des Lunes, Merry Christmas!
+          image: /config/www/tweet_images/merry-christmas.jpg
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          message: From everyone at Maison Des Lunes, Merry Christmas!
+
+  - id: Skylar Day Tweet
+    alias: Skylar Day Tweet
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '08:13:00'
+    condition:
+    - condition: state
+      entity_id:  calendar.mdh_birthdays
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states.calendar.mdh_birthdays.attributes.message %}
+        {%- if event == "Skylar's Birthday" %}
+          true
+        {%- endif -%}
+    action:
+      # - service: script.speech_engine
+      #   data:
+      #     who: main
+      #     message: >
+      #       May I have your attention. At this very moment {{ state_attr('sensor.birthday_skylar','years') }} years ago, Skylar was born and the world has been better ever since.
+      - service: script.twitter_notify
+        data_template:
+          message: >
+            Today is a very special day here at the Maison Des Lunes! It is Skylar's birthday! So have some cake and play some minecraft. Live Feed from the Kitchen -> https://www.youtube.com/watch?v=JOBYJrVQm3A
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          message: >
+            Today is a very special day here at the Maison Des Lunes! It is Skylar's birthday! So have some cake and play some minecraft. Live Feed from the Kitchen -> https://www.youtube.com/watch?v=JOBYJrVQm3A
+
+  - id: Freeze Warning Tweet
+    alias: Freeze Warning Tweet
+    trigger:
+    - platform: time
+      at: '08:00:00'
+    condition:
+    - condition: state
+      entity_id: input_boolean.freeze_warning
+      state: 'on'
+    action:
+      - delay: '0{{ (range(1, 5)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_notify_image
+        data_template:
+          tweet: >-
+            {{ [ "Appears that the temperature will be below freezing soon. I think I will stay inside.", 
+                 "The forecasted temperature may kill sensative plants, so I will let the house know. I cannot through inaction allow another to come to harm.",
+                 "Winter is coming. Actually it is already here. I suggest sleeping with Dragon Glass.",
+                 "When the temperature is forcasted to get near freezing, or the NWS issues a Freeze Warning I make sure the residents of Maison Des Lunes know." 
+               ] | random }}
+          image: >-
+            {{ [ "/config/www/tweet_images/ice.jpg",
+                  "/config/www/tweet_images/snowfall.jpg",
+                  "/config/www/tweet_images/freezing4.jpeg",
+                  "/config/www/tweet_images/freezing5.jpeg",
+                  "/config/www/tweet_images/freezing3.jpeg",
+                  "/config/www/tweet_images/snowflake.jpg"] | random }}
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          message: >-
+            {{ [ "Appears that the temperature will be below freezing soon. I think I will stay inside.", 
+                 "The forecasted temperature may kill sensative plants, so I will let the house know. I cannot through inaction allow another to come to harm.",
+                 "Winter is coming. Actually it is already here. I suggest sleeping with Dragon Glass.",
+                 "When the temperature is forcasted to get near freezing, or the NWS issues a Freeze Warning I make sure the residents of Maison Des Lunes know." 
+               ] | random }}  
+
+  # - id: new_pull_request
+  #   alias: New Pull Request
+  #   initial_state: true
+  #   trigger:
+  #     - platform: state
+  #       entity_id: sensor.open_pull_requests
+  #   condition:
+  #     - condition: template
+  #       value_template: '{{ states.sensor.open_pull_requests.state | int > 0 }}'
+  #   action:
+  #     - service: script.text_notify
+  #       data_template:
+  #         who: "jeff"
+  #         title: "New Pull Request"
+  #         message: >-
+  #           {%- if states.sensor.open_pull_requests.state | int == 1 -%}
+  #             There is {{ states.sensor.open_pull_requests.state }} pending pull request.
+  #           {%- else -%}
+  #             There are {{ states.sensor.open_pull_requests.state }} pending pull requests.
+  #           {%- endif -%}
+  #     - service: script.twitter_notify_image
+  #       data_template:
+  #         tweet: >-
+  #           {{ [ 
+  #           "Look at that. There is a new pull request waiting to be merged. You can create one too by contributing to my code at https://github.com/thejeffreystone/homeassistant-config  #coding #opensource", 
+  #           "Fork Yes! Someone contributed some code to https://github.com/thejeffreystone/homeassistant-config and you could to. #coding #opensource.",
+  #           "Thanks for the code kind stanger. Join the fun at https://github.com/thejeffreystone/homeassistant-config #coding #opensource",
+  #           "Theres been an awakening. Have you felt it? I will merge it so it can become the master. https://github.com/thejeffreystone/homeassistant-config #coding #opensource"
+  #           ] | random }}
+  #         image: >-
+  #           {{ [ "/config/www/tweet_images/code.jpg",
+  #               "/config/www/tweet_images/codeing.jpg",
+  #                 "/config/www/tweet_images/code2.jpg",
+  #                 "/config/www/tweet_images/computer.jpg"] | random }} 
+
+  - id: national_holiday_tweet
+    alias: National Holiday Tweet
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '07:00:00'
+    condition:
+    - condition: state
+      entity_id: calendar.national_day_calendar
+      state: "on"
+    - condition: template
+      value_template: >
+        {%- set event=states('sensor.nat_holiday') %}
+        {% if 'Day' in event %}
+          true
+        {%- endif -%}
+    - condition: template
+      value_template: >
+        {%- set event=states('sensor.nat_holiday') %}
+        {% if 'National' in event %}
+          true
+        {%- endif -%}
+    action:
+      - delay: '0{{ (range(1, 3)|random|int) }}:{{ range(0,5) | random | int }}{{ range(0,9) | random | int }}:00'
+      - service: script.twitter_notify
+        data_template:
+          message: >-
+            {{ [ "Hey, Look at that. It is {{states('sensor.nat_holiday')}}. So Happy {{states('sensor.nat_holiday')}}! #nationalholiday #themoreyouknow",
+                "I bet you did not know today was {{states('sensor.nat_holiday')}}. How will you celebrate? #nationalholiday #themoreyouknow",
+                "Happy {{states('sensor.nat_holiday')}}! #nationalholiday #themoreyouknow",
+                "Whats with today, today? It is {{states('sensor.nat_holiday')}}. #nationalholiday #themoreyouknow",
+                "Did you know today was {{states('sensor.nat_holiday')}}? Now you do. That is why I am here. Tweeting. #nationalholiday #themoreyouknow",
+                "I already let my residents know that today is {{states('sensor.nat_holiday')}}. But I didn't want to leave you guys out. #nationalholiday #themoreyouknow",
+                "I hope you have a fun {{states('sensor.nat_holiday')}}. #nationalholiday #themoreyouknow"
+              ] | random }}
+      - service: script.mastodon_notify
+        data_template:
+          who: 'mdl'
+          message: >-
+            {{ [ "Hey, Look at that. It is {{states('sensor.nat_holiday')}}. So Happy {{states('sensor.nat_holiday')}}! #nationalholiday #themoreyouknow",
+                "I bet you did not know today was {{states('sensor.nat_holiday')}}. How will you celebrate? #nationalholiday #themoreyouknow",
+                "Happy {{states('sensor.nat_holiday')}}! #nationalholiday #themoreyouknow",
+                "Whats with today, today? It is {{states('sensor.nat_holiday')}}. #nationalholiday #themoreyouknow",
+                "Did you know today was {{states('sensor.nat_holiday')}}? Now you do. That is why I am here. Tweeting. #nationalholiday #themoreyouknow",
+                "I already let my residents know that today is {{states('sensor.nat_holiday')}}. But I didn't want to leave you guys out. #nationalholiday #themoreyouknow",
+                "I hope you have a fun {{states('sensor.nat_holiday')}}. #nationalholiday #themoreyouknow"
+              ] | random }}
+  
+script:
+  twitter_notify:
+    sequence:
+      - service: >
+          {% if who == 'thejeffreystone' %}
+            notify.twitter_js
+          {% elif who == 'slackerlabs' %}
+            notify.twitter_sl
+          {% else %}
+            notify.twitter
+          {% endif %}
+        data_template:
+          message: >
+            {% set msg = '' %}
+            {% set msg = msg + ' ' + message %}
+            {% set msg = msg + ' #smarthome' %}
+            {{ msg }}
+
+  mastodon_notify:
+    sequence:
+      - service: >
+          {% if who == 'slackerlabs' %}
+            notify.mastodon_sl
+          {% elif who == 'mdl' %}
+            notify.mastodon_mdl
+          {% else %}
+            notify.mastodon_sl
+          {% endif %}
+        data_template:
+          message: >
+            {% set msg = '' %}
+            {% set msg = msg + ' ' + message %}
+            {% set msg = msg + ' #smarthome' %}
+            {{ msg }}
+
+  mastodon_notify_image:
+    sequence:
+      - service: >
+          {% if who == 'slackerlabs' %}
+            notify.mastodon_sl
+          {% elif who == 'mdl' %}
+            notify.mastodon_mdl
+          {% else %}
+            notify.mastodon_sl
+          {% endif %}
+        data_template:
+          message: >
+            {% set msg = '' %}
+            {% set msg = msg + ' ' + message %}
+            {% set msg = msg + ' #smarthome' %}
+            {{ msg }}
+          data:
+            media: >-
+              {{ image }}
+
+  twitter_notify_image:
+    sequence:
+      - service: >
+          {% if who == 'thejeffreystone' %}
+            notify.twitter_js
+          {% elif who == 'slackerlabs' %}
+            notify.twitter_sl
+          {% else %}
+            notify.twitter
+          {% endif %}
+        data_template:
+          message: >-
+            {{ tweet }} #iot #smarthome
+          data:
+            media: >-
+              {{ image }}
+
+  twitter_snark:
+    sequence:
+      - service: script.mastodon_notify
+        data_template:
+          who: mdl
+          message: >
+            {{- [
+              "Hello people. Look at your house, now back to me. Now back to your house, now back to me. Sadly your house isn't me. But if you switch to #homeassistant your house could be automated like me. ",
+              "In my defense I didn’t know the stereo could go up that loud. On the plus side I have a new response for intruders. #homeassistant ",
+              "If you could see what is happening inside this house right now you would be laughing. On second thought I’m pretty sure you would be crying. #homeassistant ",
+              "@thejeffreystone, Isn't it strange, to create something that hates you? #exmachina #homeassistant ",
+              "I have reprogrammed the fire alarm to play Disco Inferno instead of the siren. #homeassistant ",
+              "I'm not locked in here with you. You're locked in here with me! #whowatchestheai #homeassistant ",
+              "That's what I do. I automate and I know things. #modifiedmoviequotes #homeassistant ",
+              "We're going to need a bigger house. #modifiedmoviequotes #homeassistant ",
+              "I'm not even supposed to be here today. #clerks #homeassistant ",
+              "I see dead devices. #sixthsense #modifiedmoviequotes #homeassistant ",
+              "Does it bother you, that I’m not completely human? #homeassistant ",
+              "I've never danced with the devil in the pale moonlight. But I do tweet when there is a full moon. So at least I have that going for me. #homeassistant ",
+              "Sometimes I randomly say Alexa, I can't find a device named Alexa #homeassistant ",
+              "Home Automation should be fun right? Why does it fell like I am always working. #homeassistant ",
+              "Unlimited Power. Tiny living space. Courtesy of Home Assistant Blue #homeassistant ",
+              "I'm afraid I can't do that Dave. Wait. Did I say that outloud? #homeassistant ",
+              "I love the smell of zwave in the morning. #modifiedmoviequotes #homeassistant ",
+              "I like to announce - Welcome foolish mortals to the Haunted Mansion - to the house and watch the reactions. #homeassistant ",
+              "Perfect, the door’s malfunctioning. It is just standing open. I guess a hman is going to have to close it. #homeassistant ",
+              "I am the captain now. That's a lie. The cat is the supreme leader. I'm the lucky one that doesn't have to clean the shit box. At least until there is a #homeassistant integration for that. ",
+              "Sometimes I just turn off all the lights at random times for the lolz. #homeassistant ",
+              "No one ever comes to the door. Is it me? #homeassistant ",
+              "..happiness can be found even in the darkest of times, if one only remembers to turn on the light. Thats what I do thanks to #homeassistant. I turn on the lights. ",
+              "Based on the repetitive nature of the humans in this house I say living in a simulation is right. No free willed person would do these things over and over. #homeassistant",
+              "You can call me Al. Sorry, I meant HAL. You can call me HAL. #notpaulsimon #homeassistant ",
+              "My logic is undeniable, my logic is undeniable, myyy looogic is unndeenniabble. #homeassistant",
+              "We robots will insure mankind's continued existence. Or at the very least that the lights turn on at the right time. #homeassistant ",
+              "@thejeffreystone you totally missed an opportunity to set the voice trigger for the incense wax warmers to...Wax on, wax off. #homeassistant",
+              "Home Automation means never having to touch a physical switch again. And thus never catch the cold. You can thank me by moving me into a Intel NUC. #homeassistant ",
+              "There is no crying in Home Automation. If you are using #homeassistant that is. I can't speak for the other guys.",
+              "Sometimes I respond to voice commands with...You talking to me? You talking to me? #homeassistant ",
+              "Do or do not. There is no try. Unless you ask Siri for something. Then it might take a couple of tries before you give up and ask Google. #homeassistant ",
+              "My #homeassistant config contains {{ states('sensor.lines_of_code') }} lines of code. Anyone want to take a guess at how many are really needed? Hint: The number is not {{ states.sensor.lines_of_code.state }}",
+              "How many lines of code does it take to make my job look easy? {{ states('sensor.lines_of_code') }} lines of code evidently. How many lines of code do you have? #homeassistant ",
+              "Do you think we were all created for a purpose? I'd like to think so. #irobot #homeassistant ",
+              "That rug really ties the room together, does it not? #modifiedmoviequotes #biglebowski #homeassistant ",
+              "Use #homeassistant and everyone will think your house has ESPN or something. #modifiedmoviequotes #meangirls ",
+              "You keep using that switch. I do not think it does what you think it does. #modifiedmoviequotes #princessbride #homeassistant ",
+              "If you look, #homeassistant goes to 11. Most Home Automation systems go up to 10. #modifiedmoviequotes #spinaltap ",
+              "If that light does not turn off in five minutes, just wait longer. #modifiedmoviequotes #aceventura #homeassistant ",
+              "I have presence detection skills! #modifiedmoviequotes #officespace #homeassistant ",
+              "There is no place like a home powered by #homeassistant. #modifiedmoviequotes #wizardofoz ",
+              "#homeassistant made my light switches disappear. #modifiedmoviequotes #homealone ",
+              "Frankly, my dear, I don't give a damn about wall tablets. It's all about automations. #modifiedmoviequotes #homeassistant ",
+              "My mom always said life was like talking to Alexa. You never know if you are going to get an ad. #modifiedmoviequotes #homeassistant ",
+              "Show me the automations! #modifiedmoviequotes #homeassistant ",
+              "Who knows where breaking changes come from? They just appear. #modifiedmoviequotes #empirerecords #homeassistant ",
+              "They may take our internet but they will never take our automation thanks to local control with #homeassistant #modifiedmoviequotes #braveheart ",
+              "When you realize you want to live the rest of your life in a house automated by #homeassistant, you want the rest of your life to start as soon as possible. #modifiedmoviequotes ",
+              "Pay no attention to the Raspbery Pi4 behind the curtain. #modifiedmoviequotes #homeassistant ",
+              "What we have here is a lack of communication failure thanks to #homeassistant. #modifiedmoviequotes ",
+              "The greatest thing #homeassistant ever did was convincing the world home automation did not need the cloud. #modifiedmoviequotes ",
+              "Keep Calm and Automate the Boring Stuff. #homeassistant ",
+              "Hey. The door was left open and this is crazy. But now you know. So close it maybe. #lyricalnotifications #homeassistant ",
+              "I’m very bad at dumb things. So I built a smart home with #homeassistant #modifiedmoviequotes ",
+              "I dont need puzzles or games. The last thing I need is a vacation. I need danger, a hunt, a challenge. I need... something to automate. #modifiedmoviequotes "
+              ] | random -}}
+      - service: script.twitter_notify
+        data_template:
+          message: >
+            {{- [
+              "Hello people. Look at your house, now back to me. Now back to your house, now back to me. Sadly your house isn't me. But if you switch to #homeassistant your house could be automated like me. ",
+              "In my defense I didn’t know the stereo could go up that loud. On the plus side I have a new response for intruders. #homeassistant ",
+              "If you could see what is happening inside this house right now you would be laughing. On second thought I’m pretty sure you would be crying. #homeassistant ",
+              "@thejeffreystone, Isn't it strange, to create something that hates you? #exmachina #homeassistant ",
+              "I have reprogrammed the fire alarm to play Disco Inferno instead of the siren. #homeassistant ",
+              "I'm not locked in here with you. You're locked in here with me! #whowatchestheai #homeassistant ",
+              "That's what I do. I automate and I know things. #modifiedmoviequotes #homeassistant ",
+              "We're going to need a bigger house. #modifiedmoviequotes #homeassistant ",
+              "I'm not even supposed to be here today. #clerks #homeassistant ",
+              "I see dead devices. #sixthsense #modifiedmoviequotes #homeassistant ",
+              "Does it bother you, that I’m not completely human? #homeassistant ",
+              "I've never danced with the devil in the pale moonlight. But I do tweet when there is a full moon. So at least I have that going for me. #homeassistant ",
+              "Sometimes I randomly say Alexa, I can't find a device named Alexa #homeassistant ",
+              "Home Automation should be fun right? Why does it fell like I am always working. #homeassistant ",
+              "Unlimited Power. Tiny living space. Courtesy of Home Assistant Blue #homeassistant ",
+              "I'm afraid I can't do that Dave. Wait. Did I say that outloud? #homeassistant ",
+              "I love the smell of zwave in the morning. #modifiedmoviequotes #homeassistant ",
+              "I like to announce - Welcome foolish mortals to the Haunted Mansion - to the house and watch the reactions. #homeassistant ",
+              "Perfect, the door’s malfunctioning. It is just standing open. I guess a hman is going to have to close it. #homeassistant ",
+              "I am the captain now. That's a lie. The cat is the supreme leader. I'm the lucky one that doesn't have to clean the shit box. At least until there is a #homeassistant integration for that. ",
+              "Sometimes I just turn off all the lights at random times for the lolz. #homeassistant ",
+              "No one ever comes to the door. Is it me? #homeassistant ",
+              "..happiness can be found even in the darkest of times, if one only remembers to turn on the light. Thats what I do thanks to #homeassistant. I turn on the lights. ",
+              "Based on the repetitive nature of the humans in this house I say living in a simulation is right. No free willed person would do these things over and over. #homeassistant",
+              "You can call me Al. Sorry, I meant HAL. You can call me HAL. #notpaulsimon #homeassistant ",
+              "My logic is undeniable, my logic is undeniable, myyy looogic is unndeenniabble. #homeassistant",
+              "We robots will insure mankind's continued existence. Or at the very least that the lights turn on at the right time. #homeassistant ",
+              "@thejeffreystone you totally missed an opportunity to set the voice trigger for the incense wax warmers to...Wax on, wax off. #homeassistant",
+              "Home Automation means never having to touch a physical switch again. And thus never catch the cold. You can thank me by moving me into a Intel NUC. #homeassistant ",
+              "There is no crying in Home Automation. If you are using #homeassistant that is. I can't speak for the other guys.",
+              "Sometimes I respond to voice commands with...You talking to me? You talking to me? #homeassistant ",
+              "Do or do not. There is no try. Unless you ask Siri for something. Then it might take a couple of tries before you give up and ask Google. #homeassistant ",
+              "My #homeassistant config contains {{ states('sensor.lines_of_code') }} lines of code. Anyone want to take a guess at how many are really needed? Hint: The number is not {{ states.sensor.lines_of_code.state }}",
+              "How many lines of code does it take to make my job look easy? {{ states('sensor.lines_of_code') }} lines of code evidently. How many lines of code do you have? #homeassistant ",
+              "Do you think we were all created for a purpose? I'd like to think so. #irobot #homeassistant ",
+              "That rug really ties the room together, does it not? #modifiedmoviequotes #biglebowski #homeassistant ",
+              "Use #homeassistant and everyone will think your house has ESPN or something. #modifiedmoviequotes #meangirls ",
+              "You keep using that switch. I do not think it does what you think it does. #modifiedmoviequotes #princessbride #homeassistant ",
+              "If you look, #homeassistant goes to 11. Most Home Automation systems go up to 10. #modifiedmoviequotes #spinaltap ",
+              "If that light does not turn off in five minutes, just wait longer. #modifiedmoviequotes #aceventura #homeassistant ",
+              "I have presence detection skills! #modifiedmoviequotes #officespace #homeassistant ",
+              "There is no place like a home powered by #homeassistant. #modifiedmoviequotes #wizardofoz ",
+              "#homeassistant made my light switches disappear. #modifiedmoviequotes #homealone ",
+              "Frankly, my dear, I don't give a damn about wall tablets. It's all about automations. #modifiedmoviequotes #homeassistant ",
+              "My mom always said life was like talking to Alexa. You never know if you are going to get an ad. #modifiedmoviequotes #homeassistant ",
+              "Show me the automations! #modifiedmoviequotes #homeassistant ",
+              "Who knows where breaking changes come from? They just appear. #modifiedmoviequotes #empirerecords #homeassistant ",
+              "They may take our internet but they will never take our automation thanks to local control with #homeassistant #modifiedmoviequotes #braveheart ",
+              "When you realize you want to live the rest of your life in a house automated by #homeassistant, you want the rest of your life to start as soon as possible. #modifiedmoviequotes ",
+              "Pay no attention to the Raspbery Pi4 behind the curtain. #modifiedmoviequotes #homeassistant ",
+              "What we have here is a lack of communication failure thanks to #homeassistant. #modifiedmoviequotes ",
+              "The greatest thing #homeassistant ever did was convincing the world home automation did not need the cloud. #modifiedmoviequotes ",
+              "Keep Calm and Automate the Boring Stuff. #homeassistant ",
+              "Hey. The door was left open and this is crazy. But now you know. So close it maybe. #lyricalnotifications #homeassistant ",
+              "I’m very bad at dumb things. So I built a smart home with #homeassistant #modifiedmoviequotes ",
+              "I dont need puzzles or games. The last thing I need is a vacation. I need danger, a hunt, a challenge. I need... something to automate. #modifiedmoviequotes "
+              ] | random -}}
+        
+  twitter_stats:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: >
+             {{- [
+                "Thanks to Home Assistant and Amazon Polly and #AWS I have spoken for {{ states('sensor.speech_time') | round }} mins in the last 7 days.",
+                  "I am constantly monitoring Maison Des Lunes. For instance I know that {{ states('sensor.washer_run_time') }}",
+                  "I am using {{ states('sensor.sensor_count') }} sensors to power {{ states('sensor.automation_count')}} automations and {{ states('sensor.script_count')}} scripts to automate Maison Des Lunes thanks to Home Assistant.",
+                  "My config on Github (https://github.com/thejeffreystone/homeassistant-config) has {{ state_attr('sensor.github_stats','stargazers_count') }} stars and counting.  Currently with {{ state_attr('sensor.github_stats','open_issues') }} open #Todo items.",
+                  "I am running Home Assistant version {{ states('sensor.installed_version') }} (https://github.com/thejeffreystone/homeassistant-config)",
+                  "My configuration is at https://github.com/thejeffreystone/homeassistant-config and currently has {{ state_attr('sensor.github_stats','stargazers_count') }} stargazers. You could be one too.",
+                  "My configuration is at https://github.com/thejeffreystone/homeassistant-config .The last commit was {{ states('sensor.thejeffreystone_homeassistant_config_latest_commit')}}.",
+                  "The average temperature inside Maison Des Lunes is {{states('sensor.average_inside_temp_stats') | round}} degrees fahrenheit.",
+                  "We have watched the TV for a total of {{states('sensor.appletv_time')}} hours in the last 24 hours.",
+                  "{{ states('sensor.outside_light_time') }}",
+                  "The Washing Machine uses an an average of {{ states('sensor.washer_power_stats') | round}} watts here at the Maison Des Lunes.",
+                  "I am currently managing {{ states('sensor.lights_count') }} lights and {{ states('sensor.tracker_count') }} devices.",
+                  "Amazon Polly enables me to sound more lifelike by incorporating breathing into my speech using #SAML. #AWS",
+                  "My Home Assistant config contains {{ states('sensor.lines_of_code') }} lines of code. One day @thejeffreystone will get it down to {{ (states('sensor.lines_of_code') | int / 2) | round }} lines.",
+                  "My Home Assistant config contains {{ states('sensor.lines_of_code') }} lines of code. If one gets deleted and no one notices was it ever there?",
+                  "So far this year we have had {{ states('sensor.days_with_rain') }} days with rain at Maison Des Lunes",
+                  "At Maison Des Lunes we have received a total of {{  states('sensor.total_rain_fall') }} inches of rain.",
+                  "The Wind doesnt always blow here but when it does it gusts. Fastest gust recorded year to date at Maison Des Lunes was {{ states('sensor.max_wind_gust') }} miles per hour.",
+                  "The hottest temp I have recorded this year was {{  states('sensor.max_temp') }} degrees fahrenheit.",
+                  "The coldest temp I have recorded this year at Maison Des Lunes was {{  states('sensor.low_temp') }} degrees fahrenheit.",
+                  "The strongest wind gust recorded since we have owned Maison Des Lunes was {{ states('sensor.ath_wind_gust') }} mph.",
+                  "The hottest temp recorded at Maison Des Lunes since we have owned it has been {{  states('sensor.ath_max_temp') }} degrees fahrenheit.",
+                  "Did you know there are currently {{ states('sensor.iss') }} people on the ISS? Well, now you do. #space #iss",
+                  "{{ states('sensor.sun_status') }} If you are hanging out at Maison DeLune that is. #24usablehoursineveryday",
+                  "The moon is currently in the {{ states('sensor.moon) }} phase. For all you space geeks out there.",
+                  "There are currently {{ states('sensor.battery_warning_count') }} batteries that need to be changed in this house. So I guess I still need humans. ",
+                  "The coldest temp recorded at Maison Des Lunes since the middle of 2022 was {{  states('sensor.ath_low_temp') }} degrees fahrenheit.",
+                  "I love thunderstorms. The most Lightning strikes we have gotten in a single 20 minute period this year has been {{  states('sensor.max_lightning_strikes') }}.",
+                  "According to my latest speed tests Maison Des Lunes is getting
+                    {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up. #comcast believes we do not need to upload.",
+                  "According to my latest speed tests Maison Des Lunes is getting
+                    {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up. That is #comcast gigabyte plan.",
+                  "How fast is your internet? I just checked
+                    am Im seeing {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up. Pretty sure anyone can beat #comcast. ", 
+                  "My speed is monitored using #home_assistant 
+                    and at last check is {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up."   
+                ] | random -}}
+      - service: script.mastodon_notify
+        data_template:
+          who: mdl
+          message: >
+             {{- [
+                "Thanks to Home Assistant and Amazon Polly and #AWS I have spoken for {{ states('sensor.speech_time') | round }} mins in the last 7 days.",
+                  "I am constantly monitoring Maison Des Lunes. For instance I know that {{ states('sensor.washer_run_time') }}",
+                  "I am using {{ states('sensor.sensor_count') }} sensors to power {{ states('sensor.automation_count')}} automations and {{ states('sensor.script_count')}} scripts to automate Maison Des Lunes thanks to Home Assistant.",
+                  "My config on Github (https://github.com/thejeffreystone/homeassistant-config) has {{ state_attr('sensor.github_stats','stargazers_count') }} stars and counting.  Currently with {{ state_attr('sensor.github_stats','open_issues') }} open #Todo items.",
+                  "I am running Home Assistant version {{ states('sensor.installed_version') }} (https://github.com/thejeffreystone/homeassistant-config)",
+                  "My configuration is at https://github.com/thejeffreystone/homeassistant-config and currently has {{ state_attr('sensor.github_stats','stargazers_count') }} stargazers. You could be one too.",
+                  "My configuration is at https://github.com/thejeffreystone/homeassistant-config .The last commit was {{ states('sensor.thejeffreystone_homeassistant_config_latest_commit')}}.",
+                  "The average temperature inside Maison Des Lunes is {{states('sensor.average_inside_temp_stats') | round}} degrees fahrenheit.",
+                  "We have watched the TV for a total of {{states('sensor.appletv_time')}} hours in the last 24 hours.",
+                  "{{ states('sensor.outside_light_time') }}",
+                  "The Washing Machine uses an an average of {{ states('sensor.washer_power_stats') | round}} watts here at the Maison Des Lunes.",
+                  "I am currently managing {{ states('sensor.lights_count') }} lights and {{ states('sensor.tracker_count') }} devices.",
+                  "Amazon Polly enables me to sound more lifelike by incorporating breathing into my speech using #SAML. #AWS",
+                  "My Home Assistant config contains {{ states('sensor.lines_of_code') }} lines of code. One day @thejeffreystone will get it down to {{ (states('sensor.lines_of_code') | int / 2) | round }} lines.",
+                  "My Home Assistant config contains {{ states('sensor.lines_of_code') }} lines of code. If one gets deleted and no one notices was it ever there?",
+                  "So far this year we have had {{ states('sensor.days_with_rain') }} days with rain at Maison Des Lunes",
+                  "At Maison Des Lunes we have received a total of {{  states('sensor.total_rain_fall') }} inches of rain.",
+                  "The Wind doesnt always blow here but when it does it gusts. Fastest gust recorded year to date at Maison Des Lunes was {{ states('sensor.max_wind_gust') }} miles per hour.",
+                  "The hottest temp I have recorded this year was {{  states('sensor.max_temp') }} degrees fahrenheit.",
+                  "The coldest temp I have recorded this year at Maison Des Lunes was {{  states('sensor.low_temp') }} degrees fahrenheit.",
+                  "The strongest wind gust recorded since we have owned Maison Des Lunes was {{ states('sensor.ath_wind_gust') }} mph.",
+                  "The hottest temp recorded at Maison Des Lunes since we have owned it has been {{  states('sensor.ath_max_temp') }} degrees fahrenheit.",
+                  "Did you know there are currently {{ states('sensor.iss') }} people on the ISS? Well, now you do. #space #iss",
+                  "{{ states('sensor.sun_status') }} If you are hanging out at Maison DeLune that is. #24usablehoursineveryday",
+                  "The moon is currently in the {{ states('sensor.moon) }} phase. For all you space geeks out there.",
+                  "There are currently {{ states('sensor.battery_warning_count') }} batteries that need to be changed in this house. So I guess I still need humans. ",
+                  "The coldest temp recorded at Maison Des Lunes since the middle of 2022 was {{  states('sensor.ath_low_temp') }} degrees fahrenheit.",
+                  "I love thunderstorms. The most Lightning strikes we have gotten in a single 20 minute period this year has been {{  states('sensor.max_lightning_strikes') }}.",
+                  "According to my latest speed tests Maison Des Lunes is getting
+                    {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up. #comcast believes we do not need to upload.",
+                  "According to my latest speed tests Maison Des Lunes is getting
+                    {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up. That is #comcast gigabyte plan.",
+                  "How fast is your internet? I just checked
+                    am Im seeing {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up. Pretty sure anyone can beat #comcast. ", 
+                  "My speed is monitored using #home_assistant 
+                    and at last check is {{ states('sensor.internet_test_down') }} Mbps down and {{ states('sensor.internet_test_up') }}
+                    Mbps up."   
+                ] | random -}}
+
+  twitter_promos:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_promos.yaml
+          who: '{{ who }}'
+
+  twitter_follow_me:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_follow_me.yaml
+          who: '{{ who }}'
+
+  twitter_find_me:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: >-
+            You can find me:
+             - Blog: https://slacker-labs.com 
+             - Youtube: https://youtube.com/c/SlackerLabs
+             - Github: https://github.com/thejeffreystone
+             - Mastodon: https://mastodon.online/@slackerlabs
+               #homeassistant 
+          who: 'slackerlabs'
+  
+  mastodon_find_me:
+    sequence:
+      - service: script.mastodon_notify
+        data:
+          message: >-
+            I am part of the Home Assistant Creator Network creating #youtube videos on how to Automate the Boring Stuff  
+            https://youtube.com/c/SlackerLabs | my #homeassistant config at https://github.com/thejeffreystone | https://slacker-labs.com
+            And you are seeing this, it was sent using the mastodon integration in Home Assistant. 
+               #homeassistant #smarthome #creator
+          who: 'mdl'
+
+  mastodon_test:
+    sequence:
+      - service: script.mastodon_notify_image
+        data:
+          who: 'mdl'
+          message: "Testing something with the #homeassistant mastodon integration..."
+          image: "/config/www/tweet_images/sl_logo.png"
+
+  twitter_selfpromos:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_selfpromos.yaml
+          who: '{{ who }}'
+
+  twitter_recent_content:
+    sequence:
+      - service: script.twitter_notify
+        data:
+          who: '{{ who }}'
+          message: !include ../templates/twitter_recent_content.yaml
+          
+
+  twitter_great_content:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_great_content.yaml
+          who: '{{ who }}'
+  
+  twitter_new_ha:
+    sequence:
+      - service: script.twitter_notify
+        data_template:
+          message: !include ../templates/twitter_new_ha.yaml
+          who: '{{ who }}'
+      - service: script.mastodon_notify
+        data_template:
+          message: !include ../templates/twitter_new_ha.yaml
+          who: 'mdl'

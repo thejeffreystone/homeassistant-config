@@ -1,0 +1,450 @@
+###############################################################################
+#   @author         :   Jeffrey Stone 
+#   @date           :   06/12/2020
+#   @package        :   Appliances
+#   @description    :   Package for handling Smart Applicances and or automation to make dumb appliances seem smart.  
+###############################################################################
+
+utility_meter:
+  washer_daily_watts:
+    source: sensor.washer_switch_electric_consumption_w
+    cycle: daily
+  washer_weekly_watts:
+    source: sensor.washer_switch_electric_consumption_w
+    cycle: weekly
+
+sensor:
+  - platform: history_stats
+    name: Fridge Opened Count
+    entity_id: binary_sensor.refrigerator_door_open
+    state: "on"
+    type: count
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}"
+  - platform: history_stats
+    name: Fridge Opened Time
+    entity_id: binary_sensor.refrigerator_door_open
+    state: "on"
+    type: time
+    start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+    end: "{{ now() }}" 
+  - platform: history_stats
+    name: Dryer Run Time
+    entity_id: sensor.dryer_run_state
+    state: "Drying"
+    type: time
+    end: "{{ now() }}"  
+    duration:
+      days: 7
+  - platform: history_stats
+    name: ps5_today
+    entity_id: binary_sensor.ps5
+    state: "on"
+    type: time
+    end: "{{ now() }}"  
+    duration:
+      hours: 24
+  - platform: history_stats
+    name: ps5_this_week
+    entity_id: binary_sensor.ps5
+    state: "on"
+    type: time
+    end: "{{ now() }}"  
+    duration:
+      days: 7
+
+template:
+  - binary_sensor:
+    - name: ps5
+      unique_id: ps5_power_sensor
+      state: >
+        {{ states('sensor.playstation_power_power')  | int > 10 }}
+      device_class: power
+
+automation:
+    
+  - id: washer_running
+    alias: Washer Running
+    trigger:
+    - above: 5
+      entity_id: sensor.washer_switch_electric_consumption_w
+      platform: numeric_state
+    condition:
+      condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.washer_status
+        state: idle
+      - condition: state
+        entity_id: sensor.washer_status
+        state: complete
+    action:
+    - service: mqtt.publish
+      data:
+        topic: house/washer/status
+        payload: running
+        retain: true
+    initial_state: true
+
+  - id: washer_complete
+    alias: Washer Complete
+    trigger:
+    - below: 3
+      entity_id: sensor.washer_switch_electric_consumption_w
+      platform: numeric_state
+    condition:
+    - condition: state
+      entity_id: sensor.washer_status
+      state: running
+    action:
+    - service: mqtt.publish
+      data:
+        topic: house/washer/status
+        payload: complete
+        retain: true
+    - service: mqtt.publish
+      data:
+        topic: house/washer/time_complete
+        payload: '{{ now().timestamp() }}'
+        retain: true
+    initial_state: true
+
+  - id: washer_notification
+    initial_state: true
+    alias: Washer Notification
+    trigger:
+    - platform: state
+      entity_id: sensor.washer_status
+      from: running
+      to: complete
+    action:
+    - wait_template: '{{ is_state(''binary_sensor.dryer_dry_completed'',''on'') }}'
+      continue_on_timeout: True
+      timeout: 00:15:00
+    # - service: input_boolean.turn_on
+    #   entity_id: input_boolean.washer_finished
+    - service: script.announcement
+      data: 
+        who: '{{ states(''sensor.room_audio'') }}'
+        message: >
+          It appears the washing machine has completed its cycle.
+    - service: script.turn_on
+      entity_id: script.washer_finished_notification_audible
+
+  - id: washer_emptied
+    initial_state: true
+    alias: Washer Emptied
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.washer_door
+      from: 'off'
+      to: 'on'
+    action:
+    - service: mqtt.publish
+      data:
+        topic: house/washer/status
+        payload: idle
+        retain: true
+    # - service: input_boolean.turn_off
+    #   entity_id: input_boolean.washer_finished
+    - service: script.turn_off
+      entity_id: script.washer_finished_notification_audible
+    - service: mqtt.publish
+      data:
+        topic: house/washer/time_emptied
+        payload: '{{ now().timestamp() }}'
+        retain: true
+
+  - id: e1cb26fe-0423-11eb-adc1-0242ac120002
+    initial_state: true
+    alias: Dryer Notification
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.dryer_dry_completed
+      from: 'off'
+      to: 'on'
+    action:
+    - service: script.announcement
+      data:
+        who: '{{ states(''sensor.room_audio'') }}'
+        message: >
+          It appears the dryer has finished.
+    - delay:
+        minutes: 15    
+
+  - id: e1cb2640-0423-11eb-adc1-0242ac120002 
+    alias: 3D Printing Notifications
+    trigger:
+    - platform: state 
+      entity_id: binary_sensor.octoprint_printing
+      to: "on"
+      from: 'off'
+      for: "00:01:00"
+      id: printing_started
+    - platform: state 
+      entity_id: binary_sensor.octoprint_printing
+      to: "off"
+      from: 'on'
+      id: printing_ended
+    - platform: state
+      entity_id: sensor.octoprint_current_state
+      from: 'offline'
+      to: 'operational'
+      id: online
+    - platform: state
+      entity_id: switch.3d_printer
+      from: 'off'
+      to: 'on'
+      id: printer_on
+    action:
+    - choose:
+      - conditions:
+        - condition: trigger
+          id: printing_started
+        sequence:
+        - wait_template: "{{ (states('sensor.octoprint_tool_0_target') | int >= 200 ) and (states('sensor.octoprint_tool_0_temperature') | int >= (states('sensor.octoprint_tool_0_target') | int -2) ) and (states('sensor.octoprint_bed_temperature') | int >= (states('sensor.octoprint_bed_target') | int -2) ) }}"
+        - service: script.announcement
+          data:
+            who: '{{ states(''sensor.room_audio'') }}'
+            message: >
+              {% set printer = ['The Ender five','The three d Printer'] | random %}
+              {{ [
+              printer ~ " has reached optimal temperature.",
+              printer ~ " is reporting all sensors nominal.",
+              printer ~ " appears to have completed its pre print cycle."
+              ] | random }}
+              {{ [
+              'Commencing automated fabrication.',
+              'Commencing automated assembly. '
+              ] | random }}
+              {% if states('sensor.octoprint_print_estimated_time') != 'None' %}
+                {{ [
+                    'Estimation completion time is ',
+                    'Fabrication should be complete in '
+                    ] | random }}
+                {% set hours = states('sensor.octoprint_print_estimated_time').split(':')[0] %}
+                {% set mins = states('sensor.octoprint_print_estimated_time').split(':')[1] %}
+                {% if hours | int > 0 %}
+                    {% if hours | int > 1 %}
+                      {{ hours }} hours and
+                    {% else %}
+                      {{ hours }} hour and 
+                    {% endif %}
+                {% endif %}
+                {% if mins | int > 0 %}
+                  {{ mins }} minutes
+                {% endif %}
+              {% endif %}
+        - service: script.twitter_notify
+          data_template:
+            message: >
+              {%- macro getReport() -%}
+              {% set printer = ['The Ender 5','The 3d Printer'] | random %}
+                            {{ [
+                            printer ~ " has reached optimal temperature.",
+                            printer ~ " is reporting all sensors nominal.",
+                            printer ~ " appears to have completed its pre print cycle."
+                            ] | random }}
+                            {{ [
+                            'Commencing automated fabrication.',
+                            'Commencing automated assembly. '
+                            ] | random }}
+                            {% if states('sensor.octoprint_print_estimated_time') != 'None' %}
+                              {{ [
+                                  'Estimation completion time is ',
+                                  'Fabrication should be complete in '
+                                  ] | random }}
+                              {% set hours = states('sensor.octoprint_print_estimated_time').split(':')[0] %}
+                              {% set mins = states('sensor.octoprint_print_estimated_time').split(':')[1] %}
+                              {% if hours | int > 0 %}
+                                  {% if hours | int > 1 %}
+                                    {{ hours }} hours and
+                                  {% else %}
+                                    {{ hours }} hour and 
+                                  {% endif %}
+                              {% endif %}
+                              {% if mins | int > 0 %}
+                                {{ mins }} minutes
+                              {% endif %}
+                            {% endif %}
+                {%- endmacro -%}
+                {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
+                {%- macro cleanup(data) -%}
+                  {%- for item in data.split("\n")  if item | trim != "" -%}
+                    {{ item | trim }} {% endfor -%}
+                {%- endmacro -%}
+
+                {# a macro to call all macros :)  #}
+                {%- macro mother_of_all_macros() -%}
+                  {{ getReport() }}
+                {%- endmacro -%}
+
+                {# Call the macro  #}
+                {{- cleanup(mother_of_all_macros()) -}}
+
+
+      - conditions:
+        - condition: trigger
+          id: online
+        sequence:
+        - service: script.announcement
+          data:
+            who: '{{ states(''sensor.room_audio'') }}'
+            message: >
+              {% set printer = ['The Ender five','The three d Printer'] | random %}
+              {{ [
+                "I have detected the " ~ printer + " is now online.",
+                printer ~ " is now idle and ready for printing.",
+                printer ~ " is online."
+                ] | random }}
+      - conditions:
+        - condition: trigger
+          id: printer_on
+        sequence:
+        - service: scene.turn_on
+          entity_id: scene.3dprinteron
+      - conditions:
+        - condition: trigger
+          id: printing_ended
+        sequence:
+        - service: script.announcement
+          data:
+            who: '{{ states(''sensor.room_audio'') }}'
+            message: >
+              {% set printer = ['The Ender five','The three d Printer'] | random %}  
+              {{ [
+                printer ~ " has completed its run.",
+                printer ~ " is reporting fabrication is completed.",
+                printer ~ " has rendered a new object."
+                ] | random }}
+                {{ [
+                'And is currently in the process of shutting down.',
+                'And has begun to cool down.',
+                'And has started the post print cool down.'
+                ] | random }}
+
+script:
+
+  appliances_on:
+    sequence:
+    - service: switch.turn_on
+      data:
+        entity_id: switch.box_fans
+  
+  appliances_off:
+    sequence:
+    - data:
+        entity_id: switch.incense
+      service: switch.turn_off
+    - data:
+        entity_id: switch.artemis
+      service: switch.turn_off
+    - data:
+        entity_id: switch.box_fans
+      service: switch.turn_off
+
+  washer_finished_notification_audible:
+    sequence:
+    - repeat:
+        while:
+          - condition: state
+            entity_id: sensor.washer_status
+            state: 'complete'
+        sequence:
+        - delay:
+            minutes: 45
+        #- service: script.washer_audible
+        - service: script.simplified_washer_audible
+
+  # dryer_finished_notification_audible:
+  #   sequence:
+  #   - repeat:
+  #       while:
+  #         - condition: state
+  #           entity_id: sensor.washer_status
+  #           state: 'complete'
+  #       sequence:
+  #       - service: script.dryer_audible
+  #       - delay:
+  #           minutes: 45
+
+  simplified_washer_audible:
+    sequence:
+    - condition: state
+      entity_id: group.family
+      state: 'home'
+    - condition: state
+      entity_id: sensor.washer_status
+      state: complete
+    - service: script.announcement
+      data: 
+        who: "{{ states('sensor.room_audio') }}"
+        message: >
+            The washing machine completed its cycle 
+            {% set seconds = now().timestamp() - as_timestamp(states.sensor.washer_status.last_changed) %}
+            {% if (seconds / ( 60 * 60 )) | int == 1 %}
+              over an hour ago.
+              {{ [
+              'I would not forget the clothes.', 
+              'You might want rotate the laundry.',
+              'If you dont want to rotate them, I suggest delegation.'
+              ] | random }}
+            {% elif (seconds / ( 60 * 60 )) | int > 1 and (seconds / ( 60 * 60 )) | int < 6 %}
+              over {{ (seconds //  ( 60 * 60 )) | int }} hours ago.
+              {{ [
+              'Much longer and you are going to need to wash them again.', 
+              'Someone needs to rotate the laundry.',
+              'Do not forget about the clothes in the washing machine.',
+              'I could not locate Skylar or I would have told him to do it.',
+              'Do you like your clothes smelling like mildew? Because that is what is happening right now.'
+              ] | random }}
+            {% elif (seconds / ( 60 * 60 )) | int > 6 %}
+              over {{ (seconds //  ( 60 * 60 )) | int }} hours ago.
+              {{ [
+              'That is a largae amount of time.', 
+              'Did you decide you want those clothes to suffer?',
+              'You might as well just rewash those clothes.',
+              'I can smell the mildew. Virtually that is.',
+              'Surely you did not mean to forget about the clothes.'
+              ] | random }}
+            {% else %}
+              {{ (seconds // 60) | int }} minutes ago. Someone forgot to move the clothes to the dryer. I am not going to name names, but I bet it was
+              {{ [
+              'Skylar. ', 
+              'Dad. ', 
+              'Master Gracey. ',
+              'Constance. ',
+              'Winston. ',
+              'Pippa. '
+              ] | random }}
+              Anyway, someone might want to move them.
+            {% endif %}
+    
+
+  washer_idle:
+    sequence:
+    - service: mqtt.publish
+      data:
+        topic: house/washer/status
+        payload: idle
+        retain: true
+  washer_running:
+    sequence:
+    - service: mqtt.publish
+      data:
+        topic: house/washer/status
+        payload: running
+        retain: true
+  washer_complete:
+    sequence:
+    - service: mqtt.publish
+      data:
+        topic: house/washer/status
+        payload: complete
+        retain: true
+    - service: mqtt.publish
+      data:
+        topic: house/washer/time_complete
+        payload: '{{ now().timestamp() }}'
+        retain: true
+

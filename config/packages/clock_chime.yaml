@@ -1,0 +1,176 @@
+#####################################################################
+# Origianl Repo: @chrisron95 - https://raw.githubusercontent.com/chrisron95/home-assistant-config/master/packages/clock_chime.yaml
+## Plays the number of cuckoos per hour and 1 on the half hour.
+# More Info and Video: https://www.vcloudinfo.com/2017/11/building-digital-cuckoo-clock-with-home.html
+
+# Modified from Chris Heder (@chrisron95) for Maison Des Lunes
+# Setup package to make everything configurable.
+# Added:
+#   - Ability to select sound between Cuckoo and Grandfather Clock
+#   - Quarter toll ability
+#   - Ability to disable quarter and half tolls, and chime entirely
+#   - Time helpers for start and stop times.
+#
+# Changed:
+#   - Now runs every 15 minutes rather than only every half hour
+#   - Triggers have IDs now which allows me to replace the time templates
+#####################################################################
+
+input_boolean:
+  clock_chime:
+    name: Clock Chime
+    icon: mdi:alarm
+  clock_chime_half_toll:
+    name: Clock Chime Half Hour Toll
+    icon: mdi:alarm
+  clock_chime_quarter_toll:
+    name: Clock Chime Quarter Hour Toll
+    icon: mdi:alarm
+
+input_datetime:
+  clock_chime_on_time:
+    name: Clock Chime On Time
+    has_date: false
+    has_time: true
+  clock_chime_off_time:
+    name: Clock Chime Off Time
+    has_date: false
+    has_time: true
+
+input_select:
+  clock_chime_sound:
+    name: Clock Chime Sound
+    options:
+      - Cuckoo Clock
+      - Grandfather Clock
+    icon: mdi:bell-ring
+
+automation:
+  - alias: Clock Chime
+    id: clock_chime
+    mode: restart
+    # Trigger every 15 minutes. The ID lets you know which one is current, rather than a time template.
+    # This accounts for the delay when waiting for media player to stop playing, just in case it lasts too long.
+    trigger:
+      - platform: time_pattern
+        minutes: 0
+        id: "0"
+      - platform: time_pattern
+        minutes: 15
+        id: "15"
+      - platform: time_pattern
+        minutes: 30
+        id: "30"
+      - platform: time_pattern
+        minutes: 45
+        id: "45"
+
+    condition:
+      - condition: time
+        after: input_datetime.clock_chime_on_time
+        before: input_datetime.clock_chime_off_time
+      - condition: state
+        entity_id: input_boolean.audible_notifications
+        state: "on"
+      - condition: state # Make sure the chime is enabled.
+        entity_id: input_boolean.clock_chime
+        state: "on"
+      - condition: numeric_state # TV Off
+        entity_id: sensor.power_switch_electric_consumption_w
+        below: 100
+      - condition: or # Either we are home or Guest_Mode is on.
+        conditions:
+          - condition: state
+            entity_id: group.family
+            state: "home"
+          - condition: state
+            entity_id: input_boolean.guest_mode
+            state: "on"
+
+    action:
+      - choose:
+          # Check for quarter and half hour trigger, and stop if it should be disabled.
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: trigger
+                    id: "15"
+                  - condition: trigger
+                    id: "45"
+            sequence:
+              - condition: or
+                conditions:
+                  # Don't play the quarter toll if it's disabled.
+                  - condition: state
+                    entity_id: input_boolean.clock_chime_quarter_toll
+                    state: "off"
+                  # Also don't play the quarter toll if Cuckoo Clock is selected as it's not needed.
+                  - condition: state
+                    entity_id: input_select.clock_chime_sound
+                    state: Cuckoo Clock
+              - stop: "Quarter Toll Disabled"
+          - conditions:
+              - condition: trigger
+                id: "30"
+            sequence:
+              # Don't play the half toll if it's disabled.
+              - condition: state
+                entity_id: input_boolean.clock_chime_half_toll
+                state: "off"
+              - stop: "Half Toll Disabled"
+        default: []
+      - if:
+        - condition: state
+          entity_id: media_player.ha_blue
+          state: 'idle'
+        then:
+        - service: media_player.volume_set
+          data:
+            entity_id: media_player.ha_blue
+            volume_level: 0.25
+        - service: media_player.play_media
+          data:
+            entity_id: >
+                media_player.ha_blue
+            media_content_id: >
+              {% if states("input_select.clock_chime_sound") == "Cuckoo Clock" %}
+                  {% if trigger.id == "30" %}
+                    https://slackerlabs.s3.amazonaws.com/audio/cuckoo/cuckoo-clock-01.mp3 
+                  {% else %}
+                    https://slackerlabs.s3.amazonaws.com/audio/cuckoo/cuckoo-clock-{{now().strftime("%I")}}.mp3
+                  {% endif %}
+                {% elif states("input_select.clock_chime_sound") == "Grandfather Clock" %}
+                  {% if trigger.id == "15" %}
+                    https://slackerlabs.s3.amazonaws.com/audio/gfclock/toll-1quarter.mp3
+                  {% elif trigger.id == "30" %}
+                    https://slackerlabs.s3.amazonaws.com/audio/gfclock/toll-2quarter.mp3
+                  {% elif trigger.id == "45" %}
+                    https://slackerlabs.s3.amazonaws.com/audio/gfclock/toll-3quarter.mp3
+                  {% else %}
+                    https://slackerlabs.s3.amazonaws.com/audio/gfclock/{{now().strftime("%I")}}-hour.mp3
+                  {% endif %}
+                {% endif %}
+            media_content_type: music
+        else:
+        - service: script.jarvis_voice
+          data:
+            who: living_room
+            message: > # Use the trigger ID to specify which sound to play.
+              {% if states("input_select.clock_chime_sound") == "Cuckoo Clock" %}
+                {% if trigger.id == "30" %}
+                  <audio src='https://slackerlabs.s3.amazonaws.com/audio/cuckoo/cuckoo-clock-01.mp3'/>
+                {% else %}
+                  <audio src='https://slackerlabs.s3.amazonaws.com/audio/cuckoo/cuckoo-clock-{{now().strftime("%I")}}.mp3'/>
+                {% endif %}
+              {% elif states("input_select.clock_chime_sound") == "Grandfather Clock" %}
+                {% if trigger.id == "15" %}
+                  <audio src='https://slackerlabs.s3.amazonaws.com/audio/gfclock/toll-1quarter.mp3'/>
+                {% elif trigger.id == "30" %}
+                  <audio src='https://slackerlabs.s3.amazonaws.com/audio/gfclock/toll-2quarter.mp3'/>
+                {% elif trigger.id == "45" %}
+                  <audio src='https://slackerlabs.s3.amazonaws.com/audio/gfclock/toll-3quarter.mp3'/>
+                {% else %}
+                  <audio src='https://slackerlabs.s3.amazonaws.com/audio/gfclock/{{now().strftime("%I")}}-hour.mp3'/>
+                {% endif %}
+              {% endif %}
+      

@@ -7,7 +7,7 @@
 
 recorder:
   db_url: !secret database
-  purge_keep_days: 30
+  purge_keep_days: 35
   exclude:
     domains:
       - automation
@@ -40,6 +40,11 @@ logbook:
       - device_tracker
       - input_boolean
       - person
+      - event
+      - timer
+      - service
+      - binary_sensor
+      - sensor
 
 # Lets try to make the logs less chatty and more fine tuned.       
 logger:
@@ -48,6 +53,7 @@ logger:
 history:
   include:
     domains:
+      - binary_sensor
       - sensor
       - switch
       - media_player

@@ -32,12 +32,20 @@
     days: 8
 - platform: history_stats
   name: AppleTV time
-  entity_id: media_player.apple_tv
-  state: "playing"
+  entity_id: media_player.home_theater
+  state: "Playing"
   type: time
   end: "{{ now() }}"
   duration:
     hours: 24
+- platform: history_stats
+  name: AppleTV time this week
+  entity_id: media_player.home_theater
+  state: "Playing"
+  type: time
+  end: "{{ now() }}"
+  duration:
+    days: 7
 - platform: history_stats
   name: Game time
   entity_id: media_player.playstation_4
@@ -85,6 +93,13 @@
   entity_id: sensor.pirateweather_wind_speed
   state_characteristic: mean
   sampling_size: 500
+- platform: statistics
+  name: "Lightning Strikes Last 20 Mins"
+  entity_id: sensor.acurite_6045m_under_deck_strcnt
+  state_characteristic: change
+  max_age:
+    minutes: 20
+  precision: 0
 - platform: statistics
   name: Visibility Stats
   entity_id: sensor.nws_current_visibility
@@ -176,25 +191,26 @@
         {% else %}
           none
         {% endif %}
-    school_tomorrow:
-      friendly_name: "School Tomorrow"
-      value_template: >-
-        {%- set test=(as_timestamp(now())+ (86400)) | timestamp_custom("%Y-%m-%d",true) %}
-        {% if states.calendar.school.attributes.start_time == test + " 07:10:00" %}
-          on
-        {% else %}
-          off
-        {% endif %}
+    # school_tomorrow:
+    #   friendly_name: "School Tomorrow"
+    #   value_template: >-
+    #     {%- set next_event=as_timestamp(state_attr('calendar.school','start_time')) | timestamp_custom("%Y-%m-%d",true) %}
+    #     {%- set tomorrow=as_timestamp(strptime(states('sensor.date'), "%Y-%m-%d") + timedelta(days=1)) | timestamp_custom("%Y-%m-%d",true) %}
+    #     {% if next_event == tomorrow %}
+    #       on
+    #     {% else %}
+    #       off
+    #     {% endif %}
     outside_light_time:
       friendly_name: "Outside Light Time"
       value_template: >-
         {% set time = (timedelta(hours=states('sensor.outside_lights')| float(0))| string) %} 
-        The outside lights were on for a total of {{time[:-6]}} hours and {{time[2:-3]}} mins in the last 24 hours.
+        The outside lights were on for a total of {{time[:-6]}} hours and {{time[2:-3] | replace(":", "")}} mins in the last 24 hours.
     washer_run_time:
       friendly_name: "Weekly Washer Run Time"
       value_template: >-
         {% set time = (timedelta(hours=states('sensor.washer_time')| float(0))| string) %} 
-        the washing machine ran for a total of {{time[:-6]}} hours and {{time[2:-3]}} mins in the last Week.
+        the washing machine ran for a total of {{time[:-6]}} hours and {{time[2:-3] | replace(":", "") }} mins in the last Week.
     battery_warning:
       friendly_name: "Battery Warning"
       value_template: >-

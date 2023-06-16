@@ -2,10 +2,12 @@
 #   @author         :   Jeffrey Stone 
 #   @date           :   03/13/2019
 #   @package        :   Security
-#   @description    :   Everything related to Disney in Anchorage House. 
+#   @description    :   Everything related to Disney in Maison Des Lunes. 
 ###############################################################################
 
 input_boolean:
+  haunted_mansion:
+    name: Haunted Mansion Show
   happy_ever_after_show:
     name: Happy Ever After Show
   boo_to_you_show:
@@ -60,6 +62,8 @@ input_boolean:
     name: Pixar Pier Loop
   disney_random_area_loop:
     name: Disney Random Area Loop
+  disney_random_area_loop_outside:
+    name: Disney Random Area Loop Outside
   disneyland_christmas_loop:
     name: Disneyland Christmas Loop
   mainstreet_usa_christmas_loop:
@@ -158,7 +162,6 @@ group:
       - input_boolean.test_track_loop
       - input_boolean.hogwartsexpress
       - input_boolean.forbiddenjourney
-      - input_boolean.islandsofadventure
       - input_boolean.hogsmeadeloop
       - input_boolean.underthesea
       - input_boolean.sorinaroundtheworld
@@ -200,7 +203,6 @@ group:
       - input_boolean.pixar_pier_loop
       - input_boolean.hogwartsexpress
       - input_boolean.forbiddenjourney
-      - input_boolean.islandsofadventure
       - input_boolean.hogsmeadeloop
       - input_boolean.underthesea
       - input_boolean.sorinaroundtheworld
@@ -795,7 +797,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/TrollyParade.mp3"
-            volume: .35
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -867,7 +869,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/AKLoop1.mp3"
-            volume: .30
+            volume: .20
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -1303,7 +1305,7 @@ automation:
         - service: script.local_audio
           data:
             media: "/media/disney/FrozenEverAfter.mp3"
-            volume: .30
+            volume: .25
             speaker: media_player.ha_blue
       - conditions:
         - condition: trigger
@@ -2167,7 +2169,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/PixarPier.mp3
-        volume: .35
+        volume: .20
   - id: pixar_pier_loop_off
     alias: Pixar Pier Loop Off
     initial_state: true
@@ -2342,7 +2344,7 @@ automation:
       data_template:
         speaker: media_player.ha_blue
         media: /media/disney/spaceship_earth_ride.mp3
-        volume: .35
+        volume: .25
   - id: spaceship_earth_off
     alias: Spaceship Earth Off
     initial_state: true
@@ -2649,6 +2651,29 @@ automation:
     - service: script.turn_off
       entity_id: script.local_audio
 
+  - id: random_disney_area_on_outside
+    alias: Random Disney Area On Outside
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.disney_random_area_loop_outside
+      to: 'on'
+    action:
+    - service: script.disney_park_audio
+  - id: random_disney_area_off_outside Outside
+    alias: Random Disney Area Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.disney_random_area_loop_outside
+      to: 'off'
+    action:
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: script.turn_off
+      entity_id: script.local_audio
+      
+
 script:
   # kill_hurry_back:
   #   sequence:
@@ -2869,7 +2894,7 @@ script:
         speaker: media_player.ha_blue
         volume: .4
         media: >
-         {{- ["http://192.168.7.40/Liberty_square_audio.mp3",
+         {{ ["http://192.168.7.40/Liberty_square_audio.mp3",
             "http://192.168.7.40/adventureland_loop.mp3",
             "http://192.168.7.40/be_our_guest.mp3",
             "http://192.168.7.40/epcot_entrance_loop.mp3",
@@ -2884,7 +2909,26 @@ script:
             "https://www.youtube.com/watch?v=tBm73YjJB0o",
             "https://www.youtube.com/watch?v=Jmyspnk8DZ8",
             "https://www.youtube.com/watch?v=joOLgTNMuVU",
-            "https://www.youtube.com/watch?v=19-ooWL5R8w"] | random -}}
+            "https://www.youtube.com/watch?v=19-ooWL5R8w"] | random }}
+
+# Random Disney Park Music
+  disney_park_audio_deck:
+    sequence:
+    - service: script.local_audio
+      data_template:
+        speaker: media_player.roku_deck
+        volume: .4
+        media: >
+          {{[
+            "/media/disney/aroundmk.mp3",
+            "/media/disney/Pandora_Area_Loop.mp3",
+            "/media/disney/WDW_Resort_TV.mp3",
+            "/media/disney/MK_MainStreet_Loop.mp3",
+            "/media/disney/ToyStorylandLoop.mp3",
+            "/media/disney/PiratesQueue.mp3",
+            "/media/disney/HauntedMansionQueue.mp3"
+            ] | random }}
+          
 
 # Dapper Dan Music
   dapper_dan_audio:
@@ -2894,10 +2938,10 @@ script:
         speaker: media_player.ha_blue
         volume: .4
         media: >
-         {{- [
+         {{[
             "https://www.youtube.com/watch?v=ELjBO21QaI0",
             "https://www.youtube.com/watch?v=sQqz_6dkwKE",
             "https://www.youtube.com/watch?v=4uqapvdZLlc",
             "https://www.youtube.com/watch?v=NgWemGSpQDc",
             "https://www.youtube.com/watch?v=bCyCWP311pE"
-            ] | random -}}
+            ] | random }}

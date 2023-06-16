@@ -4,7 +4,7 @@
 #   @package        :   Holidays
 #   @description    :   Holiday Specific.
 #
-#   I'm not sure where I got this, but it leverages a python script: https://github.com/thejeffreystone/home-assistant-configuration/blob/master/python_scripts/special_events.py
+#   I'm not sure where I got this, but it leverages a python script: https://github.com/thejeffreystone/homeassistant-config/blob/master/python_scripts/special_events.py
 #
 #   To create a sensor just create an automation to fire around midnight.
 #
@@ -60,7 +60,8 @@ automation:
     initial_state: true
     trigger:
     - platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.christmas_preshow', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      value_template: >
+        {{ states('sensor.time') == (state_attr('input_datetime.christmas_preshow', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}
     condition:
     - condition: state
       entity_id: calendar.holidays_in_united_states

@@ -64,6 +64,12 @@ notify:
     client_id: !secret mastodon_client_id
     client_secret: !secret mastodon_client_secret
     base_url: https://mastodon.online
+  - name: mastodon_mdl
+    platform: mastodon
+    access_token: !secret mdl_mastodon_access_token
+    client_id: !secret mdl_mastodon_client_id
+    client_secret: !secret mdl_mastodon_client_secret
+    base_url: https://mastodon.online
   
 script:
 
@@ -71,39 +77,12 @@ script:
 ###############################################################################
 # Txt Notify
 ###############################################################################
-  text_notify_all:
-    sequence:
-      - service: notify.all_ios
-        data_template:
-          message: >
-            {{ message }}
-
   text_debug:
     sequence:
       - condition: state
         entity_id: input_boolean.debug_texts
         state: 'on'
       - service: notify.jeff_ios
-        data_template:
-          message: >
-            {{ message }}
-
-  text_notify_jeff:
-    sequence:
-      - condition: state
-        entity_id: input_boolean.text_notify_jeff
-        state: 'on'
-      - service: notify.jeff_ios
-        data_template:
-          message: >
-            {{ message }}
-
-  text_notify_kat:
-    sequence:
-      - condition: state
-        entity_id: input_boolean.text_notify_kat
-        state: 'on'
-      - service: notify.kat_ios
         data_template:
           message: >
             {{ message }}
@@ -174,7 +153,7 @@ script:
             {% elif who == 'skylar' %}
               notify.skylar_ios
             {% elif who == 'parents' %}
-              notify.ios_parents
+              notify.parents_ios
             {% else %}
               notify.all_ios
             {% endif %}
@@ -219,137 +198,3 @@ script:
           #    badge: 0
           #     category: '{{ ios_category }}'
           #   entity_id: '{{ camera_entity }}'
-
-
-###############################################################################
-# Twitter
-###############################################################################
-
-
-  twitter_notify:
-    sequence:
-      - service: >
-          {% if who == 'thejeffreystone' %}
-            notify.twitter_js
-          {% elif who == 'slackerlabs' %}
-            notify.twitter_sl
-          {% else %}
-            notify.twitter
-          {% endif %}
-        data_template:
-          message: >
-            {% set msg = '' %}
-            {% set msg = msg + ' ' + message %}
-            {% set msg = msg + ' #iot #smarthome' %}
-            {{ msg }}
-
-  mastodon_notify:
-    sequence:
-      - service: >
-          {% if who == 'slackerlabs' %}
-            notify.mastodon_sl
-          {% else %}
-            notify.mastodon_sl
-          {% endif %}
-        data_template:
-          message: >
-            {% set msg = '' %}
-            {% set msg = msg + ' ' + message %}
-            {{ msg }}
-
-  twitter_notify_image:
-    sequence:
-      - service: >
-          {% if who == 'thejeffreystone' %}
-            notify.twitter_js
-          {% elif who == 'slackerlabs' %}
-            notify.twitter_sl
-          {% else %}
-            notify.twitter
-          {% endif %}
-        data_template:
-          message: >-
-            {{ tweet }} #iot #smarthome
-          data:
-            media: >-
-              {{ image }}
-
-  twitter_snark:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: !include ../templates/twitter_snark.yaml
-        
-  twitter_stats:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: !include ../templates/twitter_stats.yaml 
-
-  twitter_promos:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: !include ../templates/twitter_promos.yaml
-          who: '{{ who }}'
-
-  twitter_follow_me:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: !include ../templates/twitter_follow_me.yaml
-          who: '{{ who }}'
-
-  twitter_find_me:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: >-
-            You can find me:
-             - Blog: https://slacker-labs.com 
-             - Youtube: https://youtube.com/c/SlackerLabs
-             - Github: https://github.com/thejeffreystone
-             - Mastodon: https://mastodon.online/@slackerlabs
-               #homeassistant 
-          who: 'thejeffreystone'
-  
-  mastodon_find_me:
-    sequence:
-      - service: script.mastodon_notify
-        data:
-          message: >-
-            I haven't done one of these #intro posts, so here goes...
-            I am part of the Home Assistant Creator Network creating #youtube videos on how to Automate the Boring Stuff  
-            https://youtube.com/c/SlackerLabs | my #homeassistant config at https://github.com/thejeffreystone | https://slacker-labs.com
-            And you are seeing this, it was sent using the mastodon integration in Home Assistant. 
-               #homeassistant #smarthome #creator
-          who: 'slackerlabs'
-
-  twitter_selfpromos:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: !include ../templates/twitter_selfpromos.yaml
-          who: '{{ who }}'
-
-  twitter_recent_content:
-    sequence:
-      - service: script.twitter_notify
-        data:
-          who: '{{ who }}'
-          message: !include ../templates/twitter_recent_content.yaml
-          
-
-  twitter_great_content:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: !include ../templates/twitter_great_content.yaml
-          who: '{{ who }}'
-  
-  twitter_new_ha:
-    sequence:
-      - service: script.twitter_notify
-        data_template:
-          message: !include ../templates/twitter_new_ha.yaml
-          who: '{{ who }}'

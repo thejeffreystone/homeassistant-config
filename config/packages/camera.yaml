@@ -95,9 +95,9 @@ camera:
   - platform: ffmpeg
     name: "Backyard Ezviz"
     input: !secret ezviz_c8c 
-  # - platform: ffmpeg
-  #   name: "Printer Cam"
-  #   input: !secret printer_cam
+  - platform: ffmpeg
+    name: "Printer Cam"
+    input: !secret printer_cam
 ffmpeg:
   ffmpeg_bin: /usr/bin/ffmpeg  
 

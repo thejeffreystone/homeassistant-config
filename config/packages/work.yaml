@@ -83,7 +83,7 @@ automation:
   #   initial_state: true
   #   trigger:
   #   - platform: state
-  #     entity_id: binary_sensor.studio_motion
+  #     entity_id: binary_sensor.slacker_labs_motion
   #     from: "off"
   #     to: "on"
   #     id: motion
@@ -181,6 +181,9 @@ automation:
       - conditions:
         - condition: trigger
           id: start
+        - condition: state
+          entity_id: input_boolean.vacation_mode
+          state: 'off'
         sequence:
         - service: input_boolean.turn_on
           entity_id: input_boolean.work_background
@@ -191,7 +194,6 @@ automation:
         - service: input_boolean.turn_off
           entity_id: input_boolean.work_background
       default: []
-    initial_state: true
     mode: single   
 
 

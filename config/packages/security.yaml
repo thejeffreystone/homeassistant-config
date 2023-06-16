@@ -34,6 +34,470 @@ input_boolean:
     name: Dog Mode
     icon: mdi:dog-side
 
+automation:
+  - id: 26267abe-fbc4-4d1e-8d8d-4c06910766d0
+    alias: Sentry Mode Enabled Annoucement
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: input_boolean.sentry_mode
+        from: "off"
+        to: "on"
+    action:
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: group.external_doors
+                state: "on"
+            sequence:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.sentry_mode
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.lockdown_issue
+              - service: script.text_notify
+                data:
+                  who: "parents"
+                  message: "Unable to lock down Maison Des Lunes due to issue"
+              - service: script.speech_engine
+                data_template:
+                  who: "{{ states.sensor.room_audio.state }}"
+                  message: >
+                    {{ [
+                    "I was unable to activate sentry mode due to an open door.",
+                    "You may want to check the external doors. I was unable to secure them all.",
+                    "My systems check has failed. Please check the external doors.",
+                    "Someone has left the pod bay doors open."
+                    ] | random }}
+        default:
+          - service: script.speech_engine
+            data_template:
+              who: "{{ states.sensor.room_audio.state }}"
+              message: >
+                {{ [
+                "Sentry Mode has been activated.",
+                "May zan Day Loon has been secured! ",
+                "Sentry Mode is active. ",
+                "I am now monitoring the doors and will let you know if anyone attempts to access.",
+                "May zan Day Loon Shields are up."
+                ] | random }}
+          - service: script.text_notify
+            data_template:
+              who: "parents"
+              title: "Security Armed"
+              message: "Security System has been armed."
+          - service: alarm_control_panel.aarlo_set_mode
+            data:
+              entity_id: alarm_control_panel.aarlo_ah_base_station
+              mode: "Armed"
+          - service: media_player.play_media
+            target:
+              device_id: edb192da8c7f80c32410147961257fae
+            data:
+              media_content_id: disarm easy viz
+              media_content_type: routine
+          - service: scene.turn_on
+            entity_id: scene.lockdown
+          
+
+  # When sentry mode is disabled / security disarmed by any method, notify everyone.
+  - id: 4dbf31f4-49e6-43fe-b48e-0970a68853dd
+    alias: Sentry Mode Disabled Annoucement
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: input_boolean.sentry_mode
+        from: "on"
+        to: "off"
+    action:
+      - choose:
+          - conditions:
+              condition: or
+              conditions:
+                - condition: state
+                  entity_id: group.family
+                  state: "home"
+                - condition: state
+                  entity_id: input_boolean.guest_mode
+                  state: "on"
+            sequence:
+              - service: script.speech_engine
+                data_template:
+                  who: "{{ states.sensor.room_audio.state }}"
+                  message: >
+                    {{ [
+                    "Sentry Mode has been deactivated.",
+                    "I am no longer monitoring the access points. ",
+                    "Sentry Mode has been disabled. ",
+                    "May zan Day Loons Shields are down."
+                    ] | random }}
+              - service: script.text_notify
+                data_template:
+                  who: "parents"
+                  title: "Welcome Home"
+                  message: "Security System has been disarmed."
+              - service: alarm_control_panel.aarlo_set_mode
+                data:
+                  entity_id: alarm_control_panel.aarlo_ah_base_station
+                  mode: "home"
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.security_alarm
+        default:
+          - service: input_boolean.turn_off
+            entity_id: input_boolean.sentry_mode
+          - service: script.text_notify
+            data_template:
+              who: "parents"
+              title: "Potential Security Issue"
+              message: "Security System has been disarmed, but I could not validate presence."
+          - service: alarm_control_panel.aarlo_set_mode
+            data:
+              entity_id: alarm_control_panel.aarlo_ah_base_station
+              mode: "home"
+
+  - id: 6a058189-d013-4758-b5f8-f528e7318bd5
+    alias: barn door protocol action 
+    trigger:
+    - platform: state
+      entity_id: input_boolean.barn_door_protocol
+      from: "off"
+      to: "on"
+      id: activate
+    - platform: state
+      entity_id: input_boolean.barn_door_protocol
+      from: "on"
+      to: "off"
+      id: deactivate
+    action:
+    - choose:
+      - conditions:
+          - condition: trigger
+            id: activate
+        sequence:
+          - service: scene.turn_on
+            entity_id: scene.lockdown
+  - id: a668ef5b-0372-431b-921e-e2691690cf79
+    alias: Security Breach Doors
+    trigger:
+    - platform: state
+      entity_id:
+      - binary_sensor.front_door_contact
+      - binary_sensor.kitchen_door_contact
+      - binary_sensor.basement_door_contact
+      - binary_sensor.back_door_contact
+      - binary_sensor.garage_door
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: input_boolean.sentry_mode
+      state: 'on'
+    action:
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: '{{ trigger.to_state.attributes.friendly_name == "Back Door"
+            }}'
+        - condition: state
+          entity_id: input_boolean.dog_mode
+          state: 'on'
+        sequence:
+        - service: script.text_notify
+          data:
+            who: jeff
+            message: Dog Mode enabled, bypassing back door sensor.
+      default:
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.security_issue
+      - service: script.text_alert
+        data:
+          who: parents
+          title: Security Alert!!
+          message: >
+            {{ trigger.to_state.attributes.friendly_name }} has been opened.
+      - service: script.jarvis_alert
+        data:
+          who: master_bedroom
+          message: >
+            My security protocols are being overidden,, The {{ trigger.to_state.attributes.friendly_name }} has been opened.
+      - service: script.jarvis_alert
+        data:
+          who: main
+          message: >
+            My security protocols are being overidden,, The {{ trigger.to_state.attributes.friendly_name }} has been opened.
+      - service: script.jarvis_alert
+        data:
+          who: basement
+          message: >
+            My security protocols are being overidden,, The {{ trigger.to_state.attributes.friendly_name }} has been opened.
+    initial_state: true
+  - id: security_response_on
+    alias: Security Response On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.security_issue
+      from: 'off'
+      to: 'on'
+      for: 00:02:00
+    action:
+    - service: script.turn_on
+      entity_id: script.security_response
+    - service: scene.turn_on
+      entity_id: scene.lr_red
+  - id: security_response_off
+    alias: Security Response Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.security_issue
+      from: 'on'
+      to: 'off'
+    action:
+    - service: script.turn_off
+      entity_id: script.security_response
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.security_alarm
+    - service: scene.turn_on
+      entity_id: scene.normal_livingroom_lighting
+    - service: script.text_alert
+      data:
+        who: parents
+        message: Security Issue Cleared! Canceling Repsonse.
+  - id: security_alarm_on
+    alias: Security alarm On
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.security_alarm
+      to: 'on'
+    action:
+    - service: script.turn_on
+      entity_id: script.notification_security_alarm_audio
+  - id: security_alarm_off
+    alias: Security alarm Off
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.security_alarm
+      to: 'off'
+    action:
+    - service: script.turn_off
+      entity_id: script.notification_security_alarm_audio
+    - service: media_player.media_stop
+      entity_id: media_player.ha_blue
+
+  #############################################
+  # Vacation Mode Enabled
+  # Enable when everyone is 3 hours away.
+  # Disable happens in family_is_home automation in presence.yaml
+  - id: 184eb5f1-b853-41e7-9448-3e7c6a15f12e
+    alias: Enable Vacation Mode
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        entity_id: proximity.home_jeff
+      - platform: numeric_state
+        entity_id: proximity.home_kat
+        above: 180
+    condition:
+      - condition: numeric_state
+        entity_id: proximity.home_jeff
+        above: 180
+      - condition: numeric_state
+        entity_id: proximity.home_kat
+        above: 180
+    action:
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.vacation_mode
+
+  #############################################
+  # Dog Mode
+  #
+  # Activate Dog Mode
+  # If done via motion annouce in kitchen. If manually just text.
+  - id: d8067a7c-a0d3-4dd5-a157-1f19bb3c2e91
+    alias: Dog Mode Activated
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.back_door_motion
+        to: "on"
+        id: motion
+      - platform: state
+        entity_id: input_boolean.dog_mode
+        to: "on"
+        id: manual
+      - platform: state
+        entity_id: sensor.dog_mode_action
+        to: "single"
+        id: toggle
+    action:
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: manual
+            sequence:
+              - service: scene.turn_on
+                entity_id: scene.pantry_green
+              - service: script.text_notify
+                data:
+                  who: "parents"
+                  message: "Dog Mode has been enabled manually"
+          - conditions:
+              - condition: trigger
+                id: toggle
+              - condition: state
+                entity_id: input_boolean.sentry_mode
+                state: "on"
+              - condition: state
+                entity_id: input_boolean.dog_mode
+                state: "off"
+            sequence:
+              - service: scene.turn_on
+                entity_id: scene.pantry_green
+              - service: script.text_notify
+                data:
+                  who: "parents"
+                  message: "Dog Mode has been enabled manually"
+          - conditions:
+              - condition: trigger
+                id: toggle
+              - condition: state
+                entity_id: input_boolean.dog_mode
+                state: "on"
+            sequence:
+              - service: input_boolean.turn_off
+                entity_id: input_boolean.dog_mode
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.sentry_mode
+                state: "on"
+              - condition: state
+                entity_id: group.family
+                state: "home"
+              - condition: trigger
+                id: motion
+            sequence:
+              - service: input_boolean.turn_on
+                entity_id: input_boolean.dog_mode
+              - service: scene.turn_on
+                entity_id: scene.pantry_green
+              - service: tts.amazon_polly_say
+                data_template:
+                  entity_id: media_player.kitchen_display
+                  message: >
+                    <speak>
+                      <break time="1s"/>
+                      <amazon:auto-breaths>
+                      <prosody rate="fast">
+                      Turning on Dog Mode.
+                      <prosody>
+                      </amazon:auto-breaths>
+                    </speak>
+                  cache: true
+              
+          - conditions:
+              - condition: state
+                entity_id: input_boolean.sentry_mode
+                state: "on"
+              - condition: state
+                entity_id: group.family
+                state: "not_home"
+              - condition: state
+                entity_id: input_boolean.vacation_mode
+                state: "off"
+              - condition: trigger
+                id: motion
+            sequence:
+              - service: script.text_alert
+                data:
+                  who: parents
+                  message: "Winston may be trying to go out and no one appears to be here to let him out."
+
+  # After 20, minutes deactivate dog mode
+  - id: 0ed9200f-3c35-4400-b12a-c637fb7138ca
+    alias: Dog mode Deactivated
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: input_boolean.dog_mode
+        to: "off"
+    action:
+      - service: script.text_notify
+        data:
+          who: "jeff"
+          message: "Dog Mode has been disabled"
+      - service: scene.turn_on
+        entity_id: scene.pantry_normal
+  #############################################
+
+template: 
+  - sensor:
+      - name: doorbell_snark
+        state: >-
+          {% if states('sensor.doorbell_presses_yesterday') |int == 0 %}
+            No one has come to the door in the last 24 hours. 
+            {{ [
+              " It is me, isn't?",
+              " My automation doesn't bring people to the yard."
+              ]| random }}
+          {% elif states('sensor.doorbell_presses_yesterday') |int == 1 %}
+            {{ [
+              "One person in the last 24 hours was brave enough to push my button.",
+              "The doorbell was rang one time in the last 24 hours. I am pretty sure they were testing me.",
+              "The doorbell has been tested one time in the last 24 hours. Or maybe there is a package on the porch."
+              ]| random }}
+          {% else %}
+            {{ [
+              "{{ states('sensor.doorbell_presses_yesterday')}} people have come to the door in the last 24 hours. Did someone put an open sign out?",
+              "We dont't get a lot of visitors at Maison Des Lunes, but some days {{ states('sensor.doorbell_presses_yesterday')}} people randomly show up.",
+              "To the {{ states('sensor.doorbell_presses_yesterday')}} people that pressed the doorbell in the last 24 hours. Welcome Foolish Mortals!"
+              ]| random }}
+          {% endif %}
+          
+  - binary_sensor:
+      - name: dog_mode
+        delay_off:
+          seconds: 30
+        state: >
+          {{ is_state('sensor.dog_mode_action','single') }}
+        
+
+
+sensor:
+  - platform: history_stats
+    name: Weekly Doorbell
+    entity_id: binary_sensor.front_door_ding
+    state: "on"
+    type: count
+    end: "{{ now() }}"
+    duration:
+      days: 7
+  # - platform: template
+  #   sensors:
+  #     doorbell_snark:
+  #       friendly_name: "Doorbell Snark"
+  #       value_template: >-
+  #         {% if states('sensor.doorbell_presses_yesterday') |int == 0 %}
+  #           No one has come to the door in the last 24 hours. 
+  #           {{ [
+  #             " It is me, isn't?",
+  #             " My automation doesn't bring people to the yard."
+  #             ]| random }}
+  #         {% elif states('sensor.doorbell_presses_yesterday') |int == 1 %}
+  #           {{ [
+  #             "One person in the last 24 hours was brave enough to push my button.",
+  #             "The doorbell was rang one time in the last 24 hours. I am pretty sure they were testing me.",
+  #             "The doorbell has been tested one time in the last 24 hours. Or maybe there is a package on the porch."
+  #             ]| random }}
+  #         {% else %}
+  #           {{ [
+  #             "{{ states('sensor.doorbell_presses_yesterday')}} people have come to the door in the last 24 hours. Did someone put an open sign out?",
+  #             "We dont't get a lot of visitors at Maison Des Lunes, but some days {{ states('sensor.doorbell_presses_yesterday')}} people randomly show up.",
+  #             "To the {{ states('sensor.doorbell_presses_yesterday')}} people that pressed the doorbell in the last 24 hours. Welcome Foolish Mortals!"
+  #             ]| random }}
+  #         {% endif %}
 script:
   driveway_doods:
     sequence:
@@ -197,7 +661,7 @@ script:
             sequence:
               - service: script.jarvis_already_done
         default:
-          - service: script.jarvis_interjection
+          - service: script.jarvis_response
           - delay:
               seconds: 2
           - service: input_boolean.turn_on
@@ -209,7 +673,7 @@ script:
               entity_id: input_boolean.barn_door_protocol
               state: 'on'
             then:
-            - service: script.speech_engine
+            - service: script.announcement
               data_template:
                 who: "{{ states('sensor.room_audio.') }}"
                 message: "Barn door protocol has been activated."
@@ -225,7 +689,7 @@ script:
             sequence:
               - service: script.jarvis_already_done
         default:
-          - service: script.jarvis_interjection
+          - service: script.jarvis_response
           - delay:
               seconds: 2
           - service: input_boolean.turn_off
@@ -237,7 +701,7 @@ script:
               entity_id: input_boolean.barn_door_protocol
               state: 'off'
             then:
-            - service: script.speech_engine
+            - service: script.announcement
               data_template:
                 who: "{{ states('sensor.room_audio.') }}"
                 message: "Barn door protocol has been deactivated."
@@ -285,7 +749,7 @@ script:
             ",Unathorized Access detected.",
             ",Meat Popsicle detected. Attempting to verify."
             ] | random }}
-            You now have 60 seconds to abandon Anchorage House.
+            You now have 60 seconds to abandon Maison Des Lunes.
       - delay:
           seconds: 15
       - service: script.jarvis_alert
@@ -326,9 +790,9 @@ script:
           message: >-
             {{ [ 
               "My security protocols have been overridden. I am sounding the alarm for the interloper. #itsloudinhere #securityalarm", 
-              "To the unannounced guest that has entered Anchorage House. I see you. Enjoy the concert of alarm sounds. #itsloudinhere #securityalarm",
-              "I am playing the most annoying sound in the world at full volume for the intruder in Anchorage House. And the neighbors too. #itsloudinhere #securityalarm",
+              "To the unannounced guest that has entered Maison Des Lunes. I see you. Enjoy the concert of alarm sounds. #itsloudinhere #securityalarm",
+              "I am playing the most annoying sound in the world at full volume for the intruder in Maison Des Lunes. And the neighbors too. #itsloudinhere #securityalarm",
               "Someone did not say the magic word. And now I have to get angry. Deploying countermeasures. #itsloudinhere #securityalarm",
               "Initiating my security response, and sounding the alarm. Oh, and I dont charge a monthly monitoring fee. #itsloudinhere #securityalarm",
-              "Hey, wanna hear the most annoying sound in the world? The intruder inside Anchorage House evidently did.  #itsloudinhere #securityalarm"
+              "Hey, wanna hear the most annoying sound in the world? The intruder inside Maison Des Lunes evidently did.  #itsloudinhere #securityalarm"
             ] | random }}
