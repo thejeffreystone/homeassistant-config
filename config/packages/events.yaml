@@ -317,8 +317,8 @@ script:
 #       entity_id: input_boolean.audible_notifications
 #       state: 'on'
 #     - condition: state
-#       entity_id: group.family
-#       state: 'home'
+#       entity_id: binary_sensor.family_home
+#       state: "on"
 #     - service: media_player.volume_set
 #       data_template:
 #         entity_id: media_player.ha_blue

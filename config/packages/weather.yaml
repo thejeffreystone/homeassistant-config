@@ -51,11 +51,29 @@ input_boolean:
 
 utility_meter:
   recent_lightning_strikes:
+    unique_id: recent_lightning_strikes
     source: sensor.acurite_6045m_under_deck_strcnt
     cycle: quarter-hourly
   daily_lightning_strikes:
+    unique_id: daily_lightning_strikes
     source: sensor.acurite_6045m_under_deck_strcnt
     cycle: daily
+  daily_rainfall_ut:
+    unique_id: daily_rainfall_ut
+    source: sensor.acurite_rain899_rain_gauge_rt
+    cycle: daily
+  daily_rainfall_ws_ut:
+    unique_id: daily_rainfall_ws_ut
+    source: sensor.acurite_5n1_865_rt
+    cycle: daily
+  weekly_rainfall_ut:
+    unique_id: weekly_rainfall_ut
+    source: sensor.acurite_rain899_rain_gauge_rt
+    cycle: weekly
+  weekly_rainfall_ws_ut:
+    unique_id: weekly_rainfall_ws_ut
+    source: sensor.acurite_5n1_865_rt
+    cycle: weekly
 
   
 template:
@@ -93,7 +111,7 @@ template:
         {{((states('sensor.weekly_rainfall') | float) + (states('sensor.daily_rainfall_in_2') | float) ) | round(1) }}
     - name: adj_wind_speed
       state : >-
-        {% set value = (states('sensor.acurite_5n1_865_ws') | int) * 2.8 | round  %}
+        {% set value = (states('sensor.acurite_5n1_865_ws') | int) * 2.2 | round  %}
         {{ value }}
     - name: current_forecast
       icon: mdi:weather-sunny
@@ -757,7 +775,18 @@ template:
     - name: lightning_stike_count
       state: "{{ states('sensor.acurite_6045m_under_deck_strcnt') | int }}"
       state_class: 'total_increasing'
-    
+    - name: adj_wind_speed_clean
+      unique_id: adj_wind_speed_clean
+      state_class: measurement
+      state: >
+        {% if has_value('sensor.adj_wind_speed') %}
+          {{ states('sensor.adj_wind_speed') | int }}
+        {% else %}
+          0
+        {% endif %}
+    - name: yesterday_rainfall_in_ut
+      unique_id: "yesterday_rainfall_in_ut"
+      state: "{{ state_attr('sensor.daily_rainfall_ws_ut', 'last_period') }}"
 
 # MQTT Stored Sensors
 mqtt:
@@ -800,6 +829,9 @@ mqtt:
       state_topic: "house/weather/yesterday_rainfall_in"
     - name: "Weekly Rainfall"
       state_topic: "house/weather/weekly_rainfall"
+    - name: "ws_wind_speed"
+      unique_id: ws_wind_speed
+      state_topic: "house/weather/new_wind_speed"
 
 sensor:
   - platform: weatheralerts
@@ -842,13 +874,13 @@ sensor:
       hours: 24
   - platform: statistics
     name: "Daily Avg Wind Speed"
-    entity_id: sensor.adj_wind_speed
+    entity_id: sensor.adj_wind_speed_clean
     state_characteristic: mean
     max_age:
       hours: 24
   - platform: statistics
     name: "Avg Wind Speed"
-    entity_id: sensor.adj_wind_speed
+    entity_id: sensor.adj_wind_speed_clean
     state_characteristic: mean
     max_age:
       minutes: 10
@@ -870,8 +902,38 @@ sensor:
     state_characteristic: value_min
     max_age:
       hours: 24
-
-
+  - platform: statistics
+    name: "Rainfall Last 24h"
+    unique_id: rainfall_last_24h
+    entity_id: sensor.acurite_rain899_rain_gauge_rt
+    state_characteristic: change
+    max_age:
+      hours: 24
+    precision: 1
+  - platform: statistics
+    name: "WS Rainfall Last 24h"
+    unique_id: ws_rainfall_last_24h
+    entity_id: sensor.acurite_5n1_865_rt
+    state_characteristic: change
+    max_age:
+      hours: 24
+    precision: 1
+  - platform: statistics
+    name: "Rainfall Last Week"
+    unique_id: rainfall_last_week
+    entity_id: sensor.acurite_rain899_rain_gauge_rt
+    state_characteristic: change
+    max_age:
+      days: 7
+    precision: 1
+  - platform: statistics
+    name: "WS Rainfall Last Week"
+    unique_id: ws_rainfall_last_week
+    entity_id: sensor.acurite_5n1_865_rt
+    state_characteristic: change
+    max_age:
+      days: 7
+    precision: 1
  
 
 
@@ -1569,9 +1631,7 @@ sensor:
       # lightning_stike_count:
       #   friendly_name: "Lightning Strike Count"
       #   value_template: "{{ states('sensor.acurite_6045m_green_house_strcnt') | int }}"
-      # yesterday_rainfall_in:
-      #   friendly_name: "Yesterday Rainfall"
-      #   value_template: "{{ state_attr('sensor.daily_rainfall_in', 'last_period') }}"
+      
       # previous_rainfall:
       #   friendly_name: "Past 48h Rainfall"
       #   value_template: "{{ states('sensor.daily_rainfall_in') | float  + state_attr('sensor.daily_rainfall_in', 'last_period') | float | round(1) }}"
@@ -1611,6 +1671,9 @@ automation:
     - platform: state
       entity_id: sensor.daily_max_wind_speed
       id: new_gust
+    - platform: state
+      entity_id: sensor.adj_wind_speed
+      id: new_wind_speed
     - platform: time
       at: "23:55:00"
       id: daily
@@ -1629,20 +1692,6 @@ automation:
           - condition: trigger
             id: save_stats
         sequence:
-          - if:
-            - condition: time
-              weekday:
-              - mon
-              - tue
-              - wed
-              - thu
-              - fri
-              - sat
-            then:
-            - service: mqtt.publish
-              data:
-                topic: house/weather/weekly_rainfall
-                payload: "{{((states('sensor.weekly_rainfall') | float) + (states('sensor.yesterday_rainfall') | float) ) | round(1) }}"
           - service: mqtt.publish
             data:
               topic: house/weather/rain_guage_start
@@ -1703,7 +1752,7 @@ automation:
             - service: mqtt.publish
               data:
                 topic: house/weather/weekly_rainfall
-                payload: "0"
+                payload: "{{ states('sensor.rainfall_last_week_2') }}"
           - if:
             - condition: template
               value_template: "{{ now().day == 28 }}"
@@ -1733,6 +1782,20 @@ automation:
                 topic: house/weather/maxstrikes
                 payload: "{{ states('sensor.recent_lightning_strikes') }}"
                 retain: true
+      - conditions:
+          - condition: trigger
+            id: new_wind_speed
+        sequence:
+          - service: mqtt.publish
+            data:
+              topic: house/weather/new_wind_speed
+              payload: >
+                {% if has_value('sensor.adj_wind_speed') %}
+                  {{ states('sensor.adj_wind_speed') | int }}
+                {% else %}
+                  0
+                {% endif %}
+              retain: true
       - conditions:
           - condition: trigger
             id: new_gust
@@ -1783,7 +1846,7 @@ automation:
           - service: mqtt.publish
             data:
               topic: house/weather/yesterday_rainfall_in
-              payload: "{{ states('sensor.daily_rainfall_in_2') }}"
+              payload: "{{ state_attr('sensor.daily_rainfall_ut','last_period') | float }}"
               retain: true
           - if:
             - condition: template
@@ -1860,12 +1923,12 @@ automation:
                           ] | random -}}
           - if:
             - condition: template
-              value_template: "{{ (states('sensor.daily_rainfall_in_ws_2') | float) > (states('sensor.ath_daily_rain') | float) }}"
+              value_template: "{{ (states('sensor.daily_rainfall_ut') | float) > (states('sensor.ath_daily_rain') | float) }}"
             then:
             - service: mqtt.publish
               data:
                 topic: house/weather/athdailyrain
-                payload: "{{ states('sensor.daily_rainfall_in_ws_2') }}"
+                payload: "{{ states('sensor.daily_rainfall_ut') }}"
                 retain: true
             - service: script.text_notify
               data_template:
@@ -1883,7 +1946,7 @@ automation:
                 retain: true
           - if:
             - condition: numeric_state
-              entity_id: sensor.daily_rainfall_in_ws_2
+              entity_id: sensor.daily_rainfall_ut
               above: 0
             then:
             - service: mqtt.publish
@@ -1897,7 +1960,7 @@ automation:
               data:
                 topic: house/weather/totalrainfall
                 payload: >
-                  {% set total = (states('sensor.daily_rainfall_in_ws_2') | float) + (states('sensor.total_rain_fall') | float) | round(1) %}
+                  {% set total = (states('sensor.daily_rainfall_ut') | float) + (states('sensor.total_rain_fall') | float) | round(1) %}
                   {{ total }}
                 retain: true
           # - service: mqtt.publish

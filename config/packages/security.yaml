@@ -87,7 +87,7 @@ automation:
               message: "Security System has been armed."
           - service: alarm_control_panel.aarlo_set_mode
             data:
-              entity_id: alarm_control_panel.aarlo_ah_base_station
+              entity_id: alarm_control_panel.aarlo_mdl_base_station
               mode: "Armed"
           - service: media_player.play_media
             target:
@@ -114,8 +114,8 @@ automation:
               condition: or
               conditions:
                 - condition: state
-                  entity_id: group.family
-                  state: "home"
+                  entity_id: binary_sensor.family_home
+                  state: "on"
                 - condition: state
                   entity_id: input_boolean.guest_mode
                   state: "on"
@@ -137,8 +137,8 @@ automation:
                   message: "Security System has been disarmed."
               - service: alarm_control_panel.aarlo_set_mode
                 data:
-                  entity_id: alarm_control_panel.aarlo_ah_base_station
-                  mode: "home"
+                  entity_id: alarm_control_panel.aarlo_mdl_base_station
+                  mode: "Disarmed"
               - service: input_boolean.turn_off
                 entity_id: input_boolean.security_alarm
         default:
@@ -151,8 +151,8 @@ automation:
               message: "Security System has been disarmed, but I could not validate presence."
           - service: alarm_control_panel.aarlo_set_mode
             data:
-              entity_id: alarm_control_panel.aarlo_ah_base_station
-              mode: "home"
+              entity_id: alarm_control_panel.aarlo_mdl_base_station
+              mode: "Disarmed"
 
   - id: 6a058189-d013-4758-b5f8-f528e7318bd5
     alias: barn door protocol action 
@@ -374,8 +374,8 @@ automation:
                 entity_id: input_boolean.sentry_mode
                 state: "on"
               - condition: state
-                entity_id: group.family
-                state: "home"
+                entity_id: binary_sensor.family_home
+                state: "on"
               - condition: trigger
                 id: motion
             sequence:
@@ -402,8 +402,8 @@ automation:
                 entity_id: input_boolean.sentry_mode
                 state: "on"
               - condition: state
-                entity_id: group.family
-                state: "not_home"
+                entity_id: binary_sensor.family_home
+                state: "off"
               - condition: state
                 entity_id: input_boolean.vacation_mode
                 state: "off"

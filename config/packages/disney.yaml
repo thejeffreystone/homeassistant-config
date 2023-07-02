@@ -407,8 +407,8 @@ automation:
         entity_id: input_boolean.audible_notifications
         state: 'off'
       - condition: state
-        entity_id: group.family
-        state: 'not_home'
+        entity_id: binary_sensor.family_home
+        state: 'off'
     action:
     - service: homeassistant.turn_off 
       entity_id: group.disney_background
@@ -2684,8 +2684,8 @@ script:
       entity_id: input_boolean.audible_notifications
       state: 'on'
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     - service: shell_command.haunted_mansion_hurry_back_short
   hurry_back_full:
     sequence:
@@ -2693,8 +2693,8 @@ script:
       entity_id: input_boolean.audible_notifications
       state: 'on'
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     - service: shell_command.haunted_mansion_hurry_back_full
   haunted_lights_on:
     sequence:
@@ -2737,8 +2737,8 @@ script:
       entity_id: input_boolean.audible_notifications
       state: 'on'
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     - service: shell_command.haunted_mansion_ride
 
 # Big Kill show script - This is my E-Stop
@@ -2800,8 +2800,8 @@ script:
       entity_id: input_boolean.audible_notifications
       state: 'on'
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     - service: media_player.play_media
       entity_id: media_player.ha_blue
       data:
@@ -2879,8 +2879,8 @@ script:
       entity_id: input_boolean.audible_notifications
       state: 'on'
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     - service: script.local_audio
       data_template:
         media: /media/disney/haunted_guest_welcome.mp3

@@ -147,8 +147,8 @@
       - condition: trigger
         id: 'on'
       - condition: state
-        entity_id: group.family
-        state: home
+        entity_id: binary_sensor.family_home
+        state: 'on'
       sequence:
       - service: input_boolean.turn_on
         data: {}
@@ -913,8 +913,8 @@
           entity_id: light.front_porch_lights
       - if:
         - condition: state
-          entity_id: group.family
-          state: home
+          entity_id: binary_sensor.family_home
+          state: 'on'
         then:
         - service: cover.open_cover
           entity_id:
@@ -1898,7 +1898,6 @@
     data:
       option: "{% if is_state('input_select.skylar_is_with', 'Self') %}\n  Mom\n{%
         else %}\n  {{ states('input_select.skylar_is_with') }}\n{% endif %}\n"
-  - service: script.jeff_destination_na
   initial_state: true
 - id: e1cb15b0-0423-11eb-adc1-0242ac120002
   alias: Zone Debugger
@@ -2341,15 +2340,15 @@
   trigger:
   - platform: state
     entity_id:
-    - group.family
-    from: home
-    to: not_home
+    - binary_sensor.family_home
+    from: 'on'
+    to: 'off'
     id: family_gone
   - platform: state
     entity_id:
-    - group.family
-    from: not_home
-    to: home
+    - binary_sensor.family_home
+    from: 'off'
+    to: 'on'
     id: family_home
   - platform: time
     at: input_datetime.security_armed_at

@@ -13,6 +13,7 @@ command_line:
       scan_interval: 20000
   - sensor:
       name: 'GitHub Stats'
+      unique_id: github_stats
       command: 'curl https://api.github.com/repos/thejeffreystone/homeassistant-config'
       scan_interval: 20000
       value_template: '{{ value_json.name }}'

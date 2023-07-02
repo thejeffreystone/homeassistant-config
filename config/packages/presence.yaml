@@ -360,6 +360,12 @@ template:
       unique_id: kat_home
       state: >-
           {{ is_state('device_tracker.iphone', 'home') or is_state('device_tracker.iphone', 'home') }}
+  - binary_sensor:
+    - name: family_home
+      unique_id: family_home
+      state: >-
+        {{ is_state_attr('sensor.jeff_location','general','home') or 
+            is_state_attr('sensor.kat_location','general','home') }}
 
 
 sensor:
@@ -712,8 +718,8 @@ script:
   family_is_home:
     sequence:
       - condition: state
-        entity_id: group.family
-        state: "home"
+        entity_id: binary_sensor.family_home
+        state: "on"
       - service: script.standby
 
   skylar_presence_update:
@@ -733,8 +739,8 @@ script:
   family_is_away:
     sequence:
       - condition: state
-        entity_id: group.family
-        state: "not_home"
+        entity_id: binary_sensor.family_home
+        state: "off"
       - condition: state
         entity_id: input_boolean.guest_mode
         state: "off"

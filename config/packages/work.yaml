@@ -144,8 +144,8 @@ automation:
         entity_id: input_boolean.audible_notifications
         state: 'off'
       - condition: state
-        entity_id: group.family
-        state: 'not_home'
+        entity_id: binary_sensor.family_home
+        state: "off"
     action:
     - service: homeassistant.turn_off 
       entity_id: group.work_background

@@ -81,8 +81,8 @@ automation:
       - condition: or # Either we are home or Guest_Mode is on.
         conditions:
           - condition: state
-            entity_id: group.family
-            state: "home"
+            entity_id: binary_sensor.family_home
+            state: "on"
           - condition: state
             entity_id: input_boolean.guest_mode
             state: "on"

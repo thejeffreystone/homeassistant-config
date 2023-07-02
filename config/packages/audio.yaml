@@ -60,8 +60,8 @@ script:
       state: 'on'
     # Ensure the family is home. If you are using a group to track the family, or a person just update as needed. Comment out if not needed.
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     # This sets the voume via a parameter when the script is called, and should be a value between .1 and 1.0
     - service: media_player.volume_set
       data:
@@ -144,8 +144,8 @@ script:
       state: 'on'
     # Ensure the family is home. If you are using a group to track the family, or a person just update as needed. Comment out if not needed.
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     # This sets the voume via a parameter when the script is called, and should be a value between .1 and 1.0
     - service: media_player.volume_set
       data:
@@ -316,7 +316,7 @@ template:
               {% set sensor = expand('group.room_presence')| rejectattr('state', 'in', ['not_home']) | sort(attribute='last_changed') | map(attribute='entity_id') | list | last %}
               {% set sensor = states(sensor) %}
             {% else %}
-                {% if is_state('group.family', 'home') %}
+                {% if is_state('binary_sensor.family_home', 'on') %}
                   {% set sensor = states('sensor.room_presence') %}
                 {% endif %}
             {% endif %}
@@ -368,7 +368,7 @@ template:
                   {{ states('sensor.presence_source') }} 
                 {% endif %}
               {% else %}
-                {% if is_state('group.family', 'home') %}
+                {% if is_state('binary_sensor.family_home', 'on') %}
                   {{ states('sensor.presence_source') }}
                 {% else %}
                   none

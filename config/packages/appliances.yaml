@@ -371,8 +371,8 @@ script:
   simplified_washer_audible:
     sequence:
     - condition: state
-      entity_id: group.family
-      state: 'home'
+      entity_id: binary_sensor.family_home
+      state: 'on'
     - condition: state
       entity_id: sensor.washer_status
       state: complete
