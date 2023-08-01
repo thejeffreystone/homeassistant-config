@@ -70,6 +70,12 @@ notify:
     client_id: !secret mdl_mastodon_client_id
     client_secret: !secret mdl_mastodon_client_secret
     base_url: https://mastodon.online
+  - name: mastodon_dev
+    platform: mastodon_sl
+    access_token: !secret test_mastodon_access_token
+    client_id: !secret test_mastodon_client_id
+    client_secret: !secret test_mastodon_client_secret
+    base_url: https://mastodon.online
   
 script:
 
