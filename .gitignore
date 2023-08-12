@@ -64,3 +64,4 @@ transporter.py
 **ipchange.yaml
 **production_auth.json
 **traccar.xml
+**sensitive.yaml
