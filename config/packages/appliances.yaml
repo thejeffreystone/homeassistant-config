@@ -59,7 +59,153 @@ template:
       unique_id: ps5_power_sensor
       state: >
         {{ states('sensor.playstation_power_power')  | int > 10 }}
-      device_class: power
+      device_class: running
+    - name: deck_roku_status
+      unique_id: deck_roku_status
+      state: >
+        {{ is_state('media_player.roku_deck','playing') }}
+      device_class: running
+    - name: livingroom_tv_status
+      unique_id: livingroom_tv_status
+      state: >
+        {{ states('sensor.power_switch_electric_consumption_w') | int > 100 }}
+      device_class: running
+    - name: theater_tv_status
+      unique_id: theater_tv_status
+      state: >
+        {{ is_state('media_player.theater_tv','on') }}
+      device_class: running
+    - name: ender5_headed_home
+      unique_id: ender5_headed_home
+      state: >
+        {{ (as_timestamp(now()) - (states('sensor.ender5_last_home_timestamp')| int)) < 60 }}
+  - sensor:
+    - name: 3d_printer_state
+      unique_id: 3d_printer_state
+      state: >
+        {% if has_value('sensor.ender5pro_state') %}
+          {% if states('sensor.ender5pro_state') == 'Offline' %}
+            offline
+          {% elif states('sensor.ender5pro_state') == 'Operational' and
+            states('sensor.octoprint_print_progress') | int == 100 %}
+            finished
+          {% elif states('sensor.ender5pro_state') == 'Printing' and
+            states('sensor.octoprint_print_progress') | int == 0 %}
+            preprint
+          {% elif states('sensor.ender5pro_state') == 'Printing' and 
+            (states('sensor.ender5_state') == 'printing'
+            or (states('sensor.octoprint_print_progress') | int > 0 and 
+            states('sensor.octoprint_print_progress') | int < 100 ))
+            %}
+            printing 
+          {% elif states('sensor.ender5pro_state') == 'Operational' %}
+            ready 
+          {% elif states('sensor.ender5pro_state') == 'Cancelling' %}
+            cancelling
+          {% elif states('sensor.ender5pro_state') == 'Connecting' %}
+            connecting
+          {% endif %}
+        {% else %}
+        None
+        {% endif %}
+    # Pulled from HA forum
+    - name: 3d_total_print_time
+      unique_id: 3d_total_print_time
+      state: > 
+        {%- set time = states('sensor.ender5_job_total_time') | int -%}
+        {% set minutes = ((time % 3600) / 60) | int %}
+        {% set hours = ((time % 86400) / 3600) | int %}
+        {% set days = (time / 86400) | int %}
+
+        {%- if time < 60 -%}
+          Less than a minute
+        {%- else -%}
+          {%- if days > 0 -%}
+            {%- if days == 1 -%}
+              1 day
+            {%- else -%}
+              {{ days }} days
+            {%- endif -%}
+          {%- endif -%}
+          {%- if hours > 0 -%}
+            {%- if days > 0 -%}
+              {{ ', ' }}
+            {%- endif -%}
+            {%- if hours == 1 -%}
+              1 hour
+            {%- else -%}
+              {{ hours }} hours
+            {%- endif -%}
+          {%- endif -%}
+          {%- if minutes > 0 -%}
+            {%- if days > 0 or hours > 0 -%}
+              {{ ', ' }}
+            {%- endif -%}
+            {%- if minutes == 1 -%}
+              1 minute
+            {%- else -%}
+              {{ minutes }} minutes
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+    - name: 3d_total_filament_used
+      unique_id: 3d_total_filament_used
+      state: >
+        {%- set mm = states('sensor.ender5_job_filament_used_mm') | int -%}
+        {%- if mm > 1000 -%}
+          {{ (mm | int / 1000) | round(2) }} meters
+        {%- else -%}
+          {{mm | int }} millimeters
+        {%- endif -%}
+
+mqtt:
+  sensor:
+    - name: ender5_job_time_left
+      unique_id: ender5_job_time_left
+      state_topic: "octoPrint/event/DisplayLayerProgress_timerTrigger"
+      unit_of_measurement: "s"
+      value_template: "{{ value_json.printTimeLeftInSeconds }}"
+    - name: ender5_last_home_timestamp
+      unique_id: ender5_last_home_timestamp
+      state_topic: "octoPrint/event/Home"
+      value_template: "{{ value_json._timestamp }}"
+    - name: ender5_printing_object
+      unique_id: ender5_printing_object
+      state_topic: "octoPrint/event/PrintStarted"
+      value_template: "{{ value_json.name }}"
+    - name: ender5_state
+      unique_id: ender5_state
+      state_topic: "octoPrint/event/DisplayLayerProgress_progressChanged"
+      value_template: "{{ value_json.printerState }}"
+    - name: ender5pro_state
+      unique_id: ender5pro_state
+      state_topic: "octoPrint/event/PrinterStateChanged"
+      value_template: "{{ value_json.state_string }}"
+    - name: ender5_completion_time
+      unique_id: ender5_completion_time
+      state_topic: "octoPrint/event/DisplayLayerProgress_progressChanged"
+      value_template: "{{ value_json.estimatedEndTime }}"
+    - name: ender5_filament_change_time
+      unique_id: ender5_filament_change_time
+      state_topic: "octoPrint/event/DisplayLayerProgress_progressChanged"
+      value_template: "{{ value_json.estimatedChangedFilamentTime }}"
+    - name: ender5_filament_time_left
+      unique_id: ender5_filament_time_left
+      state_topic: "octoPrint/event/DisplayLayerProgress_progressChanged"
+      value_template: "{{ value_json.changeFilamentTimeLeftInSeconds }}"
+    - name: ender5_job_filament_used_mm
+      unique_id: ender5_filament_used_mm
+      unit_of_measurement: "mm"
+      state_topic: "octoPrint/event/MetadataAnalysisFinished"
+      value_template: "{{ value_json.result.filament.tool0.length }}"
+    - name: ender5_job_total_time
+      unique_id: ender5_job_total_time
+      unit_of_measurement: "s"
+      state_topic: "octoPrint/event/MetadataAnalysisFinished"
+      value_template: "{{ value_json.result.analysisPrintTime }}"
+    - name: printer_filament_used_ytd
+      unique_id: printer_filament_used_ytd
+      state_topic: "house/3dfilament/ytd"
 
 automation:
     
@@ -123,9 +269,8 @@ automation:
       timeout: 00:15:00
     # - service: input_boolean.turn_on
     #   entity_id: input_boolean.washer_finished
-    - service: script.announcement
+    - service: script.speech_engine
       data: 
-        who: '{{ states(''sensor.room_audio'') }}'
         message: >
           It appears the washing machine has completed its cycle.
     - service: script.turn_on
@@ -164,33 +309,43 @@ automation:
       from: 'off'
       to: 'on'
     action:
-    - service: script.announcement
+    - service: script.speech_engine
       data:
-        who: '{{ states(''sensor.room_audio'') }}'
         message: >
           It appears the dryer has finished.
     - delay:
         minutes: 15    
 
+
+
+
   - id: e1cb2640-0423-11eb-adc1-0242ac120002 
     alias: 3D Printing Notifications
     trigger:
     - platform: state 
-      entity_id: binary_sensor.octoprint_printing
-      to: "on"
-      from: 'off'
-      for: "00:01:00"
-      id: printing_started
+      entity_id: sensor.3d_printer_state
+      to: "preprint"
+      id: printer_preprint
     - platform: state 
-      entity_id: binary_sensor.octoprint_printing
-      to: "off"
-      from: 'on'
-      id: printing_ended
+      entity_id: sensor.3d_printer_state
+      to: "printing"
+      id: printing_started
     - platform: state
-      entity_id: sensor.octoprint_current_state
-      from: 'offline'
-      to: 'operational'
+      entity_id: sensor.3d_printer_state
+      to: "finished"
+      id: printing_ended
+    - platform: state 
+      entity_id: sensor.3d_printer_state
+      to: "cancelling"
+      id: printing_canceled
+    - platform: state
+      entity_id: sensor.3d_printer_state
+      to: 'ready'
       id: online
+    - platform: state
+      entity_id: sensor.3d_printer_state
+      to: 'offline'
+      id: offline
     - platform: state
       entity_id: switch.3d_printer
       from: 'off'
@@ -200,27 +355,57 @@ automation:
     - choose:
       - conditions:
         - condition: trigger
-          id: printing_started
+          id: printer_preprint
         sequence:
-        - wait_template: "{{ (states('sensor.octoprint_tool_0_target') | int >= 200 ) and (states('sensor.octoprint_tool_0_temperature') | int >= (states('sensor.octoprint_tool_0_target') | int -2) ) and (states('sensor.octoprint_bed_temperature') | int >= (states('sensor.octoprint_bed_target') | int -2) ) }}"
-        - service: script.announcement
+        - service: script.speech_engine
           data:
-            who: '{{ states(''sensor.room_audio'') }}'
+            who: jeff
+            type: priority
             message: >
               {% set printer = ['The Ender five','The three d Printer'] | random %}
               {{ [
-              printer ~ " has reached optimal temperature.",
+              printer ~ " has began warming up.",
+              printer ~ " has initiated startup procedures.",
+              printer ~ " is preparing for fabrication."
+              ] | random }}
+              {{ [
+                'I am importing the models specifications, and calibrating the printer.',
+                'Working on a secret project are we?',
+                'I am configuring the printer according to the proposed specifications.'
+              ] | random}}
+              {{ [
+                'I will report back when fabrication has begun.',
+                'I will let you know when fabrication has started.'
+              ]| random}}
+      - conditions:
+        - condition: trigger
+          id: printing_started 
+        sequence:
+        - service: script.speech_engine
+          data:
+            who: jeff
+            type: priority
+            message: >
+              {% set printer = ['The Ender five','The three d Printer'] | random %}
+              {{ [
+              printer ~ " has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius.",
               printer ~ " is reporting all sensors nominal.",
-              printer ~ " appears to have completed its pre print cycle."
+              "I have successfully imported the proposed specifications and configured " ~ printer ~ ".",
+              printer ~ " has completed its pre print cycle, and reached target temperature.",
+              printer ~ " is reporting it has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius."
               ] | random }}
               {{ [
               'Commencing automated fabrication.',
-              'Commencing automated assembly. '
+              'Commencing automated assembly. ',
+              'Beginning automated fabrication.',
+              'Beginning automated assembly. ',
               ] | random }}
               {% if states('sensor.octoprint_print_estimated_time') != 'None' %}
                 {{ [
-                    'Estimation completion time is ',
-                    'Fabrication should be complete in '
+                    'Estimated completion time is ',
+                    'Fabrication should be complete in ',
+                    'Object should be completed in ',
+                    'If all goes well, we will have a new object in '
                     ] | random }}
                 {% set hours = states('sensor.octoprint_print_estimated_time').split(':')[0] %}
                 {% set mins = states('sensor.octoprint_print_estimated_time').split(':')[1] %}
@@ -235,67 +420,162 @@ automation:
                   {{ mins }} minutes
                 {% endif %}
               {% endif %}
-        - service: script.twitter_notify
-          data_template:
+        # - service: script.mastodon_notify
+        #   data_template:
+        #     who: mdl
+        #     message: >
+        #       {%- macro getReport() -%}
+        #       {% set printer = ['The Ender five','The three d Printer'] | random %}
+        #       {{ [
+        #       printer ~ " has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius.",
+        #       printer ~ " is reporting all sensors nominal.",
+        #       printer ~ " has been successfully configured according to the propsed specifications.",
+        #       printer ~ " has completed its pre print cycle, and reached target temperature.",
+        #       printer ~ " is reporting it has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius."
+        #       ] | random }}
+        #       {{ [
+        #       'Commencing automated fabrication.',
+        #       'Commencing automated assembly. ',
+        #       'Beginning automated fabrication.',
+        #       'Beginning automated assembly. ',
+        #       ] | random }}
+        #       {% if states('sensor.octoprint_print_estimated_time') != 'None' %}
+        #         {{ [
+        #             'Estimated completion time is ',
+        #             'Fabrication should be complete in '
+        #             ] | random }}
+        #         {% set hours = states('sensor.octoprint_print_estimated_time').split(':')[0] %}
+        #         {% set mins = states('sensor.octoprint_print_estimated_time').split(':')[1] %}
+        #         {% if hours | int > 0 %}
+        #             {% if hours | int > 1 %}
+        #               {{ hours }} hours and
+        #             {% else %}
+        #               {{ hours }} hour and 
+        #             {% endif %}
+        #         {% endif %}
+        #         {% if mins | int > 0 %}
+        #           {{ mins }} minutes
+        #         {% endif %}
+        #       {% endif %}
+        #         {%- endmacro -%}
+        #         {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
+        #         {%- macro cleanup(data) -%}
+        #           {%- for item in data.split("\n")  if item | trim != "" -%}
+        #             {{ item | trim }} {% endfor -%}
+        #         {%- endmacro -%}
+
+        #         {# a macro to call all macros :)  #}
+        #         {%- macro mother_of_all_macros() -%}
+        #           {{ getReport() }} #3dprinter #maker
+        #         {%- endmacro -%}
+
+        #         {# Call the macro  #}
+        #         {{- cleanup(mother_of_all_macros()) -}}
+      # - conditions:
+      #   - condition: trigger
+      #     id: printing_paused
+      #   sequence:
+      #   - service: script.speech_engine
+      #     data:
+      #       who: >
+      #         jeff
+      #       message: >
+      #         {% set printer = ['The Ender five','The three d Printer'] | random %}
+      #         {{ [
+      #         printer ~ " has been paused.",
+      #         printer ~ " has temporarily halted fabrication.",
+      #         printer ~ " is pausing and will resume shortly."
+      #         ] | random }}
+      # - conditions:
+      #   - condition: trigger
+      #     id: printing_resuming
+      #   sequence:
+      #   - service: script.speech_engine
+      #     data:
+      #       who: >
+      #         jeff
+      #       message: >
+      #         {% set printer = ['The Ender five','The three d Printer'] | random %}
+      #         {{ [
+      #         printer ~ " is resuming.",
+      #         printer ~ " has resumed fabrication.",
+      #         printer ~ " has begun to print again."
+      #         ] | random }}
+      - conditions:
+        - condition: or
+          conditions:  
+          - condition: trigger
+            id: printing_canceled
+          # - condition: trigger
+          #   id: printing_error
+        sequence:
+        # - service: script.mastodon_notify
+        #   data_template:
+        #     who: mdl
+        #     message: >
+        #       {% set printer = ['The Ender 5','The 3d Printer'] | random %}
+        #       {{ [
+        #       printer ~ " has detected an anomaly and has initiated shut down procedures.",
+        #       printer ~ " has encountered an error and is canceling the print.",
+        #       printer ~ " is shutting down due to an issue during fabrication."
+        #       ] | random }}
+        - service: script.speech_engine
+          data:
+            who: jeff
+            type: priority
             message: >
-              {%- macro getReport() -%}
-              {% set printer = ['The Ender 5','The 3d Printer'] | random %}
-                            {{ [
-                            printer ~ " has reached optimal temperature.",
-                            printer ~ " is reporting all sensors nominal.",
-                            printer ~ " appears to have completed its pre print cycle."
-                            ] | random }}
-                            {{ [
-                            'Commencing automated fabrication.',
-                            'Commencing automated assembly. '
-                            ] | random }}
-                            {% if states('sensor.octoprint_print_estimated_time') != 'None' %}
-                              {{ [
-                                  'Estimation completion time is ',
-                                  'Fabrication should be complete in '
-                                  ] | random }}
-                              {% set hours = states('sensor.octoprint_print_estimated_time').split(':')[0] %}
-                              {% set mins = states('sensor.octoprint_print_estimated_time').split(':')[1] %}
-                              {% if hours | int > 0 %}
-                                  {% if hours | int > 1 %}
-                                    {{ hours }} hours and
-                                  {% else %}
-                                    {{ hours }} hour and 
-                                  {% endif %}
-                              {% endif %}
-                              {% if mins | int > 0 %}
-                                {{ mins }} minutes
-                              {% endif %}
-                            {% endif %}
-                {%- endmacro -%}
-                {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
-                {%- macro cleanup(data) -%}
-                  {%- for item in data.split("\n")  if item | trim != "" -%}
-                    {{ item | trim }} {% endfor -%}
-                {%- endmacro -%}
-
-                {# a macro to call all macros :)  #}
-                {%- macro mother_of_all_macros() -%}
-                  {{ getReport() }}
-                {%- endmacro -%}
-
-                {# Call the macro  #}
-                {{- cleanup(mother_of_all_macros()) -}}
-
-
+              {% set printer = ['The Ender five','The three d Printer'] | random %}
+              {{ [
+              "I have detected an anomaly with " ~ printer ~ " and have initiated shut down procedures.",
+              printer ~ " encountered an error. I am canceling the print.",
+              printer ~ " is shutting down due to an issue during fabrication.",
+              "I detected a critical error with the fabrication, and have initiated shut down procedures.",
+              printer ~ "is rendering the object outside desired specifications. I have canceled the print.",
+              "Fabrication has failed. The render has been canceled."
+              ] | random }}
+      - conditions:
+        - condition: trigger
+          id: offline
+        - condition: state 
+          entity_id: switch.3d_printer
+          state: 'on'
+        sequence:
+        - service: script.speech_engine
+          data:
+            who: jeff
+            type: priority
+            message: >
+              {% set printer = ['The Ender five','The three d Printer'] | random %}
+              {{ [
+                printer ~ " is now offline. I will power down the printer in sixty seconds.",
+                printer ~ " is ready to be powered off.",
+                "I am running some final checks and then I will power down " ~ printer ,
+                "I have begun shutdown procedures on the " ~ printer ~ ". Power . ",
+                "All wrapped up here, sir. Printer shutoff procedures have been initiated."
+                ] | random }}
+        - delay: '00:01:00'
+        - if:
+          - condition: state 
+            entity_id: sensor.3d_printer_state
+            state: 'Offline'
+          then:
+          - service: switch.turn_off
+            entity_id: switch.3d_printer
       - conditions:
         - condition: trigger
           id: online
         sequence:
-        - service: script.announcement
+        - service: script.speech_engine
           data:
-            who: '{{ states(''sensor.room_audio'') }}'
+            who: jeff
+            type: priority
             message: >
               {% set printer = ['The Ender five','The three d Printer'] | random %}
               {{ [
-                "I have detected the " ~ printer + " is now online.",
-                printer ~ " is now idle and ready for printing.",
-                printer ~ " is online."
+                "Sir, I have detected the " ~ printer ~ " is now online and ready for printing.",
+                "Sir, " ~ printer ~ " is now idle and ready for printing.",
+                "Working on a secret project are we Sir? " ~ printer ~ " is powered on and ready for fabrication.",
+                "Sir, " ~ printer ~ " is online. I am running the pre start up checks. It will be ready momentarily. "
                 ] | random }}
       - conditions:
         - condition: trigger
@@ -306,10 +586,19 @@ automation:
       - conditions:
         - condition: trigger
           id: printing_ended
+        - condition: numeric_state
+          entity_id: sensor.octoprint_print_progress
+          above: 99
         sequence:
-        - service: script.announcement
+        # - service: mqtt.publish
+        #   data:
+        #     topic: house/3dfilament/ytd
+        #     payload: "{{ (states('sensor.ender5_job_filament_used_mm') | int) + (states('sensor.3d_printer_filament_used_ytd') | int) }}"
+        #     retain: true
+        - service: script.speech_engine
           data:
-            who: '{{ states(''sensor.room_audio'') }}'
+            who: jeff
+            type: priority
             message: >
               {% set printer = ['The Ender five','The three d Printer'] | random %}  
               {{ [
@@ -322,9 +611,472 @@ automation:
                 'And has begun to cool down.',
                 'And has started the post print cool down.'
                 ] | random }}
+              {{ [
+                'Total print ',
+                'Total Fabrication '
+                ] | random }}
+              time was {{ states('sensor.3d_total_print_time') }}.
+              And took {{ states('sensor.3d_total_filament_used') }} of filament. 
+        # - service: script.mastodon_notify
+        #   data_template:
+        #     who: mdl
+        #     message: >
+        #       {%- macro getReport() -%}
+        #       {% set printer = ['The Ender five','The 3d Printer'] | random %}  
+        #       {{ [
+        #         printer ~ " has completed its run.",
+        #         printer ~ " is reporting fabrication is completed.",
+        #         printer ~ " has rendered a new object."
+        #         ] | random }}
+        #         {{ [
+        #         'And is currently in the process of shutting down.',
+        #         'And has begun to cool down.',
+        #         'And has started the post print cool down.'
+        #         ] | random }} 
+        #         {{ [
+        #         'Total print ',
+        #         'Total Fabrication '
+        #         ] | random }}
+        #       time was {{ states('sensor.3d_total_print_time') }}.
+        #       And took {{ states('sensor.3d_total_filament_used') }} of filament. 
+        #       #3dprinter #maker
+        #       {%- endmacro -%}
+        #         {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
+        #         {%- macro cleanup(data) -%}
+        #           {%- for item in data.split("\n")  if item | trim != "" -%}
+        #             {{ item | trim }} {% endfor -%}
+        #         {%- endmacro -%}
+
+        #         {# a macro to call all macros :)  #}
+        #         {%- macro mother_of_all_macros() -%}
+        #           {{ getReport() }}
+        #         {%- endmacro -%}
+
+        #         {# Call the macro  #}
+        #         {{- cleanup(mother_of_all_macros()) -}}
+        # - service: script.twitter_notify
+        #   data_template:
+        #     message: >
+        #       {%- macro getReport() -%}
+        #       {% set printer = ['The Ender five','The 3d Printer'] | random %}  
+        #       {{ [
+        #         printer ~ " has completed its run.",
+        #         printer ~ " is reporting fabrication is completed.",
+        #         printer ~ " has rendered a new object."
+        #         ] | random }}
+        #         {{ [
+        #         'And is currently in the process of shutting down.',
+        #         'And has begun to cool down.',
+        #         'And has started the post print cool down.'
+        #         ] | random }} 
+        #       {{ [
+        #         'Total print ',
+        #         'Total Fabrication '
+        #         ] | random }}
+        #       time was {{ states('sensor.3d_total_print_time') }}.
+        #       And took {{ states('sensor.3d_total_filament_used') }} of filament. 
+        #       #3dprinter #maker
+        #       {%- endmacro -%}
+        #         {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
+        #         {%- macro cleanup(data) -%}
+        #           {%- for item in data.split("\n")  if item | trim != "" -%}
+        #             {{ item | trim }} {% endfor -%}
+        #         {%- endmacro -%}
+
+        #         {# a macro to call all macros :)  #}
+        #         {%- macro mother_of_all_macros() -%}
+        #           {{ getReport() }}
+        #         {%- endmacro -%}
+
+        #         {# Call the macro  #}
+        #         {{- cleanup(mother_of_all_macros()) -}}
+
+  # - id: e1cb2640-0423-11eb-adc1-0242ac120002 
+  #   alias: 3D Printing Notifications
+  #   trigger:
+  #   - platform: state 
+  #     entity_id: sensor.octoprint_print_status
+  #     to: "Printing"
+  #     from: "Operational"
+  #     id: printing_started
+  #   - platform: state 
+  #     entity_id: sensor.octoprint_print_status
+  #     to: "Printing"
+  #     from: "Operational"
+  #     id: printing_started
+  #   - platform: state 
+  #     entity_id: sensor.octoprint_print_status
+  #     to: "Cancelling"
+  #     from: "Printing"
+  #     id: printing_canceled
+  #   - platform: state 
+  #     entity_id: sensor.octoprint_print_status
+  #     attribute: error
+  #     to: "true"
+  #     id: printing_error
+  #   - platform: state 
+  #     entity_id: sensor.octoprint_print_status
+  #     to: "Pausing"
+  #     from: "Printing"
+  #     id: printing_paused
+  #   - platform: state 
+  #     entity_id: sensor.octoprint_print_status
+  #     attribute: resuming
+  #     to: "true"
+  #     id: printing_resuming
+  #   - platform: state
+  #     entity_id: sensor.ender5_state
+  #     from: "printing"
+  #     to: "idle"
+  #     id: printing_ended
+  #   - platform: state
+  #     entity_id: sensor.octoprint_print_status
+  #     from: 'Offline'
+  #     to: 'Operational'
+  #     for: '00:01:00'
+  #     id: online
+  #   - platform: state
+  #     entity_id: sensor.octoprint_print_status
+  #     to: 'Offline'
+  #     from: 'Operational'
+  #     id: offline
+  #   - platform: state
+  #     entity_id: switch.3d_printer
+  #     from: 'off'
+  #     to: 'on'
+  #     id: printer_on
+  #   action:
+  #   - choose:
+  #     - conditions:
+  #       - condition: trigger
+  #         id: printing_started
+  #       sequence:
+  #       - service: script.speech_engine
+  #         data:
+  #           who: >
+  #             jeff
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #             printer ~ " has began warming up.",
+  #             printer ~ " has initiated startup procedures.",
+  #             printer ~ " is preparing for fabrication."
+  #             ] | random }}
+  #             {{ [
+  #               'I am importing the models specifications, and calibrating the printer.',
+  #               'Working on a secret project, are we?',
+  #               'I am configuring the printer according to the proposed specifications.'
+  #             ] | random}}
+  #             {{ [
+  #               'I will report back when fabrication has begun.',
+  #               'I will let you know when fabrication has started.'
+  #             ]| random}}
+  #       - wait_template: "{{ (states('sensor.octoprint_tool_0_target') | int >= 200 ) and (states('sensor.octoprint_tool_0_temperature') | int >= (states('sensor.octoprint_tool_0_target') | int -2) ) and (states('sensor.octoprint_bed_temperature') | int >= (states('sensor.octoprint_bed_target') | int -2) ) and states('sensor.octoprint_print_estimated_time') != 'None' }}"
+  #         timeout:
+  #           seconds: "420"
+  #         continue_on_timeout: false
+  #       - service: script.speech_engine
+  #         data:
+  #           who: >
+  #             jeff
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #             printer ~ " has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius.",
+  #             printer ~ " is reporting all sensors nominal.",
+  #             "I have successfully imported the proposed specifications and configured " ~ printer ~ ".",
+  #             printer ~ " has completed its pre print cycle, and reached target temperature.",
+  #             printer ~ " is reporting it has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius."
+  #             ] | random }}
+  #             {{ [
+  #             'Commencing automated fabrication.',
+  #             'Commencing automated assembly. ',
+  #             'Beginning automated fabrication.',
+  #             'Beginning automated assembly. ',
+  #             ] | random }}
+  #             {% if states('sensor.octoprint_print_estimated_time') != 'None' %}
+  #               {{ [
+  #                   'Estimated completion time is ',
+  #                   'Fabrication should be complete in ',
+  #                   'Object should be completed in ',
+  #                   'If all goes well, we will have a new object in '
+  #                   ] | random }}
+  #               {% set hours = states('sensor.octoprint_print_estimated_time').split(':')[0] %}
+  #               {% set mins = states('sensor.octoprint_print_estimated_time').split(':')[1] %}
+  #               {% if hours | int > 0 %}
+  #                   {% if hours | int > 1 %}
+  #                     {{ hours }} hours and
+  #                   {% else %}
+  #                     {{ hours }} hour and 
+  #                   {% endif %}
+  #               {% endif %}
+  #               {% if mins | int > 0 %}
+  #                 {{ mins }} minutes
+  #               {% endif %}
+  #             {% endif %}
+  #       - service: script.mastodon_notify
+  #         data_template:
+  #           who: mdl
+  #           message: >
+  #             {%- macro getReport() -%}
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #             printer ~ " has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius.",
+  #             printer ~ " is reporting all sensors nominal.",
+  #             printer ~ " has been successfully configured according to the propsed specifications.",
+  #             printer ~ " has completed its pre print cycle, and reached target temperature.",
+  #             printer ~ " is reporting it has reached {{states('sensor.octoprint_tool_0_target')}} degrees Celsius."
+  #             ] | random }}
+  #             {{ [
+  #             'Commencing automated fabrication.',
+  #             'Commencing automated assembly. ',
+  #             'Beginning automated fabrication.',
+  #             'Beginning automated assembly. ',
+  #             ] | random }}
+  #             {% if states('sensor.octoprint_print_estimated_time') != 'None' %}
+  #               {{ [
+  #                   'Estimated completion time is ',
+  #                   'Fabrication should be complete in '
+  #                   ] | random }}
+  #               {% set hours = states('sensor.octoprint_print_estimated_time').split(':')[0] %}
+  #               {% set mins = states('sensor.octoprint_print_estimated_time').split(':')[1] %}
+  #               {% if hours | int > 0 %}
+  #                   {% if hours | int > 1 %}
+  #                     {{ hours }} hours and
+  #                   {% else %}
+  #                     {{ hours }} hour and 
+  #                   {% endif %}
+  #               {% endif %}
+  #               {% if mins | int > 0 %}
+  #                 {{ mins }} minutes
+  #               {% endif %}
+  #             {% endif %}
+  #               {%- endmacro -%}
+  #               {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
+  #               {%- macro cleanup(data) -%}
+  #                 {%- for item in data.split("\n")  if item | trim != "" -%}
+  #                   {{ item | trim }} {% endfor -%}
+  #               {%- endmacro -%}
+
+  #               {# a macro to call all macros :)  #}
+  #               {%- macro mother_of_all_macros() -%}
+  #                 {{ getReport() }} #3dprinter #maker
+  #               {%- endmacro -%}
+
+  #               {# Call the macro  #}
+  #               {{- cleanup(mother_of_all_macros()) -}}
+  #     - conditions:
+  #       - condition: trigger
+  #         id: printing_paused
+  #       sequence:
+  #       - service: script.speech_engine
+  #         data:
+  #           who: >
+  #             jeff
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #             printer ~ " has been paused.",
+  #             printer ~ " has temporarily halted fabrication.",
+  #             printer ~ " is pausing and will resume shortly."
+  #             ] | random }}
+  #     - conditions:
+  #       - condition: trigger
+  #         id: printing_resuming
+  #       sequence:
+  #       - service: script.speech_engine
+  #         data:
+  #           who: >
+  #             jeff
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #             printer ~ " is resuming.",
+  #             printer ~ " has resumed fabrication.",
+  #             printer ~ " has begun to print again."
+  #             ] | random }}
+
+  #     - conditions:
+  #       - condition: or
+  #         conditions:  
+  #         - condition: trigger
+  #           id: printing_canceled
+  #         - condition: trigger
+  #           id: printing_error
+  #       sequence:
+  #       - service: script.mastodon_notify
+  #         data_template:
+  #           who: mdl
+  #           message: >
+  #             {% set printer = ['The Ender 5','The 3d Printer'] | random %}
+  #             {{ [
+  #             printer ~ " has detected an anomaly and has initiated shut down procedures.",
+  #             printer ~ " has encountered an error and is canceling the print.",
+  #             printer ~ " is shutting down due to an issue during fabrication."
+  #             ] | random }}
+  #       - service: script.speech_engine
+  #         data:
+  #           who: >
+  #             jeff
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #             "I have detected an anomaly with " ~ printer ~ " and have initiated shut down procedures.",
+  #             printer ~ " encountered an error. I am canceling the print.",
+  #             printer ~ " is shutting down due to an issue during fabrication.",
+  #             "I detected a critical error with the fabrication, and have initiated shut down procedures.",
+  #             printer ~ "is rendering the object outside desired specifications. I have canceled the print.",
+  #             "Fabrication has failed. The render has been canceled."
+  #             ] | random }}
+  #     - conditions:
+  #       - condition: trigger
+  #         id: offline
+  #       sequence:
+  #       - service: script.speech_engine
+  #         data:
+  #           who: '{{ states(''sensor.jeff_notification'') }}'
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #               printer ~ " is now offline. I will power down the printer in sixty seconds.",
+  #               printer ~ " is ready to be powered off.",
+  #               "I am running some final checks and then I will power down " ~ printer ,
+  #               "I have begun shutdown procedures on the " ~ printer ~ ". Power . ",
+  #               "All wrapped up here, sir. Printer shutoff procedures have been initiated."
+  #               ] | random }}
+  #       - delay: '00:01:00'
+  #       - service: switch.turn_off
+  #         entity_id: switch.3d_printer
+
+  #     - conditions:
+  #       - condition: trigger
+  #         id: online
+  #       sequence:
+  #       - service: script.speech_engine
+  #         data:
+  #           who: '{{ states(''sensor.jeff_notification'') }}'
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}
+  #             {{ [
+  #               "Sir, I have detected the " ~ printer ~ " is now online.",
+  #               "Sir, " ~ printer ~ " is now idle and ready for printing.",
+  #               "Working on a secret project are we Sir? I will prepare the " ~ printer ~ " for fabrication.",
+  #               "Sir, " ~ printer ~ " is online. I am running the pre start up checks. "
+  #               ] | random }}
+  #     - conditions:
+  #       - condition: trigger
+  #         id: printer_on
+  #       sequence:
+  #       - service: scene.turn_on
+  #         entity_id: scene.3dprinteron
+  #     - conditions:
+  #       - condition: trigger
+  #         id: printing_ended
+  #       - condition: numeric_state
+  #         entity_id: sensor.octoprint_print_progress
+  #         above: 99
+  #       sequence:
+  #       # - service: mqtt.publish
+  #       #   data:
+  #       #     topic: house/3dfilament/ytd
+  #       #     payload: "{{ (states('sensor.ender5_job_filament_used_mm') | int) + (states('sensor.3d_printer_filament_used_ytd') | int) }}"
+  #       #     retain: true
+  #       - service: script.speech_engine
+  #         data:
+  #           who: "jeff"
+  #           message: >
+  #             {% set printer = ['The Ender five','The three d Printer'] | random %}  
+  #             {{ [
+  #               printer ~ " has completed its run.",
+  #               printer ~ " is reporting fabrication is completed.",
+  #               printer ~ " has rendered a new object."
+  #               ] | random }}
+  #               {{ [
+  #               'And is currently in the process of shutting down.',
+  #               'And has begun to cool down.',
+  #               'And has started the post print cool down.'
+  #               ] | random }}
+  #             {{ [
+  #               'Total print ',
+  #               'Total Fabrication '
+  #               ] | random }}
+  #             time was {{ states('sensor.3d_total_print_time') }}.
+  #             And took {{ states('sensor.3d_total_filament_used') }} of filament. 
+  #       - service: script.mastodon_notify
+  #         data_template:
+  #           who: mdl
+  #           message: >
+  #             {%- macro getReport() -%}
+  #             {% set printer = ['The Ender five','The 3d Printer'] | random %}  
+  #             {{ [
+  #               printer ~ " has completed its run.",
+  #               printer ~ " is reporting fabrication is completed.",
+  #               printer ~ " has rendered a new object."
+  #               ] | random }}
+  #               {{ [
+  #               'And is currently in the process of shutting down.',
+  #               'And has begun to cool down.',
+  #               'And has started the post print cool down.'
+  #               ] | random }} 
+  #               {{ [
+  #               'Total print ',
+  #               'Total Fabrication '
+  #               ] | random }}
+  #             time was {{ states('sensor.3d_total_print_time') }}.
+  #             And took {{ states('sensor.3d_total_filament_used') }} of filament. 
+  #             #3dprinter #maker
+  #             {%- endmacro -%}
+  #               {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
+  #               {%- macro cleanup(data) -%}
+  #                 {%- for item in data.split("\n")  if item | trim != "" -%}
+  #                   {{ item | trim }} {% endfor -%}
+  #               {%- endmacro -%}
+
+  #               {# a macro to call all macros :)  #}
+  #               {%- macro mother_of_all_macros() -%}
+  #                 {{ getReport() }}
+  #               {%- endmacro -%}
+
+  #               {# Call the macro  #}
+  #               {{- cleanup(mother_of_all_macros()) -}}
+  #       - service: script.twitter_notify
+  #         data_template:
+  #           message: >
+  #             {%- macro getReport() -%}
+  #             {% set printer = ['The Ender five','The 3d Printer'] | random %}  
+  #             {{ [
+  #               printer ~ " has completed its run.",
+  #               printer ~ " is reporting fabrication is completed.",
+  #               printer ~ " has rendered a new object."
+  #               ] | random }}
+  #               {{ [
+  #               'And is currently in the process of shutting down.',
+  #               'And has begun to cool down.',
+  #               'And has started the post print cool down.'
+  #               ] | random }} 
+  #             {{ [
+  #               'Total print ',
+  #               'Total Fabrication '
+  #               ] | random }}
+  #             time was {{ states('sensor.3d_total_print_time') }}.
+  #             And took {{ states('sensor.3d_total_filament_used') }} of filament. 
+  #             #3dprinter #maker
+  #             {%- endmacro -%}
+  #               {# a macro that removes all newline characters, empty spaces, and returns formatted text  #}
+  #               {%- macro cleanup(data) -%}
+  #                 {%- for item in data.split("\n")  if item | trim != "" -%}
+  #                   {{ item | trim }} {% endfor -%}
+  #               {%- endmacro -%}
+
+  #               {# a macro to call all macros :)  #}
+  #               {%- macro mother_of_all_macros() -%}
+  #                 {{ getReport() }}
+  #               {%- endmacro -%}
+
+  #               {# Call the macro  #}
+  #               {{- cleanup(mother_of_all_macros()) -}}
 
 script:
-
   appliances_on:
     sequence:
     - service: switch.turn_on
@@ -376,9 +1128,8 @@ script:
     - condition: state
       entity_id: sensor.washer_status
       state: complete
-    - service: script.announcement
+    - service: script.speech_engine
       data: 
-        who: "{{ states('sensor.room_audio') }}"
         message: >
             The washing machine completed its cycle 
             {% set seconds = now().timestamp() - as_timestamp(states.sensor.washer_status.last_changed) %}
