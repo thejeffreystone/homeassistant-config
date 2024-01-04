@@ -346,10 +346,15 @@
       state: 'on'
     light.studio_shelves:
       state: 'off'
-    switch.work_bench_light:
-      state: 'off'
     switch.dungeon_light:
       state: 'off'
+    light.light_strip_b0ca:
+      brightness: 255
+      rgb_color:
+      - 255
+      - 255
+      - 255
+      state: 'on'
 - id: a547239e-c5d7-4a4d-b94e-cfefc1d50e42
   name: Studio Weekend Mode
   entities:
@@ -415,12 +420,12 @@
       state: 'on'
     switch.dungeon_light:
       state: 'off'
-    light.printer_backlight:
+    light.light_strip_b0ca:
       brightness: 255
       rgb_color:
       - 255
-      - 204
-      - 163
+      - 255
+      - 255
       state: 'on'
 - id: '1663677462540'
   name: Film Time
@@ -428,7 +433,7 @@
     light.sl_desk_lamp:
       state: 'off'
     switch.d50_light:
-      state: 'off'
+      state: 'on'
     switch.key_light:
       state: 'on'
     switch.studio_fan:
@@ -528,7 +533,7 @@
     switch.desk_accent_lights:
       state: 'on'
     switch.d50_light:
-      state: 'off'
+      state: 'on'
     light.desk_spotlight:
       brightness: 117
       color_temp_kelvin: 5208
@@ -549,6 +554,13 @@
     switch.dungeon_light:
       state: 'off'
     switch.studio_fan:
+      state: 'on'
+    light.light_strip_b0ca:
+      brightness: 255
+      rgb_color:
+      - 255
+      - 255
+      - 255
       state: 'on'
 - id: 84269f9a-9d13-45f9-b06c-3b1b9bf264af
   name: Streaming Mode
@@ -1097,51 +1109,19 @@
     switch.work_bench_light:
       friendly_name: Work Bench Light
       state: 'on'
-    light.printer_backlight:
-      min_color_temp_kelvin: 2000
-      max_color_temp_kelvin: 6666
-      min_mireds: 150
-      max_mireds: 500
-      effect_list:
-      - blink
-      - breathe
-      - okay
-      - channel_change
-      - finish_effect
-      - stop_effect
-      supported_color_modes:
-      - color_temp
-      - xy
-      color:
-        x: 0.3836
-        y: 0.3787
-      linkquality: 43
+    light.light_strip_b0ca:
+      brightness: 255
+      rgb_color:
+      - 255
+      - 255
+      - 255
+      state: 'on'
       update:
         installed_version: 1057832
         latest_version: 1057832
         state: idle
       update_available: false
-      friendly_name: printer_backlight
-      supported_features: 44
-      color_mode: color_temp
-      brightness: 255
-      color_temp_kelvin: 3937
-      color_temp: 254
-      hs_color:
-      - 26.843
-      - 36.023
-      rgb_color:
-      - 255
-      - 204
-      - 163
-      xy_color:
-      - 0.424
-      - 0.366
-      state: 'on'
   icon: mdi:printer-3d
-  metadata:
-    light.printer_backlight:
-      entity_only: true
 - id: '1674341390878'
   name: Edit Mode
   entities:
@@ -1412,4 +1392,37 @@
     light.lumary_smart_recessed_downlight_a2_7:
       entity_only: true
     light.kitchen_lights:
+      entity_only: true
+- id: '1697152443704'
+  name: Front Porch Halloween
+  entities:
+    light.front_porch_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6666
+      min_mireds: 150
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - xy
+      entity_id:
+      - light.frontporch1
+      - light.frontporch2
+      icon: mdi:lightbulb-group
+      friendly_name: Front Porch Lights
+      supported_features: 40
+      color_mode: xy
+      brightness: 255
+      hs_color:
+      - 275.397
+      - 93.725
+      rgb_color:
+      - 157
+      - 16
+      - 255
+      xy_color:
+      - 0.251
+      - 0.094
+      state: 'on'
+  metadata:
+    light.front_porch_lights:
       entity_only: true
