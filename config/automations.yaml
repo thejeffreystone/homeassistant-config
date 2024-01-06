@@ -4,42 +4,77 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.kitchen_motion
+    - binary_sensor.kitchen_occupied
     from: 'off'
     to: 'on'
     id: Light_Needed
   - platform: state
     entity_id:
-    - binary_sensor.kitchen_motion
+    - binary_sensor.kitchen_occupied
     from: 'on'
     to: 'off'
     for:
       hours: 0
-      minutes: 10
+      minutes: 1
+      seconds: 0
+    id: lights_dim
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_occupied
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 5
       seconds: 0
     id: light_not_needed
   condition: []
   action:
+  - service: script.get_room_lights
+    data:
+      room: kitchen
+    response_variable: room
   - choose:
     - conditions:
-      - condition: state
-        entity_id: light.kitchen_lights
-        state: 'off'
       - condition: trigger
         id: Light_Needed
+      - condition: state
+        entity_id: input_boolean.audible_notifications
+        state: 'on'
       sequence:
-      - service: scene.turn_on
-        data: {}
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
         target:
-          entity_id: scene.kitchen_normal
+          entity_id: '{{room.lights}}'
+    - conditions:
+      - condition: trigger
+        id: Light_Needed
+      - condition: state
+        entity_id: input_boolean.audible_notifications
+        state: 'off'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 50
+        target:
+          entity_id: '{{room.lights}}'
+    - conditions:
+      - condition: trigger
+        id: lights_dim
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 20
+        target:
+          entity_id: '{{room.lights}}'
     - conditions:
       - condition: trigger
         id: light_not_needed
       sequence:
-      - service: scene.turn_on
-        data: {}
+      - service: light.turn_off
         target:
-          entity_id: scene.kitchen_dark
+          entity_id: '{{room.lights}}'
     default: []
   mode: restart
 - id: '1659356561696'
@@ -98,36 +133,25 @@
     id: light_needed
   - platform: state
     entity_id:
-    - binary_sensor.pantry_motion
-    from: 'on'
-    to: 'off'
-    id: light_not_needed
-    for:
-      hours: 0
-      minutes: 10
-      seconds: 0
+    - binary_sensor.kitchen_door_contact
+    from: 'off'
+    to: 'on'
+    id: Door open
   condition: []
   action:
   - choose:
     - conditions:
-      - condition: state
-        entity_id: light.pantry_lights
-        state: 'off'
       - condition: trigger
-        id: light_needed
+        id:
+        - Door open
+      - condition: state
+        entity_id: input_boolean.audible_notifications
+        state: 'off'
       sequence:
       - service: scene.turn_on
         data: {}
         target:
           entity_id: scene.pantry_normal
-    - conditions:
-      - condition: trigger
-        id: light_not_needed
-      sequence:
-      - service: scene.turn_on
-        data: {}
-        target:
-          entity_id: scene.pantry_dark
     default: []
   mode: restart
 - id: '1659367047240'
@@ -314,22 +338,6 @@
       sequence:
       - service: switch.turn_off
         entity_id: switch.exercise_lights
-    - conditions:
-      - condition: trigger
-        id: lights_on
-      sequence:
-      - service: switch.turn_on
-        data: {}
-        target:
-          entity_id: switch.work_bench_light
-    - conditions:
-      - condition: trigger
-        id: lights_off
-      sequence:
-      - service: switch.turn_off
-        data: {}
-        target:
-          entity_id: switch.work_bench_light
     default: []
   mode: restart
 - id: e1cb39dc-0423-11eb-adc1-0242ac120002
@@ -340,11 +348,15 @@
     platform: state
     to: 'on'
     id: light_needed
-  - entity_id: binary_sensor.master_bedroom_motion
+  - entity_id:
+    - binary_sensor.master_bedroom_motion
     from: 'on'
     platform: state
     to: 'off'
-    for: 00:10:00
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
     id: light_not_needed
   - platform: time
     at: '23:00:00'
@@ -522,14 +534,13 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.stairs_motion_top
-    - binary_sensor.stairs_motion_bottom
+    - group.stairs_occupancy
     from: 'off'
     to: 'on'
     id: motion
   - platform: state
     entity_id:
-    - binary_sensor.stairs_motion_top
+    - binary_sensor.stairs_motion_top_occupancy
     from: 'on'
     to: 'off'
     id: no_motion_top
@@ -564,7 +575,7 @@
         conditions:
         - condition: state
           state: 'off'
-          entity_id: binary_sensor.stairs_motion_top
+          entity_id: binary_sensor.stairs_motion_top_occupancy
         - condition: state
           entity_id: binary_sensor.stairs_motion_bottom
           state: 'off'
@@ -617,6 +628,7 @@
   trigger:
   - platform: state
     entity_id:
+    - binary_sensor.roomsense_iq_presence
     - binary_sensor.slacker_labs_motion
     from: 'off'
     to: 'on'
@@ -624,11 +636,16 @@
   - platform: state
     entity_id:
     - sensor.jeff_location
-    from: studio
+    to: studio
     for:
       hours: 0
-      minutes: 30
-      seconds: 0
+      minutes: 0
+      seconds: 30
+    id: present
+  - platform: state
+    entity_id:
+    - binary_sensor.studio_occupied
+    from: studio
     id: done
   - platform: state
     entity_id:
@@ -637,30 +654,28 @@
     id: gone
   - platform: state
     entity_id:
-    - binary_sensor.slacker_labs_motion
+    - binary_sensor.roomsense_iq_presence
     from: 'on'
     to: 'off'
-    for:
-      hours: 1
-      minutes: 10
-      seconds: 0
     id: no_motion
-  - platform: state
-    entity_id: input_select.studio_mode
-    to: Editing
-    id: edit_mode
   - platform: state
     entity_id: input_select.studio_mode
     to: Work
     id: work_mode
   - platform: state
     entity_id: input_select.studio_mode
-    to: Night
-    id: night_mode
+    to: Weekend
+    id: weekend_mode
   - platform: state
-    entity_id: input_select.studio_mode
-    to: Product
-    id: product_mode
+    entity_id:
+    - input_select.studio_mode
+    to: Normal
+    id: normal_mode
+  - platform: state
+    entity_id:
+    - input_select.studio_mode
+    to: Streaming
+    id: streaming_mode
   - platform: state
     entity_id: input_select.studio_mode
     to: Cleaning
@@ -672,20 +687,20 @@
   - platform: time
     at: 00:00:00
     id: midnight
+  - platform: time
+    at: 09:00:00
+    id: work_day_start
+  - platform: state
+    entity_id:
+    - input_select.studio_mode
+    to: Sleep
+    id: sleep_mode
   condition: []
   action:
   - choose:
     - conditions:
       - condition: trigger
-        id: product_mode
-      sequence:
-      - service: scene.turn_on
-        target:
-          entity_id: scene.product_shots
-        metadata: {}
-    - conditions:
-      - condition: trigger
-        id: night_mode
+        id: normal_mode
       sequence:
       - service: scene.turn_on
         target:
@@ -693,11 +708,20 @@
         metadata: {}
     - conditions:
       - condition: trigger
+        id:
+        - weekend_mode
+      sequence:
+      - service: scene.turn_on
+        target:
+          entity_id: scene.studio_weekend_mode
+        metadata: {}
+    - conditions:
+      - condition: trigger
         id: clean_mode
       sequence:
       - service: scene.turn_on
         target:
-          entity_id: scene.studio_normal
+          entity_id: scene.studio_clean_time
         metadata: {}
     - conditions:
       - condition: trigger
@@ -709,11 +733,12 @@
         metadata: {}
     - conditions:
       - condition: trigger
-        id: edit_mode
+        id:
+        - streaming_mode
       sequence:
       - service: scene.turn_on
         target:
-          entity_id: scene.edit_mode
+          entity_id: scene.streaming_mode
         metadata: {}
     - conditions:
       - condition: trigger
@@ -724,69 +749,63 @@
           entity_id: scene.film_time
         metadata: {}
     - conditions:
-      - condition: trigger
-        id: motion
-      - condition: numeric_state
-        entity_id: sensor.slacker_labs_lux
-        below: 9.9
+      - condition: template
+        value_template: '{{ states(''input_select.studio_mode'') not in [''Film'',''Streaming'']}}'
+      - condition: or
+        conditions:
+        - condition: trigger
+          id: present
+        - condition: trigger
+          id: motion
+        - condition: trigger
+          id: work_day_start
       sequence:
       - if:
         - condition: state
           entity_id: binary_sensor.jeff_workday
           state: 'on'
         - condition: time
-          after: 09:00:00
-          before: '17:00:00'
+          after: 08:59:00
+          before: '17:30:00'
         - condition: state
           entity_id: person.jeffrey
           state: home
-        - condition: not
-          conditions:
-          - condition: state
-            entity_id: input_select.studio_mode
-            state: Film
+        - condition: template
+          value_template: '{{ states(''input_select.studio_mode'') not in [''Film'',''Streaming'']}}'
         then:
         - service: input_select.select_option
           data:
             option: Work
           target:
             entity_id: input_select.studio_mode
-      - if:
-        - condition: time
-          after: 05:00:00
-          before: 09:00:00
-        - condition: state
-          entity_id: person.jeffrey
-          state: home
-        - condition: state
-          entity_id: input_select.studio_mode
-          state: Normal
-        then:
-        - service: input_select.select_option
-          data:
-            option: Editing
-          target:
-            entity_id: input_select.studio_mode
-      - if:
-        - condition: state
-          entity_id: group.studio_lights
-          state: 'off'
-        then:
-        - service: input_select.select_option
-          data:
-            option: Normal
-          target:
-            entity_id: input_select.studio_mode
-        - service: scene.turn_on
-          target:
-            entity_id: scene.studio_night_mode
-          metadata: {}
+        else:
+        - if:
+          - condition: state
+            entity_id: person.jeffrey
+            state: home
+          - condition: state
+            entity_id: binary_sensor.lights_out
+            state: 'on'
+          - condition: template
+            value_template: '{{ states(''input_select.studio_mode'') not in [''Film'',''Streaming'']}}'
+          then:
+          - service: input_select.select_option
+            data:
+              option: Normal
+            target:
+              entity_id: input_select.studio_mode
+          else:
+          - service: input_select.select_option
+            data:
+              option: Weekend
+            target:
+              entity_id: input_select.studio_mode
     - conditions:
-      - condition: not
-        conditions:
-        - condition: state
-          entity_id: sensor.jeff_room
-          state: studio
+      - condition: template
+        value_template: '{{ is_state(''binary_sensor.studio_occupied'',''off'')}}'
+      - condition: state
+        entity_id: switch.3d_printer
+        state: 'off'
       - condition: or
         conditions:
         - condition: trigger
@@ -796,35 +815,16 @@
         - condition: trigger
           id: midnight
       sequence:
-      - service: light.turn_off
-        data: {}
-        target:
-          area_id: studio
-      - service: switch.turn_off
-        data: {}
-        target:
-          area_id: studio
       - service: input_select.select_option
         data:
-          option: Normal
+          option: Sleep
         target:
           entity_id: input_select.studio_mode
     - conditions:
       - condition: trigger
-        id: no_motion
-      - condition: state
-        entity_id:
-        - input_select.studio_mode
-        state: Normal
+        id: sleep_mode
       sequence:
-      - service: light.turn_off
-        data: {}
-        target:
-          area_id: studio
-      - service: switch.turn_off
-        data: {}
-        target:
-          area_id: studio
+      - service: script.studio_sleep
   mode: queued
 - id: '1663678889161'
   alias: Outdoor Lighting
@@ -861,11 +861,10 @@
         target:
           entity_id:
           - switch.deck_lights
-          - switch.pool_deck_lights
       - if:
         - condition: state
-          entity_id: input_boolean.christmas_season
           state: 'on'
+          entity_id: binary_sensor.christmas_season
         then:
         - service: scene.turn_on
           data: {}
@@ -875,10 +874,16 @@
           entity_id:
           - cover.skylar_blinds_one
           - cover.master_bedroom_shade
+        alias: Christmas Season
       - if:
-        - condition: state
-          entity_id: input_boolean.christmas_season
-          state: 'off'
+        - condition: and
+          conditions:
+          - condition: state
+            entity_id: binary_sensor.christmas_season
+            state: 'off'
+          - condition: state
+            entity_id: binary_sensor.spooky_season
+            state: 'off'
         then:
         - service: scene.turn_on
           data: {}
@@ -889,6 +894,7 @@
           - cover.curtain_left
           - cover.skylar_blinds_one
           - cover.master_bedroom_shade
+        alias: Normal Lighting
       - if:
         - condition: state
           entity_id: input_boolean.vacation_mode
@@ -898,6 +904,21 @@
           data: {}
           target:
             entity_id: switch.driveway_light
+        alias: Vacation Mode
+      - if:
+        - condition: state
+          state: 'on'
+          entity_id: binary_sensor.spooky_season
+        then:
+        - service: scene.turn_on
+          data: {}
+          target:
+            entity_id: scene.front_porch_halloween
+        - service: cover.close_cover
+          entity_id:
+          - cover.skylar_blinds_one
+          - cover.master_bedroom_shade
+        alias: Halloween Season
     - conditions:
       - condition: trigger
         id: sunup
@@ -937,7 +958,6 @@
         target:
           entity_id:
           - switch.deck_lights
-          - switch.pool_deck_lights
     - conditions:
       - condition: trigger
         id: wake_up
@@ -949,7 +969,6 @@
         data: {}
         target:
           entity_id:
-          - switch.pool_deck_lights
           - switch.deck_lights
   mode: single
 - id: '1663801951273'
@@ -962,7 +981,7 @@
     id: sunup
   - platform: sun
     event: sunset
-    offset: 0
+    offset: -00:30:00
     id: sundown
   - platform: time
     at: '22:00:00'
@@ -983,12 +1002,11 @@
           entity_id:
           - switch.graveyard_one
           - switch.graveyard_two
-          device_id: 07d4fe8c84ce700fef00f4c75a6c1811
-      - service: light.turn_on
-        data:
-          brightness_pct: 100
-        target:
-          entity_id: light.front_yard_display
+          - switch.scene_2a
+          - switch.scene_2b
+          - switch.exterior_porch_left
+          - switch.tp_link_smart_plug_8559_fog
+          - switch.tp_link_smart_plug_8559_pumpkin_king
     - conditions:
       - condition: trigger
         id: sunup
@@ -997,34 +1015,21 @@
         data: {}
         target:
           entity_id:
-          - switch.front_yard1
-          - switch.fromt_yard2
           - switch.graveyard_one
           - switch.graveyard_two
-          device_id: 07d4fe8c84ce700fef00f4c75a6c1811
-      - service: light.turn_off
-        data: {}
-        target:
-          entity_id: light.front_yard_display
-    - conditions:
-      - condition: trigger
-        id: effects_on
-      sequence:
-      - service: switch.turn_on
-        data: {}
-        target:
-          entity_id: switch.graveyard_two
-        enabled: false
+          - switch.scene_2a
+          - switch.scene_2b
+          - switch.tp_link_smart_plug_8559_pumpkin_king
+          - switch.exterior_porch_left
     - conditions:
       - condition: trigger
         id: effects_off
       sequence:
       - service: switch.turn_off
         data: {}
+        enabled: true
         target:
-          entity_id:
-          - switch.graveyard_two
-        enabled: false
+          entity_id: switch.tp_link_smart_plug_8559_fog
   mode: single
 - id: '1664669337778'
   alias: Pottery Studio Lighting
@@ -1153,35 +1158,6 @@
         target:
           entity_id: switch.pot_light
   mode: restart
-- id: e1cb2fdc-0423-11eb-adc1-0242ac120002
-  alias: Set Room Presence
-  mode: restart
-  trigger:
-  - platform: state
-    entity_id: sensor.room_audio
-  action:
-  - service: input_text.set_value
-    data_template:
-      entity_id: input_text.room_presence
-      value: '{{ states(''sensor.room_audio'') }}'
-  - service: mqtt.publish
-    data:
-      topic: house/presence/current_room
-      payload: '{{ states(''sensor.room_audio'') }}'
-      retain: true
-- id: 36b35286-5a87-4dd2-84ba-6ad7e83b5d84
-  alias: Set Presence Source
-  mode: restart
-  trigger:
-  - platform: state
-    entity_id: sensor.room_audio
-    attribute: presence_source
-  action:
-  - service: mqtt.publish
-    data:
-      topic: house/presence/source
-      payload: '{{ state_attr(''sensor.room_audio'', ''presence_source'') }}'
-      retain: true
 - id: e1cb287a-0423-11eb-adc1-0242ac120002
   alias: Notification Volume Dim
   initial_state: true
@@ -1239,13 +1215,11 @@
   - platform: state
     entity_id:
     - media_player.living_room_echo
-    - media_player.kitchen_echo
-    - media_player.skylars_bedroom_echo
-    - media_player.dads_desk
-  condition:
-  - condition: template
-    value_template: '{{ trigger.to_state.attributes.last_called_timestamp | float
-      > trigger.from_state.attributes.last_called_timestamp | float }}'
+    - media_player.skylars_room
+    - media_player.slacker_labs_echo
+    - media_player.master_bedroom_echo
+    - media_player.basement_echo
+    - media_player.theater_echo
   action:
   - service: input_datetime.set_datetime
     target:
@@ -1254,7 +1228,6 @@
       datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
 - id: a2f8621f-064b-4a4f-8414-44983848ff00
   alias: bias_lighting
-  initial_state: true
   trigger:
   - platform: state
     entity_id: media_player.home_theater
@@ -1289,6 +1262,15 @@
     to: paused
     for: 00:00:05
     id: movie_paused
+  - platform: state
+    entity_id:
+    - media_player.home_theater
+    to: idle
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+    id: appletv_on
   action:
   - choose:
     - conditions:
@@ -1328,6 +1310,7 @@
       - service: scene.turn_on
         entity_id: scene.theater_movie
       - service: script.adjust_audio
+        data: {}
     - conditions:
         condition: or
         conditions:
@@ -1338,7 +1321,27 @@
       sequence:
       - service: scene.turn_on
         entity_id: scene.theater_dim
+    - conditions:
+      - condition: trigger
+        id:
+        - appletv_on
+        enabled: true
+      - condition: state
+        entity_id: binary_sensor.theater_tv_status
+        state: 'on'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: light.lytmi_neo3
+          state: 'off'
+        then:
+        - service: light.turn_on
+          data: {}
+          target:
+            device_id: 44c483d20dc039b802faf91ca36d5a20
+        enabled: true
     default: []
+  initial_state: true
 - id: 9f783303-8715-4254-82a3-79ae9b042243
   alias: Theater Lighting
   trigger:
@@ -1566,13 +1569,22 @@
   alias: Skylar is Awake
   trigger:
   - platform: state
-    entity_id: binary_sensor.skylars_bedroom_motion
-    to: 'off'
-    from: 'on'
+    entity_id:
+    - binary_sensor.skylars_bed_stairs
+    to: 'on'
+    from: 'off'
   condition:
   - condition: time
     after: 02:00:00
-    before: 08:30:00
+    before: '10:00:00'
+    weekday:
+    - sat
+    - fri
+    - thu
+    - wed
+    - tue
+    - mon
+    - sun
   - condition: state
     entity_id: input_boolean.skylar_awake
     state: 'off'
@@ -1633,12 +1645,17 @@
   action:
   - service: input_boolean.turn_off
     entity_id: input_boolean.kat_travel_monitor
-  - service: input_select.select_option
-    target:
-      entity_id: input_select.skylar_is_with
-    data:
-      option: "{% if is_state('input_select.skylar_is_with', 'Self') %}\n  Dad\n{%
-        else %}\n  {{ states('input_select.skylar_is_with') }}\n{% endif %}\n"
+  - if:
+    - condition: state
+      entity_id: input_boolean.skylar_school
+      state: 'off'
+    then:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.skylar_is_with
+      data:
+        option: "{% if is_state('input_select.skylar_is_with', 'Self') %}\n  Dad\n{%
+          else %}\n  {{ states('input_select.skylar_is_with') }}\n{% endif %}\n"
   - service: script.text_notify
     data:
       who: jeff
@@ -1697,7 +1714,7 @@
       sequence:
       - service: script.speech_engine
         data:
-          who: '{{ states(''sensor.room_audio'') }}'
+          who: jeff
           message: "{{ states('sensor.tts_interuption') }}  {{ [\n    'It appears
             Kat has entered the state of ' + state_attr('sensor.kat_location','state')
             + '.' ,\n    'the latest report shows Kat has crossed the ' + state_attr('sensor.kat_location','state')
@@ -1719,7 +1736,7 @@
       sequence:
       - service: script.speech_engine
         data:
-          who: '{{ states(''sensor.room_audio'') }}'
+          who: jeff
           message: "{{ states('sensor.tts_interuption') }}  {{ [\n    'Kat has entered
             ' + state_attr('sensor.kat_location','county') + '.' ,\n    'the latest
             report shows Kat has crossed the ' + state_attr('sensor.kat_location','county')
@@ -1740,7 +1757,7 @@
       sequence:
       - service: script.speech_engine
         data:
-          who: '{{ states(''sensor.room_audio'') }}'
+          who: jeff
           message: "{{ [\n    'I am now tracking Kats travel and will report any signifigant
             changes. ' ,\n    'Tracking mode is now enabled for Kat. ',\n    'I am
             attempting to locl on to Blueys drive signature and will provide updates
@@ -1756,7 +1773,7 @@
       sequence:
       - service: script.speech_engine
         data:
-          who: '{{ states(''sensor.room_audio'') }}'
+          who: jeff
           message: "{{ [\n    'I am no longer tracking Kats travel. ' ,\n    'Tracking
             mode is now disabled for Kat. '\n  ] | random }}\n"
       - service: script.text_notify
@@ -1772,21 +1789,25 @@
     platform: zone
     zone: zone.shmes
     id: leave
+    alias: When Jeff leaves school
   - entity_id: person.katherine
     event: leave
     platform: zone
     zone: zone.shmes
     id: leave
+    alias: When Kat leaves school
   - entity_id: person.jeffrey
     event: enter
     platform: zone
     zone: zone.shmes
     id: dad
+    alias: When Jeff arrives at school
   - entity_id: person.katherine
     event: enter
     platform: zone
     zone: zone.shmes
     id: mom
+    alias: When Kat arrives at school
   condition:
   - condition: time
     weekday:
@@ -1795,6 +1816,9 @@
     - wed
     - thu
     - fri
+  - condition: state
+    entity_id: input_boolean.school_in_session
+    state: 'on'
   action:
   - choose:
     - conditions:
@@ -1859,6 +1883,11 @@
           message: Skylar has been picked up from School.
       - service: input_boolean.turn_off
         entity_id: input_boolean.skylar_school
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.last_school_pickup
+        data:
+          timestamp: '{{ now() }}'
     - conditions:
       - condition: trigger
         id: leave
@@ -1878,6 +1907,11 @@
           entity_id: input_select.skylar_is_with
         data:
           option: Self
+      - service: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.last_school_dropoff
+        data:
+          timestamp: '{{ now() }}'
     default: []
   initial_state: true
 - id: jeff_arrives_summit
@@ -1892,12 +1926,17 @@
     data:
       who: kat
       message: Jeff has arrived at Summit
-  - service: input_select.select_option
-    target:
-      entity_id: input_select.skylar_is_with
-    data:
-      option: "{% if is_state('input_select.skylar_is_with', 'Self') %}\n  Mom\n{%
-        else %}\n  {{ states('input_select.skylar_is_with') }}\n{% endif %}\n"
+  - if:
+    - condition: state
+      entity_id: input_boolean.skylar_school
+      state: 'off'
+    then:
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.skylar_is_with
+      data:
+        option: "{% if is_state('input_select.skylar_is_with', 'Self') %}\n  Mom\n{%
+          else %}\n  {{ states('input_select.skylar_is_with') }}\n{% endif %}\n"
   initial_state: true
 - id: e1cb15b0-0423-11eb-adc1-0242ac120002
   alias: Zone Debugger
@@ -1979,26 +2018,6 @@
       topic: house/kat/last_known_location
       payload_template: '{{ states(''sensor.iphone_geocoded_location'') }}'
       retain: true
-- id: enable_vacation_mode
-  alias: Enable Vacation Mode
-  initial_state: true
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.jeff_ett_home
-    above: 180
-  - platform: numeric_state
-    entity_id: sensor.kat_ett_home
-    above: 180
-  condition:
-  - condition: numeric_state
-    entity_id: sensor.jeff_ett_home
-    above: 180
-  - condition: numeric_state
-    entity_id: sensor.kat_ett_home
-    above: 180
-  action:
-  - service: input_boolean.turn_on
-    entity_id: input_boolean.vacation_mode
 - id: door_notifications
   alias: Door Notifications
   trigger:
@@ -2056,9 +2075,8 @@
       - condition: trigger
         id: door_still_open
       sequence:
-      - service: script.announcement
+      - service: script.speech_engine
         data:
-          who: '{{ states(''sensor.room_audio'') }}'
           message: "The {{ trigger.to_state.attributes.friendly_name }} {{ [\n  '
             is standing open.',\n  ' is open.',\n  ' does not close on its own.',\n
             \ ' was left standing open.'\n] | random }} {{ [\n    'Can a human be
@@ -2082,7 +2100,6 @@
   action:
   - service: script.speech_engine
     data_template:
-      who: '{{ states.sensor.room_audio.state }}'
       message: '{{ [ "Guest Mode has been enabled.", "I have turned on guest mode.",
         "I have enabled guest mode. ", "Guest Mode is on." ] | random }}
 
@@ -2235,28 +2252,34 @@
     id: lights_out
   - platform: state
     entity_id:
-    - binary_sensor.living_room_motion
+    - binary_sensor.living_room_occupied
     enabled: true
     from: 'off'
     to: 'on'
     id: motion
   - platform: state
     entity_id:
-    - binary_sensor.living_room_motion
+    - binary_sensor.living_room_occupied
     from: 'on'
     to: 'off'
+    for: 00:01:00
     id: no_motion
-  - platform: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.living_room_lights
-    id: times_up
+  - platform: state
+    entity_id:
+    - binary_sensor.living_room_occupied
+    from: 'on'
+    to: 'off'
+    for: 00:05:00
+    id: vacant
   condition: []
   action:
   - choose:
     - conditions:
       - condition: trigger
         id: lights_out
+      - condition: state
+        entity_id: binary_sensor.living_room_occupied
+        state: 'on'
       sequence:
       - service: scene.turn_on
         data: {}
@@ -2266,13 +2289,13 @@
       - condition: trigger
         id: no_motion
       sequence:
-      - service: timer.start
+      - service: scene.turn_on
         data: {}
         target:
-          entity_id: timer.living_room_lights
+          entity_id: scene.living_room_dim
     - conditions:
       - condition: trigger
-        id: times_up
+        id: vacant
       sequence:
       - if:
         - condition: state
@@ -2299,14 +2322,6 @@
         - condition: state
           entity_id: binary_sensor.day
           state: 'on'
-        - condition: or
-          conditions:
-          - condition: numeric_state
-            entity_id: sensor.living_room_lux
-            below: 50
-          - condition: numeric_state
-            entity_id: sensor.living_room_lux
-            above: 65000
         then:
         - service: scene.turn_on
           target:
@@ -2481,7 +2496,7 @@
     to: 'off'
     for:
       hours: 0
-      minutes: 20
+      minutes: 5
       seconds: 0
     id: no_motion
   condition: []
@@ -2688,4 +2703,245 @@
         / 1.8) | round(0) }}
 
         '
+  mode: single
+- id: '1691031782065'
+  alias: Reset RoomSense
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{ not has_value(''number.roomsense_maxmacrorange_f412fae8c830'')
+      }}'
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: sensor.jeff_room
+      state: studio
+    then:
+    - service: script.speech_engine
+      data:
+        who: studio
+        message: "{{[\n  ',it appears the Room Sense IQ has gone off line.',\n  ',
+          the room sense IQ has malfunction.',\n  ', I have detected an anonmally
+          in the room sense iq sensor.'\n  ] | random}}\n{{[\n  'I am attempting to
+          bring it back online.',\n  'I am running diagnostics and will let you know
+          when I am finished.',\n  'I am attempting to recalibrate the sensor.'\n
+          \ ] | random}}\n"
+    else:
+    - service: script.text_notify
+      data_template:
+        who: jeff
+        message: "{{[\n  'Sir,it appears the Room Sense IQ has gone off line.',\n
+          \ 'Sir, the room sense IQ has malfunction.',\n  'Sir, I have detected an
+          anonmally in the room sense iq sensor.'\n  ] | random}}\n{{[\n  'I am attempting
+          to bring it back online.',\n  'I am running diagnostics and will let you
+          know when I am finished.',\n  'I am attempting to recalibrate the sensor.'\n
+          \ ] | random}}"
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.usb_hub
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.usb_hub
+  mode: single
+- id: '1694303542686'
+  alias: Flic_mb
+  description: ''
+  trigger:
+  - platform: webhook
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
+    webhook_id: -pjfaK0fYljQ9TqSilPc5A29W
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''lights_out'' }}
+
+          '
+      sequence:
+      - service: script.master_bedroom_lights_off
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''override'' }}
+
+          '
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.light_override
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''disneymusic'' }}'
+      sequence:
+      - service: input_boolean.toggle
+        data: {}
+        target:
+          entity_id: input_boolean.disney_background
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''halloween'' }}'
+      sequence:
+      - service: input_boolean.toggle
+        data: {}
+        target:
+          entity_id: input_boolean.this_is_halloween
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''lr_on'' }}'
+      sequence:
+      - service: scene.turn_on
+        entity_id: scene.living_room_lamps_on
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''lr_dim'' }}'
+      sequence:
+      - service: scene.turn_on
+        entity_id: scene.living_room_dim
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''lr_night'' }}'
+      sequence:
+      - service: scene.turn_on
+        entity_id: scene.living_room_dim
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.action == ''lr_off'' }}'
+      sequence:
+      - service: light.turn_off
+        entity_id: ight.living_room_tower_lamp,light.living_room_lamp,light.front_door_lamp
+  mode: single
+- id: '1698951808744'
+  alias: ifttt reminders handler
+  description: ''
+  trigger:
+  - platform: webhook
+    allowed_methods:
+    - POST
+    - PUT
+    local_only: false
+    webhook_id: -Ds_MxRPlYKaVvNiix6R6wqM-
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.json.event == ''add_grocery'' }}'
+      sequence:
+      - service: todo.add_item
+        data:
+          item: '{{ trigger.json.item }}'
+        target:
+          entity_id: todo.grocery
+  mode: single
+- id: '1698972828033'
+  description: ''
+  trigger: []
+  condition: []
+  action:
+  - service: tts.cloud_say
+    data:
+      cache: false
+      entity_id: media_player.slacker_labs_echo
+      message: test
+  mode: single
+- id: '1699008516868'
+  alias: Theater Bathroom
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.smart_night_light_w_occupancy_2
+    - binary_sensor.smart_night_light_w_occupancy
+    to: 'on'
+    id: detected
+  - platform: state
+    entity_id:
+    - binary_sensor.smart_night_light_w_occupancy
+    to: 'off'
+    id: clear
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - detected
+      sequence:
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id: light.smart_night_light_w
+    - conditions:
+      - condition: trigger
+        id:
+        - clear
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.smart_night_light_w
+  mode: single
+- id: '1700432878940'
+  alias: master_bedroom_flicd
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.master_bedroom_button_action
+    to: click
+    id: click
+  - platform: state
+    entity_id:
+    - sensor.master_bedroom_button_action
+    to: double_click
+    id: double_click
+  - platform: state
+    entity_id:
+    - sensor.master_bedroom_button_action
+    to: hold
+    id: hold
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - click
+      sequence:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.light_override
+      - service: script.master_bedroom_lights_off
+        data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - hold
+      sequence:
+      - service: scene.turn_on
+        target:
+          entity_id: scene.master_bedroom_on
+        metadata: {}
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.light_override
   mode: single
