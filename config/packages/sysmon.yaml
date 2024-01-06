@@ -51,21 +51,7 @@ sensor:
         friendly_name: Current HA Version
         value_template: >-
           {{ states.binary_sensor.attributes.newest_version }}
-  # - platform: version
-  #   name: Installed version
-  #   source: local
-  #   #command: "head -5 /home/homeassistant/.homeassistant/.HA_VERSION"
-  # - platform: version
-  #   name: Released Version
-  #   source: pypi
-  # - platform: version
-  #   name: Released Hassio Ver
-  #   source: hassio 
 
-  # unit of measurement deprecated in 2020.12.0
-  # - platform: uptime
-  #   name: Time Online
-    #unit_of_measurement: days 
 
   - platform: template
     sensors:
@@ -116,10 +102,55 @@ template:
         state: >
           {{ states('sensor.acurite_986_chest_freezer_f') | int > 15 }}
         device_class: problem
+  - sensor:
+    - name: Critical Battery Count 
+      unique_id: critical_battery_count
+      state: >
+        {{ expand('group.critical_batteries') 
+        | rejectattr('state', 'eq', '100')
+        | selectattr('state', 'lt', '30') | list | count }}
     
     
     
-    
-    
-    
-    
+script:
+  battery_notification:
+    sequence:
+    - service: script.get_jeff_briefing
+      response_variable: "jeff_briefing"
+    - condition: template
+      value_template: >
+        {{ jeff_briefing.critical_battery_count | int > 0 }}
+    - variables:
+        message: >
+          {% set batts = expand('group.critical_batteries') 
+            | rejectattr('state', 'eq', '100')
+            | selectattr('state', 'lt', '30') | list %}
+          {% for bat in batts %}
+            {{ bat.name }} - {{ bat.state }}%
+          {% endfor %}
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ message }}
+      response_variable: "cleaned_message"
+    - service: script.text_notify
+      data:
+        who: "jeff"
+        message: >
+          {{ cleaned_message.text }}
+        title: "Battery List"
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: "battery_notification"
+    - service: persistent_notification.create 
+      data:
+        notification_id: "battery_notification"
+        message: "{{ message }}"
+        title: "Battery List - To Change"
+    - service: todo.add_item
+      target:
+        entity_id: todo.ha_tasks
+      data:
+        item: "Replace Batteries"
+        due_date: "{{states('sensor.date')}}"
+        description: "Replace these batteries."
