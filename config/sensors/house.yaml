@@ -88,6 +88,14 @@
   duration:
     hours: 24
 
+- platform: history_stats
+  name: Skylar Sleep Last Night
+  entity_id: sensor.skylar_location
+  state: "bed"
+  type: time
+  start: "{{ now().replace(hour=19, minute=0, second=0) - timedelta(days=1) }}"
+  end: "{{ now() }}"
+
 - platform: statistics
   name: Wind Speed Stats
   entity_id: sensor.pirateweather_wind_speed
@@ -233,3 +241,44 @@
             {% endif -%}
         {% endfor %}
         {{ count.value }}
+    skylar_sleep_last_night_tts:
+      friendly_name: "Skylar Sleep Briefing"
+      unique_id: skylar_sleep_last_night_tts
+      value_template: >-
+        {% set time = (timedelta(hours=states('sensor.skylar_sleep_last_night')| float(0))| string) %}
+        {% set hours = time[:-6] %} 
+        {% set mins = time[2:-3] | replace(":", "") %}
+        {% if hours | int > 1 and mins | int == 1 %}
+          {% set timetts = hours | string + ' hours and ' + mins | string + ' minute' %}
+        {% elif hours | int == 1 and mins | int > 0 %}
+          {% set timetts = hours | string + ' hour and ' + mins | string + ' minutes' %}
+        {% elif hours | int == 1 and mins | int == 0 %}
+          {% set timetts = hours | string + ' hour' %}
+        {% elif hours | int == 0 and mins | int > 0 %}
+          {% set timetts = mins | string + ' minutes' %}
+        {% elif hours | int == 0 and mins | int ==1  %}
+          {% set timetts = mins | string + ' minute' %}
+        {% else %}
+          {% set timetts = hours | string + ' hours and ' + mins | string + ' minutes' %}
+        {% endif %}
+        {{ timetts }} of sleep last night.
+        {% if hours | int < 5 %}
+          {{[
+            'That is not enough sleep.'
+          ] | random}}
+        {% elif hours | int >=5 and hours | int < 7 %}
+          {{[
+            'That is ok sleep.'
+          ] | random}}
+          But not that impressive. 
+        {% elif hours | int > 9 %}
+          {{[
+            'You must have been tired!'
+          ] | random}}
+        {% else %}
+          {{[
+            'That is a perfect amount of sleep!'
+          ] | random}}
+          Well done, sir.
+        {% endif %}
+        
