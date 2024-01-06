@@ -110,3 +110,80 @@ script:
           entity_id: input_number.master_bedroom_wakeup
           value: 8.5
  
+
+#################################################
+  studio_sleep:
+    sequence:
+      - if:
+        - condition: template
+          value_template: >-  
+            {{ is_state('sensor.ender5_state','idle') and states('sensor.octoprint_print_status') not in ['Printing'] }}
+        then: 
+          - service: light.turn_off
+            entity_id: light.printer_backlight
+      - service: light.turn_off
+        data: {}
+        target:
+          area_id: studio
+      - service: switch.turn_off
+        data: {}
+        target:
+          area_id: studio
+
+     
+#################################################
+  get_room_scenes:
+    sequence:
+      - variables:
+          area: >
+            {{ room }}
+          normal: > 
+            {{ states.scene | 
+              selectattr('entity_id', 'in', area_entities(area)) |
+              selectattr('entity_id', 'search', '(normal)') | 
+              map(attribute='entity_id') |
+            list | first }} 
+          dim: > 
+            {{ states.scene | 
+              selectattr('entity_id', 'in', area_entities(area)) |
+              selectattr('entity_id', 'search', '(dim)') | 
+              map(attribute='entity_id') |
+            list | first }} 
+          night: >
+            {{ states.scene | 
+              selectattr('entity_id', 'in', area_entities(area)) |
+              selectattr('entity_id', 'search', '(night)') | 
+              map(attribute='entity_id') |
+            list | first }} 
+          scenes: >
+            {"normal":"{{normal}}",
+            "dim":"{{dim}}",
+            "night":"{{night}}"}
+      - stop: "Alright. Im done."
+        response_variable: "scenes"
+  get_room_lights:
+    sequence:
+      - variables:
+          area: >
+            {{ room }}
+          entities: > 
+            {% set lights = states.light | 
+                selectattr('entity_id', 'in', area_entities(area)) |
+                map(attribute='entity_id') |
+                list | join(',') %}
+            {"lights":"{{lights}}"} 
+      - stop: "Alright. Im done."
+        response_variable: "entities"
+  
+  master_bedroom_lights_off:
+    sequence:
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.light_override
+      - service: light.turn_off
+        entity_id: light.kats_lamp, light.master_bedroom_tower_lamp, light.jeffs_lamp
+      
+  master_bedroom_lights_override:
+    sequence:
+      - service: input_boolean.toggle
+        entity_id: input_boolean.light_override
+
