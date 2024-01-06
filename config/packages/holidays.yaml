@@ -51,6 +51,18 @@ input_boolean:
   christmas_season:
     name: Christmas Season
 
+template:
+  - binary_sensor:
+      - name: spooky_season
+        unique_id: spooky_season_sensor
+        state: >
+          {% set today = now().month %}
+          {{ today | int in [9,10] }}
+      - name: christmas_season
+        unique_id: christmas_season_sensor
+        state: >
+          {% set today = now().month %}
+          {{ today | int in [12] }}
 
 
 automation:
