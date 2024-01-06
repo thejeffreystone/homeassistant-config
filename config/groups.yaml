@@ -33,37 +33,74 @@ arriving:
   name: Arriving
   entities: []
 
-#- binary_sensor.skylars_bedroom_motion_occupancy
+kitchen_occupancy:
+  name: "Kitchen occupancy"
+  entities: []
+
+living_room_occupancy:
+  entities: []
+
+theater_occupancy:
+  entities: []
+
+studio_occupancy:
+  entities: []
+
+deck_occupancy:
+  entities: []
+
+skylars_bedroom_occupancy:
+  entities: []
+
+#- binary_sensor.skylars_bedroom_motion
 occupancy:
-  - binary_sensor.living_room_motion_occupancy
-  - binary_sensor.kitchen_motion_occupancy
-  - binary_sensor.pantry_motion_occupancy
-  - binary_sensor.bar_motion_occupancy
-  - binary_sensor.master_bedroom_motion_occupancy
-  - binary_sensor.studio_motion
+  - binary_sensor.living_room_motion
+  - binary_sensor.kitchen_motion
+  - binary_sensor.pantry_motion
+  - binary_sensor.bar_motion
+  - binary_sensor.master_bedroom_motion
+  - binary_sensor.slacker_labs_motion
   - binary_sensor.cricut_desk_motion
   - binary_sensor.dungeon_motion
-  - binary_sensor.pottery_studio_motion
-  - binary_sensor.back_door_motion_occupancy
-  - binary_sensor.theater_motion_occupancy
+  - binary_sensor.pot_studio_motion
+  - binary_sensor.back_door_motion
+  - binary_sensor.theater_motion
+  - binary_sensor.exercise_motion
+  - binary_sensor.stairs_motion_top
+  - binary_sensor.stairs_motion_bottom
+  - binary_sensor.roomsense_pir_f412fae8c830
+
+rooms:
+  - bomary_sensor.theater_occupied
+  - binary_sensor.kitchen_occupied
+  - binary_sensor.living_room_occupied
+  - binary_sensor.master_bedroom_occupied
+  - binary_sensor.skylars_bedroom_occupied
+  - binary_sensor.studio_occupied
+  - binary_sensor.pot_studio_occupied
+  - binary_sensor.exercise_room_occupied
   
 occupancy_night:
-  - binary_sensor.living_room_motion_occupancy
-  - binary_sensor.kitchen_motion_occupancy
-  - binary_sensor.pantry_motion_occupancy
-  - binary_sensor.bar_motion_occupancy
-  - binary_sensor.master_bedroom_motion_occupancy
-  - binary_sensor.studio_motion
+  - binary_sensor.living_room_motion
+  - binary_sensor.kitchen_motion
+  - binary_sensor.pantry_motion
+  - binary_sensor.bar_motion
+  - binary_sensor.master_bedroom_motion
+  - binary_sensor.slacker_labs_motion
   - binary_sensor.cricut_desk_motion
   - binary_sensor.dungeon_motion
-  - binary_sensor.pottery_studio_motion
+  - binary_sensor.pot_studio_motion
+  - binary_sensor.roomsense_pir_f412fae8c830
+
+stairs_occupancy:
+  - binary_sensor.stairs_motion_bottom
+  - binary_sensor.stairs_motion_top_occupancy
 
 room_presence:
-  - sensor.jeffs_iphone_11
-  - sensor.kats_iphone_11
-  - sensor.jeffs_watch
-  - sensor.kats_watch
-
+  - sensor.jeff_room
+  - sensor.kat_room
+  - sensor.skylar_room
+  
 jeff_room:
   - sensor.jeffs_iphone_11
   - sensor.jeffs_watch
@@ -90,9 +127,9 @@ all_echos:
   - media_player.master_bedroom_echo
 
 Outside Lights:
+  - light.front_porch_lights
+  - switch.deck_lights
   - switch.driveway_light
-  - switch.front_porch_light
-  - light.side_door_light_level
   
 External Doors:
   - binary_sensor.kitchen_door
@@ -136,7 +173,7 @@ incense:
   - switch.artemis
   - switch.incense
 
-all fans:
+onlyfans:
   - switch.croft_fan
   - switch.livingroom_fan
 
@@ -150,7 +187,16 @@ Master Bedroom:
   - light.jeffs_lamp
   - light.kats_lamp
   - light.master_bedroom_tower_lamp
-  
+
+driveway_motion:
+  - binary_sensor.aarlo_motion_driveway_camera
+  - binary_sensor.aarlo_motion_car_port
+
+critical_batteries:
+  - sensor.aarlo_battery_level_driveway_camera
+  - sensor.aarlo_battery_level_car_port
+  - sensor.ring_battery
+
 
 kitchen:
   - light.kitchen_cabinets
@@ -176,3 +222,10 @@ vacation lights:
 theater lights:
   - light.theater_lights
 
+
+weather_alerts:
+  - sensor.fayette_alert_1
+  - sensor.fayette_alert_2
+  - sensor.fayette_alert_3
+  - sensor.fayette_alert_4
+  - sensor.fayette_alert_5
