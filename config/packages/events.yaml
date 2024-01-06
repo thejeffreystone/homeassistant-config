@@ -86,6 +86,14 @@ input_datetime:
     name: Pest Service
     has_date: true
     has_time: true
+  skylar_first_bedtime_warning:
+    name: Skylar First Bedtime Warning
+    has_date: true
+    has_time: true
+  skylar_bedtime_warning:
+    name: Skylar Bedtime Warning
+    has_date: true
+    has_time: true
   
 template:
   - sensor:
@@ -103,6 +111,25 @@ template:
             999
           {% endif %}
         unit_of_measurement: 'Days'
+      - name: skylar_bedtime_warning
+        unique_id: skylar_bedtime_warning
+        state: >
+          {% set today = states('sensor.date') %}
+          {% if is_state('binary_sensor.school_tomorrow','on') %}
+          {% set test = today + " " + states('input_datetime.skylar_school_bedtime') %}
+          {% else %}
+          {% set test = today + " " + states('input_datetime.skylar_bedtime_holiday') %}
+          {% endif %}
+          {{ as_datetime(test) - timedelta(minutes=30) }}
+        attributes:
+          first_warning: >
+            {% set today = states('sensor.date') %}
+            {% if is_state('binary_sensor.school_tomorrow','on') %}
+            {% set test = today + " " + states('input_datetime.skylar_school_bedtime') %}
+            {% else %}
+            {% set test = today + " " + states('input_datetime.skylar_bedtime_holiday') %}
+            {% endif %}
+            {{ as_datetime(test) - timedelta(minutes=40) }}
   - binary_sensor:
       - name: school_tomorrow
         state: >
@@ -120,18 +147,18 @@ sensor:
                 | timestamp_custom("%Y-%m-%d",true) %}
             {{ today == next_event }}
   
-  - platform: rest
-    resource: https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/packages/json_data/school.json
-    name: School Lunch
-    scan_interval: 14400
-    value_template: >
-      {% set today = now().month  ~ '/' ~ now().day  %}
-      {% set lunch =  value_json.MENU.static[ today ] %}
-      {%- if lunch %}
-        {{ lunch  }}
-      {% else %}
-        Nothing
-      {%- endif %}
+  # - platform: rest
+  #   resource: https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/packages/json_data/school.json
+  #   name: School Lunch
+  #   scan_interval: 14400
+  #   value_template: >
+  #     {% set today = now().month  ~ '/' ~ now().day  %}
+  #     {% set lunch =  value_json.MENU.static[ today ] %}
+  #     {%- if lunch %}
+  #       {{ lunch  }}
+  #     {% else %}
+  #       Nothing
+  #     {%- endif %}
 
   - platform: rest
     resource: https://raw.githubusercontent.com/thejeffreystone/home-assistant-configuration/master/config/packages/json_data/school.json
@@ -152,51 +179,6 @@ sensor:
 
 
 automation:
-  - id: refresh_special_event_sensors
-    alias: Refresh special event sensors
-    initial_state: true
-    trigger:
-    - platform: time
-      at: '00:00:01'
-    - platform: homeassistant
-      event: start
-    action:
-    - service: python_script.special_events
-      data:
-        name: Skylar
-        type: birthday
-        date: !secret skylar_bday
-    - service: python_script.special_events
-      data:
-        name: Jeff
-        type: birthday
-        date: !secret jeff_bday
-    - service: python_script.special_events
-      data:
-        name: Kat
-        type: birthday
-        date: !secret kat_bday
-    - service: python_script.special_events
-      data:
-        name: Our wedding
-        type: anniversary
-        date: !secret wed_anniversary
-    - service: python_script.special_events
-      data:
-        name: Maison Des Lunes
-        type: established
-        date: !secret maisondelune_est
-    - service: python_script.special_events
-      data:
-        name: Texas
-        type: trip
-        date: !secret texas_trip
-    - service: python_script.special_events
-      data:
-        name: Disney
-        type: vacation
-        date: !secret cruise_date
-
   - id: e1cb2d02-0423-11eb-adc1-0242ac120002
     alias: School today
     initial_state: true
@@ -239,7 +221,28 @@ automation:
       entity_id: script.school_in_session
     - service: script.turn_on
       entity_id: script.digital_learning_day
-    
+  
+  - id: 54f3d3c3-4e40-4cd8-a023-11cb38e8950f
+    alias: Set Bedtime Warning
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '15:00:00'
+    action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.skylar_bedtime_warning
+      data:
+        timestamp: >
+          {{ as_timestamp(states('sensor.skylar_bedtime_warning'))}}
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.skylar_first_bedtime_warning
+      data:
+        timestamp: >
+          {{ as_timestamp(state_attr('sensor.skylar_bedtime_warning','first_warning'))}}
+
+        
     
 
 #   - id: rex_manning_audio
@@ -278,11 +281,355 @@ automation:
 #     action:
 #     - service: script.twitter_new_ha
 #     - service: script.save_current_ha_version
-    
-  
 
+# {% set next_event = as_timestamp(state_attr('calendar.school','start_time')) | timestamp_custom("%Y-%m-%d %H:%M",true) %}
+#             {% if as_timestamp(now().replace(hour=7, minute=10)) | timestamp_custom("%Y-%m-%d %H:%M",true) == next_event %}
+#               {{ ['Today is a school day.', 'You have school today.', 'It appears you have school today.'] | random }}
+#             {% else %}
+#               {{ ['Today is not a school day.', 'There is no school on the calendar today.', 'It appears you do not have school today.'] | random }}
+#             {% endif %} 
 
 script:
+
+  get_school_info:
+    sequence:
+      - variables:
+          today: >
+            {{ now().replace(hour=0, minute=0, second=0) }}
+          tomorrow: >
+            {{ now().replace(hour=11, minute=59, second=59) + timedelta(days=1) }}
+      - service: calendar.list_events
+        data:
+          start_date_time: >
+            {{ today }}
+          end_date_time: >
+            {{ tomorrow }}
+        target:
+          entity_id: calendar.school
+        response_variable: school
+      - service: calendar.list_events
+        data:
+          start_date_time: >
+            {{ today }}
+          end_date_time: >
+            {{ tomorrow }}
+        target:
+          entity_id: calendar.school_lunch
+        response_variable: school_lunch
+      - variables:
+          is_school_day: >
+            {% if school.events %}
+              {%- for event in school.events if as_timestamp(event.start) | timestamp_custom("%Y-%m-%d",true) == as_timestamp(now().date()) | timestamp_custom("%Y-%m-%d",true) %}
+                {% if event.summary is defined and event.summary == 'School Day' %}
+                  yes
+                {% else %}
+                  no
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          school_today: >
+            {% if school.events %}
+              {%- for event in school.events if as_timestamp(event.start) | timestamp_custom("%Y-%m-%d",true) == as_timestamp(now().date()) | timestamp_custom("%Y-%m-%d",true) %}
+                {% if event.summary is defined and event.summary == 'School Day' %}
+                  {{ ['Today is a school day.', 'You have school today.', 'It appears you have school today.'] | random }}
+                {% else %}
+                  {{ ['Today is not a school day.', 'There is no school on the calendar today.', 'It appears you do not have school today.'] | random }}
+                {% endif %}
+              
+                {% if event.description is defined %}
+                  {% if '#firstday' in event.description %}
+                    And it is the first day of a new school year. so that is exciting!
+                  {% elif '#lastday' in event.description %}
+                    You have made it to the last day of the school year.
+                  {% elif '#secondsemester' in event.description %}
+                    You have made it half way through the school year. Now we start working towards Winter Break!
+                  {% elif '#winterbreakover' in event.description %}
+                    One break closer to Summer Break. Now we start working towards Spring Break!
+                  {% elif '#springbreakover' in event.description %}
+                    One break closer to Summer Break. Now just a few more weeks!
+                  {% elif '#winterbreakstarts' in event.description %}
+                    Just a few hours of work until Winter Break starts!
+                  {% elif '#springbreakstarts' in event.description %}
+                    Just a few hours of work until Spring break starts!
+                  {% elif '#digital' in event.description %}
+                    {{ ['But it is a digital learning day.',',And it is a Digital Learning Day.',',But you get to do it from home since it is digital learning.'] | random }}
+                  {% else %}
+        
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% if school_lunch.events %}
+                {%- for event in school_lunch.events %}
+                  {% if event.start | string == (now().date()) | string %}
+                    {{[ 
+                      'On the Lunch menu today is ' ~ event.summary ~ '.',
+                      'Today the lunch is ' ~ event.summary ~ ' which sounds good.',
+                      'If you do not want ' ~ event.summary ~ ' let your parents know.',
+                      'Looks like today is ' ~ event.summary ~ ' day at lunch.',
+                      'The school menu shows ' ~ event.summary ~ ' day at lunch.',
+                      event.summary ~ ' is what the school menu shows for lunch.',
+                      'If you want ' ~ event.summary ~ ' for lunch just tell your father.',
+                    ] | random }}
+                  {% else %}
+                    {{ [
+                      "Unfortunately I am not sure what school lunch is going to be.",
+                      "Looks like the school menu is blank.",
+                      "Let me see. Oh. right. I have no idea what is for lunch at school today.",
+                      "There appears to be a bit of a kerfuffle so I am unable to tell you what is on the lunch menu.",
+                      "In terms of what is for lunch it appears we are going to have to do this the old fashion way since I cannot find todays menu.",
+                      "Based on my information I think you might want to ask your father to make your lunch.",
+                      "For lunch at school it appears to be whatever you take."
+                      ] | random }}
+                    {{ [
+                      "A peanut butter sandwich sounds tasty.",
+                      "You could always just roll the dice and choose from what they have today.",
+                      "Maybe a spicy cheese sammie?",
+                      "There is always cheese and crackers.",
+                      "I am sure you father will sort it out.",
+                      "So I guess go ask your father."
+                      ] | random }}
+
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endif %}
+          school_today_p: >
+            {% if school.events %}
+              {%- for event in school.events if as_timestamp(event.start) | timestamp_custom("%Y-%m-%d",true) == as_timestamp(now().date()) | timestamp_custom("%Y-%m-%d",true) %}
+                {% if event.summary is defined and event.summary == 'School Day' %}
+                  {{ ['Today is a school day.', 'Skylar has school today.', 'And you need to get going. because it is a school day.'] | random }}
+                {% else %}
+                  {{ ['Today is not a school day.', 'There is no school on the calendar today.', 'It appears there is no school today.'] | random }}
+                {% endif %}
+                {% if event.description is defined %}
+                  {% if '#firstday' in event.description %}
+                    And it is the first day of a new school year!
+                  {% elif '#lastday' in event.description %}
+                    We have made it to the last day of the school year.
+                  {% elif '#secondsemester' in event.description %}
+                    You have made it half way through the school year. Now we start working towards Winter Break!
+                  {% elif '#winterbreakover' in event.description %}
+                    One break closer to Summer Break. Now we start working towards Spring Break!
+                  {% elif '#springbreakover' in event.description %}
+                    One break closer to Summer Break. Now just a few more weeks!
+                  {% elif '#winterbreakstarts' in event.description %}
+                    Just a few hours of work until Winter Break starts!
+                  {% elif '#springbreakstarts' in event.description %}
+                    Just a few hours of work until Spring break starts!
+                  {% elif '#digital' in event.description %}
+                    ,{{ ['But it is a digital learning day.','And it is a Digital Learning Day.','But Skylar can do it from home since it is digital learning.'] | random }}
+                  {% else %}
+        
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if school_lunch.events %}
+              {%- for event in school_lunch.events %}
+                {% if event.start | string == (now().date()) | string %}
+                  {{[ 
+                      'On the Lunch menu today is ' ~ event.summary ~ '.',
+                      'Today the lunch is ' ~ event.summary ~ ' which sounds good.',
+                      'If you do not want ' ~ event.summary ~ ' let your parents know.',
+                      'Looks like today is ' ~ event.summary ~ ' day at lunch.',
+                      'The school menu shows ' ~ event.summary ~ ' day at lunch.',
+                      event.summary ~ ' is what the school menu shows for lunch.',
+                      'If you want ' ~ event.summary ~ ' for lunch just tell your father.'
+                    ] | random }}
+                  {% else %}
+                    {{ [
+                      "Unfortunately I am not sure what school lunch is going to be.",
+                      "Looks like the school menu is blank.",
+                      "Let me see. Oh. right. I have no idea what is for lunch at school today.",
+                      "There appears to be a bit of a kerfuffle so I am unable to tell you what is on the lunch menu.",
+                      "In terms of what is for lunch it appears we are going to have to do this the old fashion way since I cannot find todays menu.",
+                      "Based on my information I think you might want to ask your father to make your lunch.",
+                      "For lunch at school it appears to be whatever you take."
+                      ] | random }}
+                    {{ [
+                      "A peanut butter sandwich sounds tasty.",
+                      "You could always just roll the dice and choose from what they have today.",
+                      "Maybe a spicy cheese sammie?",
+                      "There is always cheese and crackers.",
+                      "I am sure you father will sort it out.",
+                      "So I guess go ask your father."
+                      ] | random }}
+                  
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          school_tomorrow: >
+            {% if school.events %}
+              {%- for event in school.events if as_timestamp(event.start) | timestamp_custom("%Y-%m-%d",true) == as_timestamp(now().date() + timedelta(days=1)) | timestamp_custom("%Y-%m-%d",true) %}
+                {% if event.summary is defined and event.summary == 'School Day' %}
+                  {{ ['Tomorrow is a school day.', 'There is school on the calendar for tomorrow.', 'It appears you have school tomorrow.'] | random }} 
+                {% else %}
+                  {{ ['Tomorrow is not a school day.', 'There is no school on the calendar for tomorrow.', 'It appears you do not have school tomorrow.'] | random }}
+                {% endif %}
+                {% if event.description is defined %}
+                  {% if '#firstday' in event.description %}
+                    And it is the first day of a new school year. so that is exciting! Right?
+                  {% elif '#lastday' in event.description %}
+                    You have made it to the last day of the school year.
+                  {% elif '#secondsemester' in event.description %}
+                    Christmas break is over. Back to work tomorrow. 
+                  {% elif '#winterbreakstarts' in event.description %}
+                    One more day until Winter Break starts!
+                  {% elif '#springbreakstarts' in event.description %}
+                    One more day until Spring break starts!
+                  {% elif '#digital' in event.description %}
+                    {{ ['But it is a digital learning day.','And it is a Digital Learning Day.','But you get to do it from home since it is digital learning.'] | random }}
+                  {% else %}
+        
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% if school_lunch.events %}
+              {%- for event in school_lunch.events %}
+                  {% if event.start | string == (now().date() + timedelta(days=1)) | string %}
+                    {{[ 
+                      'On the Lunch menu tomorrow is ' ~ event.summary ~ '.',
+                      'Tomorrow the lunch is ' ~ event.summary ~ ' which sounds good.',
+                      'If you do not want ' ~ event.summary ~ ' let your parents know.',
+                      'Looks like tomorrow is ' ~ event.summary ~ ' day at lunch.',
+                      'The school menu shows it is ' ~ event.summary ~ ' day tomorrow.',
+                      event.summary ~ ' is what the school menu shows for lunch tomorrow.',
+                      'If you want ' ~ event.summary ~ ' for lunch tomorrow just tell your father.'
+                    ] | random }}
+                  {% else %}
+                    {{ [
+                      "Unfortunately I am not sure what school lunch is going to be.",
+                      "Looks like the school menu is blank.",
+                      "Let me see. Oh. right. I have no idea what is for lunch at school tomorrow.",
+                      "There appears to be a bit of a kerfuffle so I am unable to tell you what is on the lunch menu tomorrow.",
+                      "In terms of what is for lunch it appears we are going to have to do this the old fashion way since I cannot find tomorrows menu.",
+                      "Based on my information I think you might want to ask your father to make your lunch tomorrow.",
+                      "For lunch at school it appears to be whatever you take tomorrow."
+                      ] | random }}
+                    {{ [
+                      "A peanut butter sandwich sounds tasty.",
+                      "You could always just roll the dice and choose from what they have tomorrow.",
+                      "Maybe a spicy cheese sammie?",
+                      "There is always cheese and crackers.",
+                      "I am sure you father will sort it out tomorrow.",
+                      "So I guess ask your father in the morning."
+                      ] | random }}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endif %}
+      - service: script.cleanup_text
+        data:
+          message: >
+            {{school_tomorrow}} 
+        response_variable: "cleaned_school_tomorrow" 
+      - service: script.cleanup_text
+        data:
+          message: >
+            {{school_today_p}} 
+        response_variable: "cleaned_school_today_p"
+      - service: script.cleanup_text
+        data:
+          message: >
+            {{school_today}} 
+        response_variable: "cleaned_school_today"  
+      - variables: 
+          school_info: >
+            {"school_today":"{{cleaned_school_today.text}}","school_tomorrow":"{{cleaned_school_tomorrow.text}}","school_today_p":"{{cleaned_school_today_p.text}}","is_school_day":"{{is_school_day}}"}
+      - stop: "Alright. Im done."
+        response_variable: "school_info"
+
+  get_school_lunch_info:
+    sequence:  
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.school_lunch
+      data:
+        start_date_time: >
+          {{ now().replace(hour=0, minute=0, second=0) }}
+        end_date_time: >
+          {{ now().replace(hour=11, minute=59, second=59) }}
+      response_variable: agenda_today
+    - service: calendar.get_events
+      target:
+        entity_id: calendar.school_lunch
+      data:
+        start_date_time: >
+          {{ now().replace(hour=00, minute=00, second=00) + timedelta(days=1) }}
+        end_date_time: >
+          {{ now().replace(hour=11, minute=59, second=59) + timedelta(days=1) }}
+      response_variable: agenda_tomorrow
+    - variables:
+        lunch_today: >
+          {% if agenda_today['calendar.school_lunch'].events %}
+            {%- for event in agenda_today['calendar.school_lunch'].events %}
+              {% if event.start | string == (now().date()) | string and now().hour < 12 %}
+                {{[ 
+                  'On the Lunch menu today is ' ~ event.summary ~ '.',
+                  'Today the lunch is ' ~ event.summary ~ ' which sounds good.',
+                  'If you do not want ' ~ event.summary ~ ' let your parents know.',
+                  'Looks like today is ' ~ event.summary ~ ' day at lunch.',
+                  'The school menu shows ' ~ event.summary ~ ' day at lunch.',
+                  event.summary ~ ' is what the school menu shows for lunch.',
+                  'If you want ' ~ event.summary ~ ' for lunch just tell your father.',
+                ] | random }}
+              {% elif event.start | string == (now().date()) | string and now().hour > 12 %}
+                
+              
+              {% else %}
+                {{ [
+                  "Unfortunately I am not sure what school lunch is going to be.",
+                  "Looks like the school menu is blank.",
+                  "Let me see. Oh. right. I have no idea what is for lunch at school today.",
+                  "There appears to be a bit of a kerfuffle so I am unable to tell you what is on the lunch menu.",
+                  "In terms of what is for lunch today it appears we are going to have to do this the old fashion way since the menu I refer to is blank.",
+                  "Based on my information I think you might want to ask your father to make your lunch.",
+                  "For lunch at school it appears to be whatever you take since there is nothing on the menu."
+                  ] | random }}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        lunch_tomorrow: >
+          {% if agenda_tomorrow['calendar.school_lunch'].events %}
+            {%- for event in agenda_tomorrow['calendar.school_lunch'].events %}
+              {% if event.start | string == (now().date() + timedelta(days=1)) | string %}
+                {{[ 
+                  'On the Lunch menu tomorrow is ' ~ event.summary ~ '.',
+                  'Tomorrow the lunch is ' ~ event.summary ~ ' which sounds good.',
+                  'If you do not want ' ~ event.summary ~ ' tomorrow for lunch let your parents know.',
+                  'Looks like tomorrow is ' ~ event.summary ~ ' day at lunch.',
+                  'The school menu shows it is ' ~ event.summary ~ ' day tomorrow.',
+                  event.summary ~ ' is what the school menu shows for lunch tomorrow.',
+                  'If you want ' ~ event.summary ~ ' for lunch tomorrow just tell your father.'
+                ] | random }}
+              {% else %}
+                {{ [
+                  "Unfortunately I am not sure what school lunch is going to be.",
+                  "Looks like the school menu is blank.",
+                  "Let me see. Oh. right. I have no idea what is for lunch at school tomorrow.",
+                  "There appears to be a bit of a kerfuffle so I am unable to tell you what is on the lunch menu tomorrow.",
+                  "In terms of what is for lunch tomorrow it appears we are going to have to do this the old fashion way since the menu is blank.",
+                  "Based on my information I think you might want to ask your father to make your lunch tomorrow.",
+                  "For lunch at school it appears to be whatever you take tomorrow since there is nothing on the menu."
+                  ] | random }}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{lunch_today}} 
+      response_variable: "cleaned_lunch_today" 
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{lunch_tomorrow}} 
+      response_variable: "cleaned_lunch_tomorrow"
+    - variables:
+        lunch_menu: >
+          {"today":"{{cleaned_lunch_today.text}}","tomorrow":"{{cleaned_lunch_tomorrow.text}}"}
+    - stop: "Alright. Im done."
+      response_variable: "lunch_menu"
 
   digital_learning_day:
     sequence:
@@ -364,67 +711,136 @@ script:
 
   skylar_good_night:
     sequence:
-      - service: script.speech_engine
-        data: 
-          who: skylars_bedroom
-          message: >
-            {{ [ 'Oh, I guess it is that time. ',
-            'Another day done. ',
-            'Is it that time already? ',
-            'I was just about to ask if it was time.',
-            'I agree.'
-            ] | random }} 
-            {% if is_state('binary_sensor.school_tomorrow', 'on') %} 
-              {{ [ 'It looks like you have school tomorrow. ',
-                'You do have to get up early tomorrow for school.',
-                'Well, ok then. You want to be ready for school tomorrow, after all.',
-                'According to the calendar, you have school tomorrow.'
-              ] | random }}   
-            {% else %}
-              {% set month=states("sensor.date").split('-')[1] | int %}
-              {%- if is_state('input_boolean.school_in_session', 'off') -%}
-                {{ [ 'But do not worry. Tomorrow is another day of summer vacation. ',
-                    'You are still on summer break tomorrow though.'
-                  ] | random }} 
-              {% else %}
-                But it appears you do not have school tomorrow
-              {% endif %} 
-                {{ [ 'so you can sleep in late. ',
-                    'so you could sleep in a little later. ',
-                    'so there is not a reason to get up early. ',
-                    'so we can sleep in. '
-                  ] | random }} 
-            {% endif %} 
-            {% if states.sensor.school_start_days2go.state | int < 10 and states.sensor.school_start_days2go.state | int > 1 -%}
-              {{ [ 'I hate to say it, but ',
-                  'Unfortunately,',
-                  'All good things must come to an end.'
-                ] | random }}
-              There are only {{ states.sensor.school_start_days2go.state }} days  
-              {{ [ 'left of summer vacation. ',
-                  ' left of summer break.',
-                  'Until School starts again.'
-                ] | random }}
-            {% elif states.sensor.school_start_days2go.state | int == 1 -%}
-              Tomorrow is the first day of school. Are you ready? 
-            {%- endif %}
-            {% if states.sensor.school_end_days2go.state | int < 15 and states.sensor.school_end_days2go.state | int > 0 -%}
-            {{ [ 'School is almost over for the year.',
-                'You have made it to the end of the school year.',
-                'You are almost done with school.'
-              ] | random }}
-            There are only {{ states.sensor.school_end_days2go.state }} days  
-            {{ [ 'left in the school year ',
-                ' left of school.',
-                'Until the last day of school.'
-              ] | random }}
-            {% elif states.sensor.school_end_days2go.state | int == 0 -%}
-              Tomorrow is the first day of summer. Are you ready? 
-            {%- endif %}
-              {{ [ 'Good night Skylar. ',
-                'Sleep well Skylar. ',
-                'Sweet dreams Skylar. '
-              ] | random }}
+    - variables:
+        awake_for: >
+          {% set time = now().date() | string + " " + states('input_datetime.skylar_awake_at') %}
+          {{ relative_time(as_datetime(time)) }}
+    - service: script.get_tts_greetings
+      response_variable: "greetings"
+    - service: script.get_school_info
+      response_variable: "school_info"
+    - variables:
+        message: >
+          {{ greetings.general }} 
+          {{ ["Skyler",
+              "Skyman",
+              "" 
+          ] |random }}
+          {{ ["Got your jim jams on I see.",
+              "Is that what you are planning to sleep in?",
+              "You brushed your teeth right?",
+              "Did you read for 20 minutes?"
+              "Time for a quick kip I see.",
+              "Is it already time to kip down for the night?"
+            ] | random }}
+          {{ ["Anyway,",
+              "Right,",
+              "Well then, ",
+              "Time to crack on then."
+            ] | random }}
+          {{ [ 'I have initiated your bedtime routine. ',
+          'I just kicked off your bedtime program. ',
+          'I am configuring your room according to your sleep preferences.',
+          'Your sleep preferences are being applied to the rooms devices.',
+          'I am importing your room preferences, and calibrating your lighting.',
+          'Time to wrap things up I guess.',
+          'Guess it is time to shut it down the house.',
+          'Initiating Bed time protocol.'
+          ] | random }} 
+          {{ [ "Which is good, because",
+              "Blimey!",
+              "Have you been faffing around all day? Because ",
+              "What were you doing today? Something wild no doubt ",
+              "Oh,",
+              "Wait. This can not be right.",
+              "Listen. Did you know ",
+              "Well this explains it. ",
+              "Look at that."
+           ] | random }}          
+          it appears you have been awake for {{ awake_for }}.
+
+
+
+          {{ school_info.school_tomorrow}}
+
+          {{ school_info.school_day_tomorrow}}
+
+          {{ school_info.lunch_tomorrow}}
+
+          {{ ["Tomorrow appears to be a busy one.",
+              "Looks like tomorrow will be a fun day.",
+              "I hope you are ready for tomorrow.",
+              "Exiting day waiting for you tomorrow it seems." 
+            ] | random }}
+
+          {{ [ 'I have set your alarm according to your schedule tomorrow. ',
+          'I have adjusted your alarm for the morning. ',
+          'I took the liberty to reconfigure your morning alarm.',
+          'I adjusted your morning alarm to wake you up based on your schedule.',
+          'I went ahead and made sure your alarm is ready.'
+          ] | random }} 
+
+          {{ [ 'All wrapped up here, sir. ',
+          'Alight, I am done. ',
+          'I guess that is all I have.'
+          ] | random }}
+
+          {{ [ 'Good night Skyler. ',
+              'Sleep well Skyler. ',
+              'Sweet dreams Skyler. '
+            ] | random }}
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ message }}
+      response_variable: "cleaned_briefing"
+    - service: media_player.volume_set
+      data:
+        entity_id:
+        - media_player.skylars_bedroom_speaker
+        - media_player.skylars_echo
+        volume_level: >
+          {{ states('input_number.skylar_room_notification_volume') | float}}
+    - delay: "00:00:03"
+    - service: script.speech_engine
+      data: 
+        who: skylars_bedroom
+        type: priority
+        message: >
+          {{ cleaned_briefing.text }}
+    - service: scene.turn_on
+      target:
+        entity_id: scene.skylar_bedtime
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.skylar_is_with
+      data:
+        option: Self
+    - if:
+      - condition: state
+        entity_id: input_boolean.skylar_bedtime_music
+        state: 'on'
+      then:
+      - delay:
+          seconds: 60
+      - service: script.bedtime_music_echo
+
+
+  skylar_good_night_music:
+    sequence:
+      - service: media_player.volume_set
+        data:
+          entity_id:
+          - media_player.skylars_bedroom_speaker
+          - media_player.skylars_echo
+          volume_level: >
+            {{ states('input_number.skylar_room_notification_volume') | float}}
+      - delay:
+          seconds: 30
+      - service: script.bedtime_music_echo
+
+  skylar_good_night_scene:
+    sequence:
       - service: scene.turn_on
         target:
           entity_id: scene.skylar_bedtime
@@ -438,84 +854,82 @@ script:
           entity_id:
           - media_player.skylars_bedroom_speaker
           - media_player.skylars_echo
-          volume_level: .4
-      - delay:
-          seconds: 15
-      - service: script.bedtime_music_echo
+          volume_level: >
+            {{ states('input_number.skylar_room_notification_volume') | float}}
 
-  alexa_skylar_good_night:
-    sequence:
-      - service: script.speech_engine
-        data: 
-          who: skylars_bedroom
-          message: >
-            {{ [ 'Oh, I guess it is that time. ',
-            'Another day done. ',
-            'Is it that time already? ',
-            'I was just about to ask if it was time.',
-            'I agree.'
-            ] | random }} 
-            {% if is_state('sensor.school_tomorrow', 'on') %} 
-              {{ [ 'It looks like you have school tomorrow. ',
-                'You do have to get up early tomorrow for school.',
-                'Perfect timing. After all, you want to be ready for school tomorrow.'
-              ] | random }}   
-            {% else %}
-              {% set month=states("sensor.date").split('-')[1] | int %}
-              {%- if is_state('input_boolean.school_in_session', 'off') -%}
-                {{ [ 'But do not worry. Tomorrow is another day of summer vacation. ',
-                    'You are still on summer break tomorrow though.'
-                  ] | random }} 
-              {% else %}
-                But it appears you do not have school tomorrow
-              {% endif %} 
-                {{ [ 'so you can sleep in late. ',
-                    'so you could sleep in a little later. ',
-                    'so there is not a reason to get up early. ',
-                    'so we can sleep in. '
-                  ] | random }} 
-            {% endif %} 
-            {% if states.sensor.school_start_days2go.state | int < 10 and states.sensor.school_start_days2go.state | int > 1 -%}
-              {{ [ 'I hate to say it, but ',
-                  'Unfortunately,',
-                  'All good things must come to an end.'
-                ] | random }}
-              There are only {{ states.sensor.school_start_days2go.state }} days  
-              {{ [ 'left of summer vacation. ',
-                  ' left of summer break.',
-                  'Until School starts again.'
-                ] | random }}
-            {% elif states.sensor.school_start_days2go.state | int == 1 -%}
-              Tomorrow is the first day of school. Are you ready? 
-            {%- endif %}
-            {% if states.sensor.school_end_days2go.state | int < 15 and states.sensor.school_end_days2go.state | int > 0 -%}
-            {{ [ 'School is almost over for the year.',
-                'You have made it to the end of the school year.',
-                'You are almost done with school.'
-              ] | random }}
-            There are only {{ states.sensor.school_end_days2go.state }} days  
-            {{ [ 'left in the school year ',
-                ' left of school.',
-                'Until the last day of school.'
-              ] | random }}
-            {% elif states.sensor.school_end_days2go.state | int == 0 -%}
-              Tomorrow is the first day of summer. Are you ready? 
-            {%- endif %}
-              {{ [ 'Good night Skylar. ',
-                'Sleep well Skylar. ',
-                'Sweet dreams Skylar. '
-              ] | random }}
-      - service: scene.turn_on
-        target:
-          entity_id: scene.skylar_bedtime
-      - service: input_select.select_option
-        target:
-          entity_id: input_select.skylar_is_with
-        data:
-          option: Self
-      - delay:
-          seconds: 15
-      - service: script.bedtime_music
+  # alexa_skylar_good_night:
+  #   sequence:
+  #     - service: script.speech_engine
+  #       data: 
+  #         who: skylars_bedroom
+  #         message: >
+  #           {{ [ 'Oh, I guess it is that time. ',
+  #           'Another day done. ',
+  #           'Is it that time already? ',
+  #           'I was just about to ask if it was time.',
+  #           'I agree.'
+  #           ] | random }} 
+  #           {% if is_state('sensor.school_tomorrow', 'on') %} 
+  #             {{ [ 'It looks like you have school tomorrow. ',
+  #               'You do have to get up early tomorrow for school.',
+  #               'Perfect timing. After all, you want to be ready for school tomorrow.'
+  #             ] | random }}   
+  #           {% else %}
+  #             {% set month=states("sensor.date").split('-')[1] | int %}
+  #             {%- if is_state('input_boolean.school_in_session', 'off') -%}
+  #               {{ [ 'But do not worry. Tomorrow is another day of summer vacation. ',
+  #                   'You are still on summer break tomorrow though.'
+  #                 ] | random }} 
+  #             {% else %}
+  #               But it appears you do not have school tomorrow
+  #             {% endif %} 
+  #               {{ [ 'so you can sleep in late. ',
+  #                   'so you could sleep in a little later. ',
+  #                   'so there is not a reason to get up early. ',
+  #                   'so we can sleep in. '
+  #                 ] | random }} 
+  #           {% endif %} 
+  #           {% if states.sensor.school_start_days2go.state | int < 10 and states.sensor.school_start_days2go.state | int > 1 -%}
+  #             {{ [ 'I hate to say it, but ',
+  #                 'Unfortunately,',
+  #                 'All good things must come to an end.'
+  #               ] | random }}
+  #             There are only {{ states.sensor.school_start_days2go.state }} days  
+  #             {{ [ 'left of summer vacation. ',
+  #                 ' left of summer break.',
+  #                 'Until School starts again.'
+  #               ] | random }}
+  #           {% elif states.sensor.school_start_days2go.state | int == 1 -%}
+  #             Tomorrow is the first day of school. Are you ready? 
+  #           {%- endif %}
+  #           {% if states.sensor.school_end_days2go.state | int < 15 and states.sensor.school_end_days2go.state | int > 0 -%}
+  #           {{ [ 'School is almost over for the year.',
+  #               'You have made it to the end of the school year.',
+  #               'You are almost done with school.'
+  #             ] | random }}
+  #           There are only {{ states.sensor.school_end_days2go.state }} days  
+  #           {{ [ 'left in the school year ',
+  #               ' left of school.',
+  #               'Until the last day of school.'
+  #             ] | random }}
+  #           {% elif states.sensor.school_end_days2go.state | int == 0 -%}
+  #             Tomorrow is the first day of summer. Are you ready? 
+  #           {%- endif %}
+  #             {{ [ 'Good night Skylar. ',
+  #               'Sleep well Skylar. ',
+  #               'Sweet dreams Skylar. '
+  #             ] | random }}
+  #     - service: scene.turn_on
+  #       target:
+  #         entity_id: scene.skylar_bedtime
+  #     - service: input_select.select_option
+  #       target:
+  #         entity_id: input_select.skylar_is_with
+  #       data:
+  #         option: Self
+  #     - delay:
+  #         seconds: 15
+  #     - service: script.bedtime_music
 
 #   meeting_time:
 #     sequence:
@@ -528,7 +942,7 @@ script:
 #         entity_id: switch.on_air
 #       - delay:
 #           seconds: 7
-#       - service: script.announcement
+#       - service: script.speech_engine
 #         data: 
 #           who: master_bedroom
 #           message: >
@@ -544,7 +958,7 @@ script:
 #         entity_id: switch.on_air
 #       - delay:
 #           seconds: 7
-#       - service: script.announcement
+#       - service: script.speech_engine
 #         data: 
 #           who: master_bedroom
 #           message: >
