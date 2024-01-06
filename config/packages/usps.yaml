@@ -137,9 +137,8 @@ automation:
       - condition: template
         value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
     action:
-      - service: script.announcement
+      - service: script.speech_engine
         data:
-          who: '{{ states(''sensor.room_audio'') }}'
           message: >-
             {%- if states.sensor.usps_mail.state | int == 1 -%} 
               {{ [ 
@@ -194,9 +193,8 @@ automation:
       - condition: template
         value_template: '{{ ((now().hour | int) > 7) and ((now().hour | int) < 16) }}'
     action:
-      - service: script.announcement
+      - service: script.speech_engine
         data_template:
-          who: '{{ states.sensor.room_audio.state }}'
           message: >
             {%- if states.sensor.usps_packages.state | int == 1 -%}
               USPS is delivering {{ states.sensor.usps_packages.state }} package today.
@@ -227,9 +225,8 @@ automation:
           who: "jeff"
           title: "Delivering Today"
           message: "{{ states('sensor.mail_deliveries_message')}}"
-      - service: script.announcement
+      - service: script.speech_engine
         data_template:
-          who: '{{ states(''sensor.room_audio'')}}'
           message: >-
             {%- if states.sensor.mail_usps_mail.state | int == 1 -%} 
               {{ [ 
@@ -273,8 +270,7 @@ automation:
           who: "jeff"
           title: "Package Delivered"
           message: "Fedex/UPS just made a delivery"
-      - service: script.announcment
+      - service: script.speech_engine
         data_template:
-          who: '{{ states.sensor.room_audio.state }}'
           message: >-
               A package was just left on the porch.
