@@ -287,6 +287,32 @@ automation:
           entity_id: switch.pottery_diffuser_light
         - service: timer.start
           entity_id: timer.disney_scents
+        # - if:
+        #   - condition: or
+        #     conditions:
+        #       - condition: state
+        #         entity_id: input_boolean.audible_notifications
+        #         state: 'on'
+        #       - condition: state
+        #         entity_id: switch.artemis
+        #         state: 'on'
+        #   then:
+        #   - service: switch.toggle
+        #     entity_id: 
+        #     - switch.artemis
+        # - if:
+        #   - condition: or
+        #     conditions:
+        #       - condition: state
+        #         entity_id: input_boolean.audible_notifications
+        #         state: 'on'
+        #       - condition: state
+        #         entity_id: switch.incense
+        #         state: 'on'
+        #   then:
+        #   - service: switch.toggle
+        #     entity_id: 
+        #     - switch.incense
       - conditions:
         - condition: trigger
           id: bedroom_smells_on
@@ -337,6 +363,9 @@ automation:
     - platform: time_pattern
       minutes: 50
       id: bedrooms
+    - platform: time_pattern
+      minutes: 10
+      id: studio
     - platform: event
       event_type: timer.finished
       event_data:
@@ -360,6 +389,18 @@ automation:
         sequence: 
         - service: input_boolean.turn_on
           entity_id: input_boolean.disney_bedrooms
+      - conditions:
+        - condition: trigger
+          id: studio
+        - condition: state
+          entity_id: binary_sensor.family_home
+          state: 'on'
+        - condition: state
+          entity_id: binary_sensor.studio_occupied
+          state: 'on'
+        sequence: 
+        - service: switch.turn_on
+          entity_id: switch.studio_airfreshener
       - conditions:
         - condition: trigger
           id: times_up
@@ -2672,7 +2713,100 @@ automation:
       entity_id: media_player.ha_blue
     - service: script.turn_off
       entity_id: script.local_audio
-      
+  
+  - id: 6bc52d2a-bf1c-4ed8-bc2f-826c4fdab593
+    alias: send_audio_event_mqtt
+    initial_state: true
+    mode: queued
+    trigger:
+    - platform: state
+      entity_id:
+        - input_boolean.happy_ever_after_show
+        - input_boolean.haunted_mansion
+        - input_boolean.boo_to_you_show
+        - input_boolean.holiday_wishes
+        - input_boolean.spaceship_earth_ride
+        - input_boolean.boo_to_you
+        - input_boolean.happy_ever_after
+        - input_boolean.mk_loop
+        - input_boolean.tiki_room_audio
+        - input_boolean.illuminations
+        - input_boolean.move_shake_dance
+        - input_boolean.welcome_show
+        - input_boolean.american_adventure
+        - input_boolean.disney_springs_xmas
+        - input_boolean.sleepy_hollow_audiobook
+        - input_boolean.this_is_halloween
+        - input_boolean.pandora_area_loop
+        - input_boolean.resort_room_audio
+        - input_boolean.wishes_audio
+        - input_boolean.mk_mainstreet_audio
+        - input_boolean.mk_fof_audio
+        - input_boolean.mk_trolly_audio
+        - input_boolean.mk_tomorrowland_loop
+        - input_boolean.mk_adventureland_loop
+        - input_boolean.mk_frontierland_loop
+        - input_boolean.mk_fantasyland_loop
+        - input_boolean.epcot_entrance_loop
+        - input_boolean.pixar_pier_loop
+        - input_boolean.disney_random_area_loop
+        - input_boolnea.disneyland_christmas_loop
+        - input_boolean.mainstreet_usa_christmas_loop
+        - input_boolean.disney_park_christmas_loop
+        - input_boolean.christmas_around_disneyland
+        - input_boolean.hauntedmansionloop
+        - input_boolean.aroundmk
+        - input_boolean.arounddisneyland
+        - input_boolean.aroundwdw
+        - input_boolean.toystoryland_loop
+        - input_boolean.worldshowcase_loop
+        - input_boolean.christmas_background
+        - input_boolean.be_our_guest
+        - input_boolean.polynesian
+        - input_boolean.tta
+        - input_boolean.tangled_loop
+        - input_boolean.epcot_gateway
+        - input_boolean.splash_mountain
+        - input_boolean.peter_pan_flight
+        - input_boolean.test_track_loop
+        - input_boolean.hogwartsexpress
+        - input_boolean.forbiddenjourney
+        - input_boolean.hogsmeadeloop
+        - input_boolean.underthesea
+        - input_boolean.sorinaroundtheworld
+        - input_boolean.journeyintoimagination
+        - input_boolean.frozeneverafter
+        - input_boolean.piratesqueue
+        - input_boolean.piratesride
+        - input_boolean.sorinqueue
+        - input_boolean.liingwiththeland
+        - input_boolean.tiki_statues
+        - input_boolean.hauntedmansionqueue
+        - input_boolean.hauntedmansionchristmas
+        - input_boolean.theseasnemo
+        - input_boolean.pirates_ride_dl
+        - input_boolean.piratestownsquare
+        - input_boolean.galaxyedge
+        - input_boolean.trollyparade
+        - input_boolean.junglecruise
+        - input_boolean.akloop1
+        - input_boolean.epcotfountains
+        - input_boolean.crystalpalace
+        - input_boolean.safariradio
+        - input_boolean.trainwdw
+        - input_boolean.disneyland_christmas_loop
+        - input_boolean.christmas_around_disneyland
+        - input_boolean.disney_park_christmas_loop
+        - input_boolean.christmas_background
+        - input_boolean.disney_springs_xmas
+        - input_boolean.audible_notifications
+        - input_boolean.guest_mode
+    action:
+    - service: script.audio_event_to_mqtt
+      data:
+        audio_entity: '{{ trigger.entity_id }}'
+        device_state: '{{ trigger.to_state.state }}'
+
 
 script:
   # kill_hurry_back:
@@ -2752,6 +2886,11 @@ script:
       entity_id: script.local_audio
     - service: homeassistant.turn_off 
       entity_id: group.disney_background
+    - service: script.turn_on
+      entity_id: script.audio_event_to_mqtt
+      data:
+        entity: 'kill_the_ride'
+        state: 'on'
 
   living_room_effects_on:
     sequence:
@@ -2885,6 +3024,15 @@ script:
       data_template:
         media: /media/disney/haunted_guest_welcome.mp3
         volume: .3
+
+  audio_event_to_mqtt:
+    sequence:
+    - service: mqtt.publish
+      data:
+        topic: 'house/audio/event'
+        payload: >
+          {"entity":"{{ audio_entity | string }}","state":"{{ device_state | string }}","timestamp":{{ as_timestamp(now()) }}}
+        retain: true
 
 # Random Disney Park Music
   disney_park_audio:
