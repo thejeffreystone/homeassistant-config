@@ -1383,7 +1383,8 @@ input_text:
 automation:
   ## Automation to trigger a UI notification when there is an active weather alert.
   ## fayette_alert_1 should always contain most recent alert.
-  - alias: Weather Alert UI Notification - 1
+  - id: 6b0faa42-ead2-4c49-b15b-a0935579f470
+    alias: Weather Alert UI Notification
     initial_state: true
     trigger:
       - platform: state
@@ -1450,7 +1451,8 @@ automation:
 
     ## Automation to dismiss UI notification if there are no active alerts for 30 minutes
     ## Disable or remove this automation if you don't want notifications to auto-dismiss
-  - alias: Weather Alert UI Notification Auto-dismiss - 1
+  - id: c0c8f47c-9764-49db-9ca4-42895966047e
+    alias: Weather Alert UI Notification Auto-dismiss - 1
     trigger:
       - platform: state
         entity_id: sensor.fayette_alerts_are_active
@@ -1553,24 +1555,24 @@ automation:
         - condition: trigger
           id: watch
         sequence:
-        - service: script.announcement
+        - service: script.speech_engine
           data_template:
-            who: "{{ states('sensor.room_audio') }}"
             message: >
-              I have a Weather Alert. {{ states('sensor.tornado_watch_details') }} 
+              {{ states('sensor.tornado_watch_details') }}
+            type: "weather-advisory" 
         - service: script.text_notify
           data_template:
             message: >
               {{ states('sensor.tornado_watch_details') }} 
-        - service: script.twitter_notify_image
-          data_template:
-            tweet: >-
-              {{ [ "Maison Des Lunes now under a tornado watch. {{ states('sensor.tornado_watch_details') }} #homeassistant #weather #fayettecounty #skywarn", 
-                "{{ states('sensor.tornado_watch_details') }} for Fayette County GA. #homeassistant #weather #fayettecounty #skywarn", 
-                "Maison Des Lunes monitors the NWS for severe weather using #homeAssistant. {{ states('sensor.tornado_watch_details') }} #homeassistant #weather #fayettecounty #skywarn" 
-                ] | random }}
-            image: >-
-              {{ [ "/config/www/tweet_images/tornado_watch.png"] | random }}
+        # - service: script.twitter_notify_image
+        #   data_template:
+        #     tweet: >-
+        #       {{ [ "Maison Des Lunes now under a tornado watch. {{ states('sensor.tornado_watch_details') }} #homeassistant #weather #fayettecounty #skywarn", 
+        #         "{{ states('sensor.tornado_watch_details') }} for Fayette County GA. #homeassistant #weather #fayettecounty #skywarn", 
+        #         "Maison Des Lunes monitors the NWS for severe weather using #homeAssistant. {{ states('sensor.tornado_watch_details') }} #homeassistant #weather #fayettecounty #skywarn" 
+        #         ] | random }}
+        #     image: >-
+        #       {{ [ "/config/www/tweet_images/tornado_watch.png"] | random }}
       - conditions:
         - condition: trigger
           id: cancel
@@ -1603,20 +1605,20 @@ automation:
           data_template:
             message: >
               {{ states('sensor.tstorm_watch_details') }}
-        - service: script.announcement
+        - service: script.speech_engine
           data_template:
-            who: "{{ states('sensor.room_audio') }}"
             message: >
-              I have a Weather Alert. {{ states('sensor.tstorm_watch_details') }} 
-        - service: script.twitter_notify_image
-          data_template:
-            tweet: >-
-              {{ [ "Maison Des Lunes now under a {{ states('sensor.tstorm_watch_details') }} #homeassistant #weather #fayettecounty #skywarn", 
-                "{{ states('sensor.tstorm_watch_details') }} for Fayette County GA. #homeassistant #weather #fayettecounty #skywarn", 
-                "Maison Des Lunes monitors the NWS for severe weather using #homeAssistant. {{ states('sensor.tstorm_watch_details') }} #homeassistant #weather #fayettecounty #skywarn" 
-              ] | random }}
-            image: >-
-              {{ [ "/config/www/tweet_images/skywarn.png"] | random }}
+              {{ states('sensor.tstorm_watch_details') }}
+            type: "weather-advisory"
+        # - service: script.twitter_notify_image
+        #   data_template:
+        #     tweet: >-
+        #       {{ [ "Maison Des Lunes now under a {{ states('sensor.tstorm_watch_details') }} #homeassistant #weather #fayettecounty #skywarn", 
+        #         "{{ states('sensor.tstorm_watch_details') }} for Fayette County GA. #homeassistant #weather #fayettecounty #skywarn", 
+        #         "Maison Des Lunes monitors the NWS for severe weather using #homeAssistant. {{ states('sensor.tstorm_watch_details') }} #homeassistant #weather #fayettecounty #skywarn" 
+        #       ] | random }}
+        #     image: >-
+        #       {{ [ "/config/www/tweet_images/skywarn.png"] | random }}
       - conditions:
         - condition: trigger
           id: cancel
@@ -1628,7 +1630,8 @@ automation:
       
   
   # Announce Severe Weather
-  - alias: NWS Announce Weather Alert
+  - id: 7e7ddd31-66f3-47cf-9d2e-01f0a74be0ec
+    alias: NWS Announce Weather Alert
     trigger:
       - platform: numeric_state
         entity_id: sensor.fayette_active_alerts
@@ -1648,33 +1651,34 @@ automation:
         data_template:
           message: >
             {{ states('sensor.tstorm_warning_details') }}
-      - service: script.announcement
-        data_template:
-          who: "{{ states('sensor.room_audio') }}"
-          message: >
-            I have a weather Alert. {{ states('sensor.tstorm_warning_details') }}
-      - service: script.twitter_notify_image
-        data_template:
-          tweet: >
-            {{ [ "Maison Des Lunes is battening down the hatches. Servere Weather is imminent. #homeassistant #weather ", 
-            "The weather outside is getting intense, so I just made a weather announcement. #homeassistant #weather ", 
-            "Maison Des Lunes monitors the NWS for severe weather using #homeAssistant. {{ states('sensor.tstorm_warning_details') }} #homeassistant #weather " 
-            ] | random }}
-          image: >-
-            {{ [ "/config/www/tweet_images/lightning.jpg",
-                 "/config/www/tweet_images/lightning-bolt.jpg"] | random }}
-      - delay: '00:00:30'
       - service: script.speech_engine
         data_template:
-          who: main
           message: >
-           Severe Weather is emminent. Batten down the hatches.
+            {{ states('sensor.tstorm_warning_details') }}
+          type: "weather-alert" 
+      # - service: script.twitter_notify_image
+      #   data_template:
+      #     tweet: >
+      #       {{ [ "Maison Des Lunes is battening down the hatches. Servere Weather is imminent. #homeassistant #weather ", 
+      #       "The weather outside is getting intense, so I just made a weather announcement. #homeassistant #weather ", 
+      #       "Maison Des Lunes monitors the NWS for severe weather using #homeAssistant. {{ states('sensor.tstorm_warning_details') }} #homeassistant #weather " 
+      #       ] | random }}
+      #     image: >-
+      #       {{ [ "/config/www/tweet_images/lightning.jpg",
+      #            "/config/www/tweet_images/lightning-bolt.jpg"] | random }}
+      # - delay: '00:00:30'
+      # - service: script.speech_engine
+      #   data_template:
+      #     who: main
+      #     message: >
+      #      Severe Weather is emminent. Batten down the hatches.
       - service: input_text.set_value
         data_template:
           entity_id: input_text.fayette_triggered_audible_alert_ids
           value: "{{ state_attr('sensor.fayette_alert_1', 'alert_id') }} {{ state_attr('sensor.fayette_alert_2', 'alert_id') }} {{ state_attr('sensor.fayette_alert_3', 'alert_id') }} {{ state_attr('sensor.fayette_alert_4', 'alert_id') }} {{ state_attr('sensor.fayette_alert_5', 'alert_id') }}"
 
-  - alias: NWS Announce Weather Alert for Tornado
+  - id: 15c80166-d428-40e2-8e7c-5fc3d9f4c24d
+    alias: NWS Announce Weather Alert for Tornado
     trigger:
       - platform: numeric_state
         entity_id: sensor.fayette_active_alerts
@@ -1703,12 +1707,12 @@ automation:
           title: "Tornado Warning - TAKE COVER!"
           message: >
             {{ states('sensor.tornado_warning_details') }}
-      - service: script.announcement
+      - service: script.speech_engine
         data:
           who: skylar_bedroom
           message: A Tornado Warning has been issued for our area. Head to the closet. 
       - delay: 00:00:10
-      - service: script.announcement
+      - service: script.speech_engine
         data:
           who: master_bedroom
           message: A Tornado Warning has been issued for our area. Head to the closet. 
@@ -1857,58 +1861,58 @@ script:
       - condition: state
         entity_id: binary_sensor.day
         state: 'on'
-      - if:
-        - condition: state
-          entity_id: input_boolean.lightning_tweet
-          state: 'off'
-        then: 
-          - service: script.twitter_notify_image
-            data_template:
-              tweet: '{{ [ "Did you see that flash? I did. Letting everyone know there is lightning nearby.", 
-              "When Lightning is near I notify the residents of Maison Des Lunes to keep them safe.", 
-              "If the residents of Maison Des Lunes didnt hear the thunder I just gave them a heads up.",
-              "Everyone inside! If you are near Maison Des Lunes that is. Lightning is near." ] | random }}'
-              image: >-
-                {{ [ "/config/www/tweet_images/lightning.jpg",
-                    "/config/www/tweet_images/lightning-bolt.jpg"] | random }}
-          - service: input_boolean.turn_on
-            entity_id: input_boolean.lightning_tweet
-      - service: script.announcement
+      # - if:
+      #   - condition: state
+      #     entity_id: input_boolean.lightning_tweet
+      #     state: 'off'
+      #   then: 
+      #     - service: script.twitter_notify_image
+      #       data_template:
+      #         tweet: '{{ [ "Did you see that flash? I did. Letting everyone know there is lightning nearby.", 
+      #         "When Lightning is near I notify the residents of Maison Des Lunes to keep them safe.", 
+      #         "If the residents of Maison Des Lunes didnt hear the thunder I just gave them a heads up.",
+      #         "Everyone inside! If you are near Maison Des Lunes that is. Lightning is near." ] | random }}'
+      #         image: >-
+      #           {{ [ "/config/www/tweet_images/lightning.jpg",
+      #               "/config/www/tweet_images/lightning-bolt.jpg"] | random }}
+      #     - service: input_boolean.turn_on
+      #       entity_id: input_boolean.lightning_tweet
+      - service: script.speech_engine
         data_template:
-          who: '{{ states.sensor.room_audio.state }}'
           message: >-
               {{ [
-                  'I have detected lightning withing 20 miles of Maison Des Lunes.',
-                  'Did you see that flash? I did. Lightning is near.',
-                  'If you didnt hear the thunder you will soon. '
-                ]|random }}
-              If anyone is outside they should head inside. 
+                  'I have detected lightning within 20 miles of the house.',
+                  'My sensors are picking up lightning.',
+                  'Lightning may be approaching based on my sensors. '
+                ]|random }} 
               {% if is_state('binary_sensor.garage_door', 'on') %} 
-                {{ [ 'The garage door needs to be closed. ',
-                  'Can someone close the garage?. ',
-                  'If you do not want the contents of the garage to get wet, you might want to close it.'
+                {{ [ 'The garage door is open. ',
+                  'The garage is currently open.',
+                  'May I suggest closing the garage. Just in case.'
                 ] | random }}
               {% endif %}
+          type: "weather-advisory"
+      
   
   lightning_clear_audible:
     sequence: 
       - condition: state
         entity_id:  binary_sensor.day
         state: 'on'
-      - service: script.announcement
+      - service: script.speech_engine
         data_template:
-          who: '{{ states.sensor.room_audio.state }}'
           message: >-
               {{ [
                 'Lightning threat appears to be over.',
                 'No more lightning appears to be occuring.',
                 'Lightning is gone.'
                 ]|random }}
-              It is safe to resume normal activities. 
+              It is safe to resume normal activities.
+          type: "weather-cleared" 
 
   ## Script creates UI notification and is called via automation defined above
   fayette_popup_on_wx_alert:
-    alias: Weather Alert Pop Up - 1
+    alias: Weather Alert Pop up
     sequence:
         ## Dismiss any current alert so the UI isn't filled 
         ## up with these if there are more then one.
