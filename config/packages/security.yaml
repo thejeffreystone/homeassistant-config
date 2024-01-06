@@ -60,7 +60,6 @@ automation:
                   message: "Unable to lock down Maison Des Lunes due to issue"
               - service: script.speech_engine
                 data_template:
-                  who: "{{ states.sensor.room_audio.state }}"
                   message: >
                     {{ [
                     "I was unable to activate sentry mode due to an open door.",
@@ -71,7 +70,6 @@ automation:
         default:
           - service: script.speech_engine
             data_template:
-              who: "{{ states.sensor.room_audio.state }}"
               message: >
                 {{ [
                 "Sentry Mode has been activated.",
@@ -122,7 +120,6 @@ automation:
             sequence:
               - service: script.speech_engine
                 data_template:
-                  who: "{{ states.sensor.room_audio.state }}"
                   message: >
                     {{ [
                     "Sentry Mode has been deactivated.",
@@ -140,7 +137,10 @@ automation:
                   entity_id: alarm_control_panel.aarlo_mdl_base_station
                   mode: "Disarmed"
               - service: input_boolean.turn_off
-                entity_id: input_boolean.security_alarm
+                entity_id: 
+                - input_boolean.security_alarm
+                - input_boolean.security_issue
+              - service: script.set_skylar_mode
         default:
           - service: input_boolean.turn_off
             entity_id: input_boolean.sentry_mode
@@ -673,9 +673,8 @@ script:
               entity_id: input_boolean.barn_door_protocol
               state: 'on'
             then:
-            - service: script.announcement
+            - service: script.speech_engine
               data_template:
-                who: "{{ states('sensor.room_audio.') }}"
                 message: "Barn door protocol has been activated."
 
   # Called via secret Alexa routine...adds a little interaction
@@ -701,9 +700,8 @@ script:
               entity_id: input_boolean.barn_door_protocol
               state: 'off'
             then:
-            - service: script.announcement
+            - service: script.speech_engine
               data_template:
-                who: "{{ states('sensor.room_audio.') }}"
                 message: "Barn door protocol has been deactivated."
 
   were_home:
@@ -724,12 +722,10 @@ script:
             sequence:
               - service: script.speech_engine
                 data_template:
-                  who: "{{ states.sensor.room_audio.state }}"
                   message: !include ../templates/speech/already_done.yaml
         default:
           - service: script.speech_engine
             data_template:
-              who: "{{ states.sensor.room_audio.state }}"
               message: !include ../templates/speech/interjections.yaml
           - delay:
               seconds: 2
