@@ -1,4 +1,3 @@
-
 activate_work_time:
   alias: Activate Work time
   sequence:
@@ -70,4 +69,12 @@ haunted_clock:
     data: {}
     target:
       entity_id: switch.haunted_clock
+  mode: single
+skeleton_seesaw:
+  alias: skeleton_seesaw
+  sequence:
+  - service: switch.toggle
+    data: {}
+    target:
+      entity_id: switch.skeletons
   mode: single
