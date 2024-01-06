@@ -479,12 +479,12 @@ template:
               ] | random }}
             {% endif %}
           {% else %}
-            and {{ states.weather.home.state }}
+            and {{ states('weather.maison_des_lunes') }}.
           {% endif %}
           {%- if is_state('binary_sensor.night','off')%}
             {{ [ 
-              'Later Today ',
-              'For the rest of the day'
+              'Later Today, ',
+              'For the rest of the day,'
               ] | random }}
             expect a high of {{ state_attr('sensor.current_forecast','high_temp') }}
             {%- if states('sensor.current_forecast') == 'sunny' and is_state('binary_sensor.night','off')%}
@@ -579,14 +579,14 @@ template:
             {% endif -%}
 
             {{ [
-                'Later tonight expect a low of ', 
-                'Overnight expect a low of '
+                ' Later tonight, expect a low of ', 
+                ' Overnight, expect a low of '
                 ] | random }}
             {{ state_attr('sensor.current_forecast','overnight_low') }} degrees. 
         {%- else -%}
           {{ [
-                'Tonight expect a low of ', 
-                'Overnight expect a low of '
+                ' Tonight, expect a low of ', 
+                ' Overnight, expect a low of '
                 ] | random }}
             {{ state_attr('sensor.current_forecast','overnight_low') }} degrees.
         {% endif %} 
@@ -623,18 +623,18 @@ template:
             {% else %}  
               {% set temp = states('sensor.acurite_5n1_865_f')|round %}
             {% endif %}
-            {%- if states('sensor.todays_high_temp')|int > 63 %}
-              {%- if states('sensor.todays_high_temp')|int < 80 %}
+            {%- if temp|int > 63 %}
+              {%- if temp|int < 80 %}
                 Nice
-              {% elif states('sensor.todays_high_temp')|int > 95 %}
+              {% elif temp|int > 95 %}
                 Hot
               {% else %}
                 Toasty
               {%- endif %}
-            {% elif states('sensor.todays_high_temp')|int < 64 %}
-              {%- if states('sensor.todays_high_temp')|int < 32 %}
+            {% elif temp|int < 64 %}
+              {%- if temp|int < 35 %}
                 Freezing
-              {% elif states('sensor.todays_high_temp')|int > 50 %}
+              {% elif temp|int > 50 %}
                 Chilly
               {% else %}
                 Cold
@@ -668,10 +668,10 @@ template:
               'Which means it is ',
               'That is going to be '
             ] | random }} 
-            {{ [ 'a bit warm, ',
-              ' rather warm outside, ',
-              ' almost too hot outside, ',
-              ' a little warm, ',
+            {{ [ 'a bit warm. ',
+              ' rather warm outside. ',
+              ' almost too hot outside. ',
+              ' a little warm. ',
             ] | random }} 
             so I suggest wearing shorts. 
           {% elif is_state('sensor.clothing_forecast', 'Hot') %}
@@ -679,12 +679,12 @@ template:
               'Which means it is ',
               'That is going to be '
             ] | random }} 
-            {{ [ 'hot,',
-              'hotter than the sun, ',
-              'hotter than hot. but in a lot of bad ways, ',
-              'hotter than the sun outside, ',
-              'super hot, ',
-              'hotter than the inside of a volcano, '
+            {{ [ 'hot.',
+              'hotter than the sun. ',
+              'hotter than hot. but in a lot of bad ways. ',
+              'hotter than the sun outside. ',
+              'super hot. ',
+              'hotter than the inside of a volcano. '
             ] | random }} 
             so I suggest wearing shorts.
           {% else %}
@@ -695,7 +695,7 @@ template:
               {{ states.sensor.clothing_forecast.state }} today so I suggest wearing shorts.
           {% endif %} 
         {% else %}
-          Based on the current temperature, 
+          Based on the current temperature. 
           {% if is_state('sensor.clothing_forecast', 'Freezing') %}
             It is freezing. so I suggest wearing long pants and a heavy coat if you are going out.
           {% elif is_state('sensor.clothing_forecast','Cold') %}
@@ -713,9 +713,9 @@ template:
             So I suggest wearing shorts.
           {% elif is_state('sensor.clothing_forecast', 'Toasty') %}
             It is 
-            {{ [ 'bit warm ',
-              ' rather warm outside ',
-              ' almost too hot outside ',
+            {{ [ 'a bit warm ',
+              ' rather warm ',
+              ' almost too hot ',
               ' a little warm ',
             ] | random }} 
             outside. So I suggest wearing shorts. 
@@ -730,23 +730,22 @@ template:
             ] | random }} 
             outside. So I suggest wearing shorts.
           {% else %}
-            It is {{ states.sensor.clothing_forecast.state }} right now so I suggest wearing shorts.
+            It is {{ states.sensor.clothing_forecast.state }} right now. so I suggest wearing shorts.
           {% endif %} 
         {% endif %}
-        Oh, and right now it is {{ states('weather.maison_des_lunes') }}
     - name: nws_current_visibility
       state: "{{ ((state_attr('weather.maison_des_lunes','visibility') | int) * 0.621371) | round }}"
 
     - name: sun_status
       state: >-
         {%- if is_state('sun.sun', 'below_horizon') -%}
-          You have 
+          You have  
           {%- set seconds = as_timestamp(states.sun.sun.attributes.next_rising)-now().timestamp() -%}
           {% set hours = seconds / 60 -%}
           {%- if seconds / ( 60 * 60 ) > 1 -%}
-            {{ (seconds //  ( 60 * 60 )) | int }} hours
+            {{""}} {{ (seconds //  ( 60 * 60 )) | int }} hours
           {%- else -%}
-            {{""}}{{ (seconds // 60) | int }} minutes
+            {{""}} {{ (seconds // 60) | int }} minutes
           {%- endif -%}
           {{ [
             ' until the sun rises.',
@@ -760,7 +759,7 @@ template:
           {%- if seconds / ( 60 * 60 ) > 1 -%}
             {{""}} {{ (seconds //  ( 60 * 60 )) | int }} hours
           {%- else -%}
-            {{ (seconds // 60) | int }} minutes
+            {{""}} {{ (seconds // 60) | int }} minutes
           {%- endif -%}
           {{ [
             ' until the sun sets for the day.',
@@ -851,6 +850,7 @@ sensor:
       - nearest_storm_distance
       - precip_intensity
       - wind_speed
+      - temperature
   - platform: statistics
     name: Inside Humidity Stats
     entity_id: sensor.current_inside_humidity
@@ -880,7 +880,7 @@ sensor:
       hours: 24
   - platform: statistics
     name: "Avg Wind Speed"
-    entity_id: sensor.adj_wind_speed_clean
+    entity_id: sensor.ws_wind_speed
     state_characteristic: mean
     max_age:
       minutes: 10
@@ -934,7 +934,7 @@ sensor:
     max_age:
       days: 7
     precision: 1
- 
+  
 
 
   # - platform: template
@@ -1872,14 +1872,14 @@ automation:
                 title: "New ATH High Temp"
                 message: "Just recorded a new ALL TIME HIGH TEMP: {{ states('sensor.daily_max_temp') }} degrees."
             - delay: "00:00:30"
-            - service: script.twitter_notify
-              data_template:
-                message: >
-                        {{ [
-                          "We have recorded a new all time high temp at Maison Des Lunes: {{ states('sensor.ath_max_temp') }} degrees ",
-                          "We have a new all time high temp at Maison Des Lunes: {{ states('sensor.ath_max_temp') }} degrees ",
-                          "A Maison Des Lunes record has been broken. The All Time High Temp is now {{ states('sensor.ath_max_temp') }} degrees "
-                          ] | random -}}
+            # - service: script.twitter_notify
+            #   data_template:
+            #     message: >
+            #             {{ [
+            #               "We have recorded a new all time high temp at Maison Des Lunes: {{ states('sensor.ath_max_temp') }} degrees ",
+            #               "We have a new all time high temp at Maison Des Lunes: {{ states('sensor.ath_max_temp') }} degrees ",
+            #               "A Maison Des Lunes record has been broken. The All Time High Temp is now {{ states('sensor.ath_max_temp') }} degrees "
+            #               ] | random -}}
           # - if:
           #   - condition: template
           #     value_template: "{{ (states('sensor.daily_max_temp') | float) > (states('sensor.monthly_max_temp') | float) }}"
@@ -1913,14 +1913,14 @@ automation:
                 title: "New ATH Low Temp"
                 message: "Just recorded a new ALL TIME LOW TEMP: {{ states('sensor.daily_low_temp') }} degrees."
             - delay: "00:00:30"
-            - service: script.twitter_notify
-              data_template:
-                message: >
-                        {{ [
-                          "We have recorded a new all time low temp at Maison Des Lunes: {{ states('sensor.ath_low_temp') }} degrees",
-                          "We have a new all time low temp at Maison Des Lunes: {{ states('sensor.ath_low_temp') }} degrees",
-                          "A Maison Des Lunes record has been broken. The All Time low Temp is now {{ states('sensor.ath_low_temp') }} degrees"
-                          ] | random -}}
+            # - service: script.twitter_notify
+            #   data_template:
+            #     message: >
+            #             {{ [
+            #               "We have recorded a new all time low temp at Maison Des Lunes: {{ states('sensor.ath_low_temp') }} degrees",
+            #               "We have a new all time low temp at Maison Des Lunes: {{ states('sensor.ath_low_temp') }} degrees",
+            #               "A Maison Des Lunes record has been broken. The All Time low Temp is now {{ states('sensor.ath_low_temp') }} degrees"
+            #               ] | random -}}
           - if:
             - condition: template
               value_template: "{{ (states('sensor.daily_rainfall_ut') | float) > (states('sensor.ath_daily_rain') | float) }}"
