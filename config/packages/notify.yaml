@@ -14,20 +14,20 @@ notify:
   - name: all_ios
     platform: group
     services:
-      - service: mobile_app_jeffrey_ha_app
+      - service: mobile_app_jeffreys_iphone_11
       - service: mobile_app_jeffreys_ipad
       - service: mobile_app_iphone
       - service: mobile_app_skylars_ipad
   - name: parents_ios
     platform: group
     services:
-      - service: mobile_app_jeffrey_ha_app
+      - service: mobile_app_jeffreys_iphone_11
       - service: mobile_app_jeffreys_ipad
       - service: mobile_app_iphone
   - name: jeff_ios
     platform: group
     services:
-      - service: mobile_app_jeffrey_ha_app
+      - service: mobile_app_jeffreys_iphone_11
       - service: mobile_app_jeffreys_ipad
   - name: kat_ios
     platform: group
@@ -94,6 +94,22 @@ script:
             {{ message }}
 
   text_notify:
+    fields:
+      who:
+        selector:
+          text:
+        name: who
+        required: true
+      title:
+        selector:
+          text:
+        name: title
+        required: false
+      message:
+        selector:
+          text:
+        name: message
+        required: true
     sequence:
       - condition: state
         entity_id: input_boolean.text_notifications
@@ -148,6 +164,7 @@ script:
           data:
             title: '{{ title }}'
             message: '{{ message }}'
+     
 
   text_alert:
     sequence:
