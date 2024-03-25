@@ -1,0 +1,211 @@
+###############################################################################
+#   @author         :   Jeffrey Stone
+#   @date           :   07/31/2023
+#   @package        :   Utilities
+#   @description    :   Just some Useful Helper Scripts for Home Assistant
+###############################################################################
+
+
+automation:
+  - id: startup_tasks
+    alias: startip_tasks
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '00:00:01'
+    - platform: homeassistant
+      event: start
+    action:
+    - delay: '00:02:00'
+    - service: python_script.special_events
+      data:
+        name: Skylar
+        type: birthday
+        date: !secret skylar_bday
+    - service: python_script.special_events
+      data:
+        name: Jeff
+        type: birthday
+        date: !secret jeff_bday
+    - service: python_script.special_events
+      data:
+        name: Kat
+        type: birthday
+        date: !secret kat_bday
+    - service: python_script.special_events
+      data:
+        name: Our wedding
+        type: anniversary
+        date: !secret wed_anniversary
+    - service: python_script.special_events
+      data:
+        name: Maison Des Lunes
+        type: established
+        date: !secret maisondelune_est
+    - service: python_script.special_events
+      data:
+        name: Texas
+        type: trip
+        date: !secret texas_trip
+    - service: python_script.special_events
+      data:
+        name: Disney
+        type: vacation
+        date: !secret cruise_date
+    - service: script.update_critical_battery_group
+    - delay: '00:01:00'
+    - service: script.update_occupancy_groups
+
+
+script:
+  update_critical_battery_group:
+    sequence:
+      # Reset group 
+      - service: group.set
+        data:
+          object_id: "critical_batteries"
+          entities: []
+      # Add Battery in the Critical Battery Group
+      - service: group.set
+        data:
+          object_id: "critical_batteries"
+          add_entities: >-
+            {{ states.sensor | 
+              selectattr('entity_id', 'in', area_entities('Critical Batteries')) |
+              map(attribute='entity_id') | list  | join(',') }} 
+             
+  cleanup_text:
+    sequence:
+    - variables:
+        cleaned: >
+          {%- macro getReport() -%}
+              {{ message }}
+          {%- endmacro -%} {%- macro cleanup(data) -%}
+            {%- for item in data.split("\n")  if item | trim != "" -%}
+              {{ item | trim }} {% endfor -%}
+          {%- endmacro -%} {%- macro mother_of_all_macros() -%}
+            {{ getReport() }}
+          {%- endmacro -%} 
+          {"text":"{{- cleanup(mother_of_all_macros()) | string -}}"}
+    - stop: "ok, Im done."
+      response_variable: "cleaned"
+
+  get_room_services:
+    sequence:
+    - variables:
+        room_priority: >
+          {% if room is defined %}
+            {% if room in ['jeff','kat','skylar']%}
+              {{ states('sensor.'~room~'_room') }}
+            {% else %}
+              {{ room }}          
+            {% endif %}
+          {% else %}
+            NA         
+          {% endif %}
+        room_services: >-
+          {% set jarvis_speaker = states.media_player | 
+              selectattr('entity_id', 'in', area_entities(room_priority)) |
+              rejectattr('attributes.last_called', 'undefined') |
+              map(attribute='entity_id') |
+            list | first %}
+
+          {% set audio_speaker = states.media_player | 
+              selectattr('entity_id', 'in', area_entities(room_priority)) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(speaker)') | 
+              map(attribute='entity_id') |
+            list | first %}
+
+          {% set tts = 'amp' %}
+          {"area":"{{room}}","jarvis_speaker":"{{jarvis_speaker}}","jarvis_tts":"{{tts}}","audio_speaker":"{{audio_speaker}}"}
+    - stop: "ok, Im done."
+      response_variable: "room_services"          
+
+  get_room_audio:
+    sequence:
+    - service: script.get_room_presence
+      response_variable: "presence"
+    - variables:
+        type: >
+          {% if type == 'alert' %}
+            alert
+          {% elif room in ['jeff','kat','skylar'] or type in ['priority','briefing'] %}
+            priority
+          {% else %}
+            normal
+          {% endif %}
+        room_priority: >
+          {% if room is defined %}
+            {% if room in ['jeff','kat','skylar']%}
+              {{ states('sensor.'~room~'_room') }}
+            {% else %}
+              {{ room }}          
+            {% endif %}
+          {% else %}
+            NA         
+          {% endif %}
+        rooms: >
+          {{ presence.occupied_rooms |
+            replace('master_bedroom','Master Bedroom') |
+            replace('living_room','Living Room') |
+            replace('pot_studio','Pottery Studio') |
+            replace('skylars_bedroom','Skylars Bedroom') |
+            replace('kitchen','Living Room')  }}
+        room_services: >
+          {% if type == 'alert'%}
+            {% set jarvis_speaker = states.media_player | 
+              rejectattr('attributes.last_called', 'undefined') |
+              rejectattr('entity_id', 'search', '(skyman|this_device|everywhere)') |
+              map(attribute='entity_id') |
+              list | join(',') %}
+            {% set audio_speaker = 'none' %}
+            {% set tts = 'amp' %}
+            {% set room = 'all' %}
+          {% elif type in ['priority','briefing'] %} 
+            {% set room = room_priority |
+            replace('master_bedroom','Master Bedroom') |
+            replace('living_room','Living Room') |
+            replace('pot_studio','Pottery Studio') |
+            replace('skylars_bedroom','Skylars Bedroom') |
+            replace('kitchen','Living Room') %}
+
+            {% set jarvis_speaker = states.media_player | 
+                rejectattr('attributes.last_called', 'undefined') |
+                selectattr('entity_id', 'in', area_entities(room)) |
+                map(attribute='entity_id') |
+              list | first %}
+
+            {% set audio_speaker = states.media_player | 
+                rejectattr('attributes.device_class', 'undefined') |
+                selectattr('attributes.device_class', 'search', '(speaker)') | 
+                selectattr('entity_id', 'in', area_entities(room)) |
+                map(attribute='entity_id') |
+              list | first %}
+            
+            {% set tts = 'amp' %}
+          {% elif type in ['normal','weather-alert','weather-advisory'] %}
+            {% set ns = namespace(area_speakers = []) %}
+            {% for room in rooms %}
+              {% set ns.area_speakers = ns.area_speakers + states.media_player | 
+              rejectattr('attributes.last_called', 'undefined') |
+              selectattr('entity_id', 'in', area_entities(room))|
+              map(attribute='entity_id') | list %}
+            {% endfor %} 
+            {% set jarvis_speaker = ns.area_speakers | join(',') %}
+            {% set room = rooms | join(',') %}
+            {% set audio_speaker = '' %}
+            {% set tts = 'amp' %}
+          {% else %} 
+            {% set room = 'none' %}
+            {% set jarvis_speaker = 'none' %}
+            {% set audio_speaker = 'none' %}
+            {% set tts = 'none' %}
+          {% endif %}
+          {"area":"{{room}}",
+          "jarvis_speaker":"{{jarvis_speaker}}",
+          "jarvis_tts":"{{tts}}",
+          "audio_speaker":"{{audio_speaker}}",
+          "type":"{{type}}"}
+    - stop: "ok, Im done."
+      response_variable: "room_services"
