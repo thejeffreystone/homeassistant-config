@@ -13,24 +13,24 @@
 # Testing internet speedtest  
 # speedtestdotnet:
 
-gdacs:
-  categories:
-    - Earthquake
-    - Tropical Cyclone
-  radius: 500
-  latitude: !secret MY_LATITUDE
-  longitude: !secret MY_LONGITUDE
+# gdacs:
+#   categories:
+#     - Earthquake
+#     - Tropical Cyclone
+#   radius: 500
+#   latitude: !secret MY_LATITUDE
+#   longitude: !secret MY_LONGITUDE
 
-# TPLink / KASA - Hardcoding the IP Address
-tplink:
-  discovery: false
-  switch:
-    - host: 192.168.7.105
-    - host: 192.168.7.107
-    - host: 192.168.7.116
-    - host: 192.168.7.120
-    - host: 192.168.7.136
-    - host: 192.168.7.137
+# TPLink / KASA - Hardcoding the IP Address - REMOVED in 2023.7
+# tplink:
+#   discovery: false
+#   switch:
+#     - host: 192.168.7.105
+#     - host: 192.168.7.107
+#     - host: 192.168.7.116
+#     - host: 192.168.7.120
+#     - host: 192.168.7.136
+#     - host: 192.168.7.137
 
 # WZYE Devices - Using the HACS integration
 # wyzeapi:
@@ -47,4 +47,5 @@ ifttt:
 #   token: !secret snapshot_token
 #   number_of_snapshots_to_keep: 3
 
-
+binary_sensor:
+  - platform: flic
