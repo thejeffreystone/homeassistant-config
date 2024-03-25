@@ -1,0 +1,165 @@
+template:
+
+  - trigger:
+      - platform: time_pattern
+        # This will update every second
+        seconds: "/1"
+    sensor:
+      - name: "chartsdata1micro"
+        state: |
+                 { }
+        attributes:
+            ids: |
+                {% set data = namespace(result={}) %}
+                
+                {% set ids = states.sensor.sensorids.attributes.ids %}
+                
+                {% for id in ids %}
+                  {% set entities = ["number.roomsense_microthreshold0_" ~ id, "number.roomsense_microthreshold1_" ~ id, "number.roomsense_microthreshold2_" ~ id,"number.roomsense_microthreshold3_" ~ id,"number.roomsense_microthreshold4_" ~ id,"number.roomsense_microthreshold4_" ~ id,"number.roomsense_microthreshold5_" ~ id,"number.roomsense_microthreshold6_" ~ id,"number.roomsense_microthreshold7_" ~ id,"number.roomsense_microthreshold8_" ~ id] %}
+                  {% set temp = namespace(result=[]) %}
+                  {% set temp2 = namespace(result=[]) %}
+                  {% for entity in entities %}
+                    {% set temp.result = temp.result + [states(entity) | float(default=0) ] %}
+                  {% endfor %}
+                  {% set key =""~id %}
+                  {% set tuple_list = data.result.items() | list + [(key, temp.result)] %}
+                  {% set data.result = dict(tuple_list) %}
+                {% endfor %}
+                
+                {{ data.result }}
+            
+      - name: "chartsdata1macro"
+        state: |
+                 { }
+        attributes:
+            ids: |
+                {% set data = namespace(result={}) %}
+                
+                {% set ids = states.sensor.sensorids.attributes.ids %}
+                
+                {% for id in ids %}
+                  {% set entities = ["number.roomsense_macrothreshold0_" ~ id, "number.roomsense_macrothreshold1_" ~ id, "number.roomsense_macrothreshold2_" ~ id,"number.roomsense_macrothreshold3_" ~ id,"number.roomsense_macrothreshold4_" ~ id,"number.roomsense_macrothreshold4_" ~ id,"number.roomsense_macrothreshold5_" ~ id,"number.roomsense_macrothreshold6_" ~ id,"number.roomsense_macrothreshold7_" ~ id,"number.roomsense_macrothreshold8_" ~ id] %}
+                  {% set temp = namespace(result=[]) %}
+                  {% set temp2 = namespace(result=[]) %}
+                  {% for entity in entities %}
+                    {% set temp.result = temp.result + [states(entity) | float(default=0)] %}
+                  {% endfor %}
+                  {% set key =""~id %}
+                  {% set tuple_list = data.result.items() | list + [(key, temp.result)] %}
+                  {% set data.result = dict(tuple_list) %}
+                {% endfor %}
+                
+                {{ data.result }}
+                
+  - sensor:
+      - name: "sensorids"
+        state: |
+                 { }
+        attributes:
+            ids: |
+                {% set data = namespace(ids=[]) %}
+                {% for state in states.binary_sensor %}
+                {% set finder="binary_sensor\.roomsense_pir_+" %}
+                {% set replace="" %}
+                  {%- if state.entity_id | string is match(finder, ignorecase=False) %}
+                   {% set name = state.entity_id|string|regex_replace(finder, replace='', ignorecase=False) %}
+                    {% if name not in data.ids %}
+                      {% set data.ids = data.ids + [name] %}
+                    {% endif %}
+                  {%- endif %}
+                {% endfor %}
+                {{data.ids}}
+      - name: "chartsdata2micro"
+        state: |
+                 { }
+        attributes:
+            ids: |
+                {% set data = namespace(result={}) %}
+                
+                {% set ids = states.sensor.sensorids.attributes.ids %}
+                
+                {% for id in ids %}
+                  {% set entities = ["sensor.roomsense_microbin0_" ~ id, "sensor.roomsense_microbin1_" ~ id, "sensor.roomsense_microbin2_" ~ id,"sensor.roomsense_microbin3_" ~ id,"sensor.roomsense_microbin4_" ~ id,"sensor.roomsense_microbin4_" ~ id,"sensor.roomsense_microbin5_" ~ id,"sensor.roomsense_microbin6_" ~ id,"sensor.roomsense_microbin7_" ~ id,"sensor.roomsense_microbin8_" ~ id] %}
+                  {% set temp = namespace(result=[]) %}
+                  {% set temp2 = namespace(result=[]) %}
+                  {% for entity in entities %}
+                    {% set temp.result = temp.result + [states(entity) | float(default=0)] %}
+                  {% endfor %}
+                  {% set key =""~id %}
+                  {% set tuple_list = data.result.items() | list + [(key, temp.result)] %}
+                  {% set data.result = dict(tuple_list) %}
+                {% endfor %}
+                
+                {{ data.result }}
+                
+      - name: "chartsdata2macro"
+        state: |
+                 { }
+        attributes:
+            ids: |
+                {% set data = namespace(result={}) %}
+                
+                {% set ids = states.sensor.sensorids.attributes.ids %}
+                
+                {% for id in ids %}
+                  {% set entities = ["sensor.roomsense_macrobin0_" ~ id, "sensor.roomsense_macrobin1_" ~ id, "sensor.roomsense_macrobin2_" ~ id,"sensor.roomsense_macrobin3_" ~ id,"sensor.roomsense_macrobin4_" ~ id,"sensor.roomsense_macrobin4_" ~ id,"sensor.roomsense_macrobin5_" ~ id,"sensor.roomsense_macrobin6_" ~ id,"sensor.roomsense_macrobin7_" ~ id,"sensor.roomsense_macrobin8_" ~ id] %}
+                  {% set temp = namespace(result=[]) %}
+                  {% set temp2 = namespace(result=[]) %}
+                  {% for entity in entities %}
+                    {% set temp.result = temp.result + [states(entity) | float(default=0)] %}
+                  {% endfor %}
+                  {% set key =""~id %}
+                  {% set tuple_list = data.result.items() | list + [(key, temp.result)] %}
+                  {% set data.result = dict(tuple_list) %}
+                {% endfor %}
+                
+                {{ data.result }}
+  - binary_sensor:
+      - name: "roomsense iq presence"
+        unique_id: roomsense_f412fae8c830
+        state: >
+          {{ is_state('sensor.roomsense_movement_f412fae8c830','2') }}
+        device_class: occupancy
+        attributes:
+          motion: >
+            {{ is_state('binary_sensor.roomsense_pir_f412fae8c830','on') }}
+          illuminance: >
+            {{ states('sensor.roomsense_photocell_f412fae8c830') | int }}
+          temperature: >
+            {{ states('sensor.roomsense_temperature_f412fae8c830') | int }}
+          humidity: >
+            {{ states('sensor.roomsense_humidity_f412fae8c830') | int }}
+
+  
+            
+input_text:
+  dashtab1:
+    name: Dash tab 1
+  dashtab2:
+    name: Dash tab 2
+  dashtab3:
+    name: Dash tab 3
+  dashtab4:
+    name: Dash tab 4
+  dashtab5:
+    name: Dash tab 5
+  dashtab6:
+    name: Dash tab 6
+  dashtab7:
+    name: Dash tab 7
+  dashtab8:
+    name: Dash tab 8
+  dashtab9:
+    name: Dash tab 9
+  dashtab10:
+    name: Dash tab 10
+  dashtab11:
+    name: Dash tab 11
+  dashtab12:
+    name: Dash tab 12
+  dashtab13:
+    name: Dash tab 13
+  dashtab14:
+    name: Dash tab 14
+  dashtab15:
+    name: Dash tab 15
