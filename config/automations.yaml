@@ -1081,7 +1081,6 @@
           - switch.pot_lights
           - switch.pottery_air_purifier
           - switch.exercise_lights
-          - switch.pot_light
       - if:
         - condition: state
           entity_id: input_boolean.chimichanga_mode
@@ -2277,14 +2276,21 @@
     - conditions:
       - condition: trigger
         id: lights_out
-      - condition: state
-        entity_id: binary_sensor.living_room_occupied
-        state: 'on'
       sequence:
-      - service: scene.turn_on
-        data: {}
+      - if:
+        - condition: state
+          entity_id: binary_sensor.living_room_occupied
+          state: 'on'
+        then:
+        - service: scene.turn_on
+          data: {}
+          target:
+            entity_id: scene.living_room_night
+        alias: If occupied set the scene
+      - service: light.turn_off
         target:
-          entity_id: scene.living_room_night
+          entity_id: light.living_room_main_lights
+        data: {}
     - conditions:
       - condition: trigger
         id: no_motion
@@ -2314,6 +2320,10 @@
             - light.living_room_tower_lamp
             - light.living_room_lamp
             - light.front_door_lamp
+      - service: light.turn_off
+        target:
+          entity_id: light.living_room_main_lights
+        data: {}
     - conditions:
       - condition: trigger
         id: motion
@@ -2873,7 +2883,7 @@
     id: detected
   - platform: state
     entity_id:
-    - binary_sensor.smart_night_light_w_occupancy
+    - binary_sensor.smart_night_light_w_occupancy_2
     to: 'off'
     id: clear
   condition: []
@@ -2944,4 +2954,80 @@
         data: {}
         target:
           entity_id: input_boolean.light_override
+  mode: single
+- id: '1709411285366'
+  alias: Water Leaks
+  description: ''
+  trigger:
+  - alias: Basement gets wet
+    platform: state
+    entity_id:
+    - binary_sensor.havc_flood_sensor_water_leak
+    - binary_sensor.pottery_flood_sensor_water_leak
+    - binary_sensor.studio_flood_sensor_water_leak
+    - binary_sensor.theater_flood_sensor_water_leak
+    to: 'on'
+    from: 'off'
+    id: basement_floods
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: group.family
+      state: home
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'on'
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - basement_floods
+      sequence:
+      - alias: Send text notification
+        service: script.text_notify
+        metadata: {}
+        data:
+          who: parents
+          message: Water in the dungeon. Thought you ought to know.
+          title: Water Detected!!!
+  mode: single
+- id: '1711370023021'
+  alias: Skylars Room
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: 0
+    id: sunup
+  - platform: sun
+    event: sunset
+    offset: 0
+    id: sunset
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - sunup
+      sequence:
+      - service: cover.open_cover
+        metadata: {}
+        data: {}
+        target:
+          entity_id: cover.skylar_blinds_one_2
+      alias: Sun is up
+    - conditions:
+      - condition: trigger
+        id:
+        - sunset
+      sequence:
+      - service: cover.close_cover
+        metadata: {}
+        data: {}
+        target:
+          entity_id: cover.skylar_blinds_one_2
+      alias: Sun is Down
   mode: single
