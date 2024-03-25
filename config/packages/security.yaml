@@ -83,7 +83,7 @@ automation:
               who: "parents"
               title: "Security Armed"
               message: "Security System has been armed."
-          - service: alarm_control_panel.aarlo_set_mode
+          - service: aarlo.alarm_set_mode
             data:
               entity_id: alarm_control_panel.aarlo_mdl_base_station
               mode: "Armed"
@@ -132,7 +132,7 @@ automation:
                   who: "parents"
                   title: "Welcome Home"
                   message: "Security System has been disarmed."
-              - service: alarm_control_panel.aarlo_set_mode
+              - service: aarlo.alarm_set_mode
                 data:
                   entity_id: alarm_control_panel.aarlo_mdl_base_station
                   mode: "Disarmed"
@@ -149,7 +149,7 @@ automation:
               who: "parents"
               title: "Potential Security Issue"
               message: "Security System has been disarmed, but I could not validate presence."
-          - service: alarm_control_panel.aarlo_set_mode
+          - service: aarlo.alarm_set_mode
             data:
               entity_id: alarm_control_panel.aarlo_mdl_base_station
               mode: "Disarmed"
