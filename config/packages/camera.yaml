@@ -23,7 +23,7 @@ aarlo:
   tfa_host: "imap.gmail.com"
   tfa_username: !secret GV_USER
   tfa_password: !secret GV_PASS
-  user_agent: arlo
+  # user_agent: arlo
   # tfa_source: push
   # tfa_type: PUSH
   # tfa_retries: 5 # optional: default 5; attempts to check for push approved
@@ -92,12 +92,12 @@ camera:
   # - platform: ffmpeg
   #   input: !secret laundry_cam # wyze cam v2
   #   name: laundry camera
-  - platform: ffmpeg
-    name: "Backyard Ezviz"
-    input: !secret ezviz_c8c
-  - platform: ffmpeg
-    name: "Printer Cam"
-    input: !secret printer_cam
+  # - platform: ffmpeg
+  #   name: "Backyard Ezviz"
+  #   input: !secret ezviz_c8c
+  # - platform: ffmpeg
+  #   name: "Printer Cam"
+  #   input: !secret printer_cam
 ffmpeg:
   ffmpeg_bin: /usr/bin/ffmpeg
 # image_processing:
