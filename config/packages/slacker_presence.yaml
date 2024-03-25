@@ -1,0 +1,181 @@
+###############################################################################
+#   @author         :   Jeffrey Stone
+#   @date           :   07/09/2019
+#   @package        :   Slacker Presence
+#   @description    :   Bringing some actual smarts to your smart home
+###############################################################################
+
+
+script:
+  update_occupancy_groups:
+    sequence:
+      # Reset group - KITCHEN
+      - service: group.set
+        data:
+          object_id: "kitchen_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "kitchen_occupancy"
+          add_entities: >-
+            {{ 
+              (states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('kitchen')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door)') | 
+              map(attribute='entity_id') | list ) | join(',')
+             }}
+      # Reset group - LIVING ROOM
+      - service: group.set
+        data:
+          object_id: "living_room_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "living_room_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('34c114a19c5e41ee9cfe505696338bec')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}
+      # Reset group - STUDIO
+      - service: group.set
+        data:
+          object_id: "studio_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "studio_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('studio')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}
+      # Reset group - DecK
+      - service: group.set
+        data:
+          object_id: "deck_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "deck_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('backyard')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}
+      # Reset group - Skylars Bedroom
+      - service: group.set
+        data:
+          object_id: "skylars_bedroom_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "skylars_bedroom_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('Skylars Bedroom')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}
+      # Reset group - Master Bedroom
+      - service: group.set
+        data:
+          object_id: "master_bedroom_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "master_bedroom_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('Master Bedroom')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}
+      # Reset group - Pot Studio
+      - service: group.set
+        data:
+          object_id: "pot_studio_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "pot_studio_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('Pottery Studio')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}  
+      # Reset group - Theater
+      - service: group.set
+        data:
+          object_id: "theater_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "theater_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('Theater')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}  
+    # Reset group - Dungeon
+      - service: group.set
+        data:
+          object_id: "dungeon_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "dungeon_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('Dungeon')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}
+      # Reset group - Garage
+      - service: group.set
+        data:
+          object_id: "garage_occupancy"
+          entities: []
+      # Add any oocupancy, motion, or door in the area to the group
+      - service: group.set
+        data:
+          object_id: "garage_occupancy"
+          add_entities: >-
+            {{ 
+              ((states.binary_sensor | 
+              selectattr('entity_id', 'in', area_entities('Garage')) |
+              rejectattr('attributes.device_class', 'undefined') |
+              selectattr('attributes.device_class', 'search', '(occupancy|motion|door|running)') | 
+              
+              map(attribute='entity_id') | list )) | join(',')}}  
