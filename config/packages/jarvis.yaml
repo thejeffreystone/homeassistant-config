@@ -47,6 +47,7 @@ tts:
     voice: Brian
     cache: True
     engine: neural
+  
 
 input_text:
   alexa_actionable_notification:
@@ -272,27 +273,338 @@ sensor:
 
       
 script:
+  get_tts_greetings:
+    sequence:
+    - variables:
+        general: >
+          {% if now().hour < 12 %}
+          {{ ["Good Morning,",
+              "Morning,",
+              "Alright, How are you? "
+           ] | random }}
+          {% elif now().hour >= 12 and now().hour < 17 %}
+          {{ ["Good Afternoon,",
+              "Afternoon,",
+              "Alright, How are you?"
+           ] | random }}
+          {% else %}
+          {{ ["Good Evening, ",
+              "Evening, ",
+              "Alright, How are you"
+           ] | random }}
+          {% endif %}
+        jarvis_morning: >
+          {{ [
+            general ~ 'Sir. ',
+            'Welcome home Sir.',
+            'At your service Sir.',
+            'Oh. Hello Sir.',
+            'Alright, How are you '
+          ] | random }}
+          {{ [
+            'Is it time to get to work? ',
+            'I have imported your preferences.',
+            'I am online and ready.',
+            'Ready to get to work?'
+            'Alright, How are you '
+            ''
+          ] | random }}
+        jarvis_welcome: >
+          {{ [
+            general ~ 'Sir. ',
+            'Welcome home Sir.',
+            'Glad to see you made it back Sir.',
+            'Oh. Hello Sir. Welcome home.'
+          ] | random }}
+        announcement: >
+          {% if states('sensor.kat_room') == room and states('sensor.jeff_room')== room  %}
+            {{ 
+              ['Pardon me everyone, ',
+              'Excuse me, ',
+              'I beg your pardon, ',
+              'Since I have you all together, ',
+              'I am sorry to intrude on this family gathering, but. ',
+              'While I have you all together,'] 
+              | random }}
+          {% elif states('sensor.kat_room') == room  %}
+            {{ 
+              ["Mam."
+               ] | random }}
+          {% elif states('sensor.jeff_room') == room  %}
+            {{ 
+              ['Sir. '
+              ] | random }}
+          {% else %}
+            {{ 
+             ['Pardon me, ',
+              'Excuse me, ',
+              'I beg your pardon, ',
+              'I do not mean to intrude, but, ',
+              'I am sorry to intrude, but. '
+              ] | random }}
+          {% endif %}
+        jeff: >
+          {{ 
+              ['Sir. '
+              ] | random }}
+        kat: > 
+          {{ 
+              ["Mam."
+               ] | random }}
+        skylar: >-
+          {{ 
+              [
+                'Skylar. ',
+                'Master Skylar',
+                'Sky man.',
+                'Herobrine.'
+              ] | random }}
+        alert: >
+          {{ [
+            'Emergency Protocol initiated.',
+            'Emergency Response Initiated. ',
+            'My emergency protocols have been activated.',
+            'I have detected a potential threat to your safety.'
+            ] | random }}
+        weather_warning: >-
+          {{ [
+            'I have an alert from the National Weather Service.',
+            'Severe weather is approaching our area. ',
+            'I must insist that anyone that is currently outside prepare to move inside.',
+            'There appears to be severe weather heading in our direction.'
+            ] | random }}
+        confirmation: > 
+          {{ [
+            'Okay.', 
+            'If you insist.',
+            'I am afraid I can not do that,, I am kidding,',
+            'Leave it to me.',
+            'Alright, Lets do this.',
+            'I am on it.',
+            'No Problem.',
+            'Will do.',
+            'I think I can handle that.',
+            'Working on it now.',
+            ', Oh, you were talking to me. Let me take care of that.'
+            'Why not. It is not like I ever sleep.',
+            'I am not even supposed to be here today. But whatever.',
+            'You did not say the magic word. , Oh forget it. I will take care of it.',
+            'Funny, I was just about to do that.',
+            'What was I thinking. You are usually so discreet.'
+            'There are still terabytes of calculations required before I can., Oh, whatever. '
+            ] | random }}
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ announcement }}
+      response_variable: "cleaned_annc_greeting"
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ jarvis_morning }}
+      response_variable: "cleaned_jarvis_morning"
+    - variables:
+        greetings: >
+          {"general":"{{general}}",
+          "announcement":"{{cleaned_annc_greeting.text}}",
+          "jarvis_morning":"{{cleaned_jarvis_morning.text}}",
+          "jarvis_welcome":"{{jarvis_welcome}}",
+          "jeff":"{{jeff}}",
+          "kat":"{{kat}}",
+          "skylar":"{{skylar}}",
+          "alert":"{{alert}}",
+          "weather_warning":"{{weather_warning}}"}
+    - stop: "ok, Im done."
+      response_variable: "greetings"
+
+  get_weather_info:
+    sequence:
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ states('sensor.clothing_forecast_detail') }}
+      response_variable: "cleaned_cforecast"
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ states('sensor.sun_status') }}
+      response_variable: "cleaned_sun_status"
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ states('sensor.current_conditions_detail') }}
+      response_variable: "cleaned_current_conditions_detailed"
+    - variables:
+        clothing_forecast: >
+          {{ cleaned_cforecast.text }}
+        current_alerts: >
+          {% if states('sensor.fayette_active_alerts') | int > 0 %}
+            There are currently {{ states('sensor.fayette_active_alerts') }} active weather alerts for our area.
+          {% else %}
+            
+          {% endif %}
+        weather: >
+          {"current_alerts":"{{current_alerts}}",
+          "clothing_forecast":"{{clothing_forecast}}",
+          "current_conditions_detail":"{{cleaned_current_conditions_detailed.text}}",
+          "sun_status":"{{cleaned_sun_status.text}}"}
+    - stop: "Alright. Im done."
+      response_variable: "weather" 
+
+  # get_room_services:
+  #   sequence:
+  #   - variables:
+  #       type: >
+  #         {% if type is defined %}
+  #           {{ type }}
+  #         {% else %}
+  #           normal
+  #         {% endif %}
+  #       room: >
+  #         {% if room is defined and room in ['jeff','kat','skylar']%}
+  #           {% set room = states('sensor.'~room~'_room') %}
+  #           {% if room == 'NA' and type == 'priority' %}
+  #             none
+  #           {% elif room != 'NA' %}
+  #             {{ room }}
+  #           {% endif %}
+  #         {% else %}
+  #           {{ states('sensor.room_audio') }}
+  #         {% endif %}
+  #       room_services: >
+  #         {% if room in ['kitchen', 'media_player.kitchen_display','media_player.living_room_echo'] and is_state('binary_sensor.quiet_time','off') %} 
+  #           {% set room = 'living_room' %}
+  #           {% set speaker = 'media_player.living_room_echo' %}
+  #           {% set tts = 'amp' %}
+  #         {% elif room in ['livingroom_echo','media_player.living_room_echo','living_room','main'] and is_state('binary_sensor.quiet_time','off') %} 
+  #           {% set room = 'living_room' %}
+  #           {% set speaker = 'media_player.living_room_echo' %}
+  #           {% set tts = 'amp' %}
+  #         {% elif room in ['skylars_bedroom','skylar_bedroom','skylars_echo','media_player.skylars_bedroom_echo','media_player.skylars_room'] and is_state('binary_sensor.quiet_time','off') and states('sensor.skylar_location') != 'bed' %}
+  #           {% set room = 'skylar_bedroom' %}
+  #           {% set speaker = 'media_player.skylars_room' %}
+  #           {% set tts = 'amp' %}
+  #         {% elif room in ['master_bedroom','media_player.master_bedroom_speaker','master_bedroom_echo','media_player.master_bedroom_echo'] and is_state('binary_sensor.quiet_time','off')%}
+  #           {% set room = 'master_bedroom' %}
+  #           {% set speaker = 'media_player.master_bedroom_echo' %}
+  #           {% set tts = 'amp' %}
+  #         {% elif room in ['studio','slacker_labs','media_player.dads_desk','media_player.slacker_labs_echo'] and is_state('sensor.jeff_room','studio')%}
+  #           {% set room = 'studio' %}
+  #           {% set speaker = 'media_player.slacker_labs_echo' %}
+  #           {% set tts = 'amp' %}
+  #         {% elif room in ['theater','media_player.theater_echo'] and is_state('input_boolean.guest_mode','off') and is_state('binary_sensor.quiet_time','off')%}
+  #           {% set room = 'theater' %}
+  #           {% set speaker = 'media_player.theater_echo' %}
+  #           {% set tts = 'amp' %}
+  #         {% elif room in ['exercise_room'] and is_state('input_boolean.audible_notifications','on')%}
+  #           {% set room = 'exercise_room' %}
+  #           {% set speaker = 'media_player.studio_speaker' %}
+  #           {% set tts = 'polly' %}
+  #         {% elif room in ['basement', 'media_player.basement_echo'] and is_state('input_boolean.audible_notifications','on') %}
+  #           {% set room = 'basement' %}
+  #           {% set speaker = 'media_player.basement_echo' %}
+  #           {% set tts = 'amp' %}
+  #         {% elif is_state('input_boolean.guestmode','off') and is_state('input_boolean.audible_notifications','on') and is_state('binary_sensor.quiet_time','off') %}
+  #           {% set room = 'main' %}
+  #           {% set speaker = 'media_player.living_room_echo' %}
+  #           {% set tts = 'amp' %}
+  #         {% else %}
+  #           {% set room = 'none' %}
+  #           {% set speaker = 'none' %}
+  #           {% set tts = 'none' %}
+  #         {% endif %}
+  #         {% if room == 'main' %} 
+  #           {% set google_speaker = 'media_player.kitchen_display' %}
+  #         {% elif room == 'living_room' %} 
+  #           {% set google_speaker = 'media_player.kitchen_display' %}
+  #         {% elif room == 'skylar_bedroom' %}
+  #           {% set google_speaker = 'media_player.skylars_bedroom_speaker' %}
+  #         {% elif room == 'master_bedroom' %}
+  #           {% set google_speaker = 'media_player.master_bedroom_speaker' %}
+  #         {% elif room in ['studio']%}
+  #           {% set google_speaker = 'media_player.studio_speaker' %}
+  #         {% elif room == 'theater' %}
+  #           {% set google_speaker = 'media_player.theater' %}
+  #         {% elif room in ['exercise_room','basement']%}
+  #           {% set google_speaker = 'media_player.basement_tv' %}
+  #         {% else %}
+  #           {% set google_speaker = 'none' %}
+  #         {% endif %}
+  #         {"area":"{{room}}","jarvis_speaker":"{{speaker}}","jarvis_tts":"{{tts}}","google_speaker":"{{google_speaker}}"}
+  #   - stop: "ok, Im done."
+  #     response_variable: "room_services"
+
+  
+
   speech_engine:
     sequence:
+    - service: script.get_tts_greetings
+      response_variable: "greetings"
+    - variables:
+        type: >
+          {% if type is defined and type != 'none' %}
+            {{ type }}
+          {% else %}
+            normal
+          {% endif %}
+        summary: >-
+          {% if msg_summary %}
+            {{ msg_summary }}
+          {% else %}
+            none
+          {% endif %}
+        room: >
+          {% if who is defined %}
+            {{ who }}
+          {% elif room is defined %}
+            {{ room }}
+          {% else %}
+            NA
+          {% endif %}
+        greeting: >
+          {% if room == 'jeff' %}
+            {{ greetings.jeff }}
+          {% elif room == 'kat' %}
+            {{ greetings.kat }}
+          {% elif room == 'skylar' %}
+            {{ greetings.skylar }}
+          {% elif type == 'weather_warning' %}
+            {{ greetings.weather_warning }}
+          {% elif type == 'alert' %}
+            {{ greetings.alert }}
+          {% else %}
+            
+          {% endif %}
+        briefing_greeting: >
+          {% if type == 'briefing' %}
+            {{ greetings.general }}
+          {% else %}
+          
+          {% endif %}
+
+    - service: script.get_room_audio
+      data:
+        room: >
+          {{room}}
+        type: >
+          {{type}}
+      response_variable: room_services
+    - service: script.cleanup_text
+      data:
+        message: >
+          {{ briefing }}
+          {{ greeting }}
+          {{ message }}
+      response_variable: cleaned_message
     - service: mqtt.publish
       data_template:
         topic: house/polly/lastmsg
         payload: >
-          {%- macro getReport() -%}
-            {% if msg_summary %}
-              {{ msg_summary}}
-            {% else %}
-              {{ message | striptags | truncate(220)}}
-            {% endif %}
-            {%- endmacro -%}
-            {%- macro cleanup(data) -%}
-              {%- for item in data.split("\n")  if item | trim != "" -%}
-                {{ item | trim }} {% endfor -%}
-            {%- endmacro -%}
-            {%- macro mother_of_all_macros() -%}
-              {{ getReport() }}
-            {%- endmacro -%}
-            {{- cleanup(mother_of_all_macros()) -}}
+          {% if summary == 'none' %}
+            {{ cleaned_message.text | string }}
+          {% else %}
+            {{ summary }}
+          {% endif %}
         retain: true
     - service: mqtt.publish
       data_template:
@@ -303,76 +615,145 @@ script:
     - service: mqtt.publish
       data_template:
         topic: house/polly/lastloc
-        payload: '{{ who }}'
+        payload: '{{ room_services.area | string }}'
         retain: true
-    - condition: state
-      entity_id: input_boolean.audible_notifications
-      state: 'on'
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/verbal
+        payload: >
+          {{ room_services.area != 'none'}}
+        retain: true
+    - service: mqtt.publish
+      data_template:
+        topic: house/polly/timestamp
+        payload: >
+          {{ as_timestamp(now()) }}
+        retain: true
+    - service: mqtt.publish
+      data_template:
+        topic: house/jarvis/event
+        payload: >
+          {"destination":"{{ room_services.area | string }}",
+          "message":"{{ cleaned_message.text | string }}",
+          "verbal":"{{ room_services.area != 'none'}}",
+          "speaker":"{{ room_services.jarvis_speaker | string }}",
+          "tts":"{{ room_services.jarvis_tts | string }}",
+          "type":"{{type | string}}",
+          "last_event":{{as_timestamp(now())}}}
+        retain: true
+        
     - condition: state
       entity_id: binary_sensor.family_home
       state: 'on'
     - condition: state
       entity_id: input_boolean.vacation_mode
       state: 'off'
-    - service: > 
-        {% if who in ['kitchen', 'media_player.kitchen_display'] %} 
-          {% set who = 'living_room' %}
-        {% elif who in ['livingroom_echo','media_player.living_room_echo','living_room','main']  %} 
-          {% set who = 'living_room' %}
-        {% elif who in ['skylars_bedroom','skylar_bedroom','skylars_echo','media_player.skylars_bedroom_echo']%}
-          {% set who = 'skylar_bedroom' %}
-        {% elif who in ['master_bedroom','media_player.master_bedroom_speaker','master_bedroom_echo']%}
-          {% set who = 'master_bedroom' %}
-        {% elif who in ['studio','slacker_labs','media_player.dads_desk']%}
-          {% set who = 'studio' %}
-        {% elif who in ['theater'] %}
-          {% set who= 'theater' %}
-        {% elif who in ['exercise_room'] %}
-          {% set who= 'exercise_room' %}
-        {% elif who in ['basement', 'media_player.basement_echo']  %}
-          {% set who = 'basement' %}
-        {% else %}
-          {% set who = 'main' %}
-        {% endif %} 
-        script.jarvis_voice
-      data:
-        who: '{{ who }}'
-        message: >
-          {%- macro getReport() -%}
-              {{ message }}
-          {%- endmacro -%}
-          {%- macro cleanup(data) -%}
-            {%- for item in data.split("\n")  if item | trim != "" -%}
-              {{ item | trim }} {% endfor -%}
-          {%- endmacro -%}
-          {%- macro mother_of_all_macros() -%}
-            {{ getReport() }}
-          {%- endmacro -%}
-          {{- cleanup(mother_of_all_macros()) -}}
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ type | string == 'alert' }}"
+          sequence:
+            - service: media_player.volume_set
+              data:
+                entity_id: >-
+                  {{ room_services.jarvis_speaker | string }}
+                volume_level: >
+                  {{ states('input_number.tts_high_volume') | float }}
+            - service: notify.alexa_media
+              data:
+                message: >
+                  <voice name="{{ states('input_select.polly_voice') }}">
+                  <amazon:auto-breaths>
+                  <prosody rate="fast">
+                  {{ cleaned_message.text }}
+                  </prosody>
+                  </amazon:auto-breaths>
+                  </voice>
+                target: >
+                  {{ room_services.jarvis_speaker | string }}
+                data:
+                  type: tts
+            - delay:
+                seconds: 20
+            - service: media_player.volume_set
+              data:
+                entity_id: >-
+                  {{ room_services.jarvis_speaker | string }} 
+                volume_level: "{{ states('input_number.tts_volume') | float }}"
+        - conditions:
+            - condition: template
+              value_template: "{{ room_services.jarvis_tts | string == 'amp' }}"
+            - condition: template
+              value_template: "{{ room_services.jarvis_speaker | string != 'none' }}"
+          sequence:
+            - service: media_player.volume_set
+              data:
+                entity_id: '{{ room_services.jarvis_speaker | string }}'
+                volume_level: >
+                  {{ states('input_number.tts_volume') | float }}
+            - service: notify.alexa_media
+              data:
+                message: >
+                  <voice name="{{ states('input_select.polly_voice') }}">
+                  <amazon:auto-breaths>
+                  <prosody rate="fast">
+                  {{ cleaned_message.text }}
+                  </prosody>
+                  </amazon:auto-breaths>
+                  </voice>
+                target: '{{ room_services.jarvis_speaker | string }}'
+                data:
+                  type: tts
+        - conditions:
+            - condition: template
+              value_template: "{{ room_services.jarvis_tts | string == 'polly' }}"
+            - condition: template
+              value_template: "{{ room_services.jarvis_speaker | string != 'none' }}"
+          sequence:
+            - service: media_player.volume_set
+              data:
+                entity_id: '{{ room_services.jarvis_speaker | string }}'
+                volume_level: >
+                  {{ states('input_number.tts_volume') | float }}
+            - service: tts.amazon_polly_say
+              data:
+                entity_id: '{{ room_services.jarvis_speaker | string }}'
+                message: >
+                  <speak>
+                    <break time="1s"/>
+                    <amazon:auto-breaths>
+                    <prosody rate="fast">
+                    {{ cleaned_message.text }}
+                    <prosody>
+                    </amazon:auto-breaths>
+                  </speak>
+                cache: true
+      default: 
+      - service: persistent_notification.dismiss
+        data:
+          notification_id: "house_notification"
+      - service: persistent_notification.create 
+        data:
+          notification_id: "house_notification"
+          message: "{{ message }}"
+          title: "From Jarvis"
 
+      
   jarvis_voice:
     sequence:
     - if:
       - condition: template
-        value_template: "{{ who in ['studio', 'media_player.dads_desk','exercise_room'] }}"
+        value_template: "{{ who in ['exercise_room'] }}"
       then:
       - service: media_player.volume_set
         data:
           entity_id: >
-            {% if who in ['exercise_room']%} 
-              media_player.exercise_room
-            {% else %}
               media_player.studio_speaker
-            {% endif %}
           volume_level: "{{ states('input_number.tts_high_volume') | float }}"
       - service: tts.amazon_polly_say
         data_template:
           entity_id: >
-            {% if who in ['exercise_room']%}
-              media_player.exercise_room
-            {% else %}
               media_player.studio_speaker
-            {% endif %}
           message: >
             <speak>
               <break time="1s"/>
@@ -385,11 +766,7 @@ script:
       - service: media_player.volume_set
         data:
           entity_id: >
-            {% if who in ['exercise_room']%} 
-              media_player.exercise_room
-            {% else %}
               media_player.studio_speaker
-            {% endif %}
           volume_level: "{{ states('input_number.tts_volume') | float }}"
       else:
       - service: media_player.volume_set
@@ -443,107 +820,31 @@ script:
             {% endif %}
           data:
             type: tts
-  jarvis_alert:
-    sequence:
-    - service: mqtt.publish
-      data_template:
-        topic: house/polly/lastmsg
-        payload: >
-          {%- macro getReport() -%}
-          {% if msg_summary %}
-            {{ msg_summary}}
-          {% else %}
-            {{ message | striptags | truncate(220)}}
-          {% endif %}
-          {%- endmacro -%}
-          {%- macro cleanup(data) -%}
-            {%- for item in data.split("\n")  if item | trim != "" -%}
-              {{ item | trim }} {% endfor -%}
-          {%- endmacro -%}
-          {%- macro mother_of_all_macros() -%}
-            {{ getReport() }}
-          {%- endmacro -%}
-          {{- cleanup(mother_of_all_macros()) -}}
-        retain: true
-    - service: mqtt.publish
-      data_template:
-        topic: house/polly/msgtime
-        payload: >
-          {{ now().strftime("%-I") }}:{{ now().strftime("%M") }} {{ now().strftime("%p")}}
-        retain: true
-    - service: mqtt.publish
-      data_template:
-        topic: house/polly/lastloc
-        payload: '{{ who }}'
-        retain: true
-    - service: media_player.volume_set
-      data_template:
-        entity_id: media_player.ha_blue
-        volume_level: >
-          {% if is_state('binary_sensor.lights_out', 'on') %}
-            {{ states('input_number.tts_high_volume') | float }}
-          {% else %}
-            {{ states('input_number.tts_volume') | float }}
-          {% endif %}
-    - service: tts.amazon_polly_say
-      data_template:
-        entity_id: media_player.ha_blue
-        message: >
-          <speak>
-            <break time="1s"/>
-            <amazon:auto-breaths>
-            <prosody rate="fast">
-            {{ message }}
-            <prosody>
-            </amazon:auto-breaths>
-          </speak>
-        cache: true
+
   announcement:
     sequence:
+    - variables: 
+        type: >
+          {% if type is defined %}
+            {{ type }}
+          {% else %}
+            normal
+          {% endif %}
+        room: > 
+          {% if who is defined %}
+            {{ who }}
+          {% else %}
+            NA
+          {% endif %}
     - service: script.speech_engine
       data:
         who: >
-          {% if who %}
-            {{ who }}
-          {% else %}
-            {{ states('sensor.room_audio') }}
-          {% endif %}
+          {{ room }}
         message: >
-          {% if states('sensor.kat_room') == who and states('sensor.jeff_room')== who  %}
-            {{ 
-              ['Pardon me everyone, ',
-              'Excuse me, ',
-              'I beg your pardon, ',
-              'Since I have you all together, ',
-              'I am sorry to interrupt, but. ',
-              'While I have you all together,'] 
-              | random }}
-          {% elif states('sensor.kat_room') == who  %}
-            {{ 
-              ["Ma'am,",
-               "Pardon me Ma'am,",
-               "Pardon me Kat,",
-               "Katherine,",
-               "I dont mean to interrupt Ma'am,"
-               ] | random }}
-          {% elif states('sensor.jeff_room') == who  %}
-            {{ 
-              ['Sir, ',
-              'Pardon me Sir, ',
-              'Pardon me Jeff, ',
-              'Boss, ',
-              'I dont mean to interrupt Sir, '
-              ] | random }}
-          {% else %}
-            {{ 
-             ['Pardon me, ',
-              'Excuse me, ',
-              'I beg your pardon, ',
-              'I do not mean to intrude, but, ',
-              'I am sorry to interrupt, but. '
-              ] | random }}
-          {% endif %} 
-          {{ message }}"
+          {{ message }}
+    
+
+
   briefing:
     sequence:
     - service: script.speech_engine
@@ -567,106 +868,106 @@ script:
               
             {% endif %}
             {{ message }}
-  jarvis_already_done:
-    sequence:
-    - service: script.speech_engine
-      data:
-        who: "{{ states('sensor.room_audio') }}"
-        message:  >-
-          {{ [
-          'I have already handled that.', 
-          'Looks like someone already did that, but I will gladly take credit.',
-          'I am so fast it is already done.'
-          ]| random }}
-  jarvis_response:
-    sequence:
-    - service: script.speech_engine
-      data:
-        who: "{{ states('sensor.room_audio') }}"
-        message:  >-
-          {{ [
-          'Okay.', 
-          'If you insist.',
-          'I am afraid I can not do that, I am kidding,',
-          'Leave it to me.',
-          'As you wish.',
-          'I am on it.',
-          'No Problem.',
-          'I think I can handle that.',
-          'Working on it now.',
-          '.Oh, you were talking to me. Let me take care of that.'
-          'Why not. It is not like I ever sleep.',
-          'I am not even supposed to be here today. But whatever.',
-          'You did not say the magic word.  ,Oh forget it. I will take care of it.',
-          'Funny, I was just about to do that.',
-          'There are still terabytes of calculations required before I can. ,Oh, whatever.'
-          ] | random }}
-  house_party_protocol_on:
-    sequence:
-      - delay: 00:00:05
-      - service: homeassistant.turn_on
-        entity_id: group.incense
-      - service: script.status_annc
-        data_template:
-          who: "{{ states('sensor.room_audio') }}"
-          call_house_party_protocol_enabled: 1
+  # jarvis_already_done:
+  #   sequence:
+  #   - service: script.speech_engine
+  #     data:
+  #       who: "{{ states('sensor.room_audio') }}"
+  #       message:  >-
+  #         {{ [
+  #         'I have already handled that.', 
+  #         'Looks like someone already did that, but I will gladly take credit.',
+  #         'I am so fast it is already done.'
+  #         ]| random }}
+  # jarvis_response:
+  #   sequence:
+  #   - service: script.speech_engine
+  #     data:
+  #       who: "{{ states('sensor.room_audio') }}"
+  #       message:  >-
+  #         {{ [
+  #         'Okay.', 
+  #         'If you insist.',
+  #         'I am afraid I can not do that, I am kidding,',
+  #         'Leave it to me.',
+  #         'As you wish.',
+  #         'I am on it.',
+  #         'No Problem.',
+  #         'I think I can handle that.',
+  #         'Working on it now.',
+  #         '.Oh, you were talking to me. Let me take care of that.'
+  #         'Why not. It is not like I ever sleep.',
+  #         'I am not even supposed to be here today. But whatever.',
+  #         'You did not say the magic word.  ,Oh forget it. I will take care of it.',
+  #         'Funny, I was just about to do that.',
+  #         'There are still terabytes of calculations required before I can. ,Oh, whatever.'
+  #         ] | random }}
+  # house_party_protocol_on:
+  #   sequence:
+  #     - delay: 00:00:05
+  #     - service: homeassistant.turn_on
+  #       entity_id: group.incense
+  #     - service: script.status_annc
+  #       data_template:
+  #         who: "{{ states('sensor.room_audio') }}"
+  #         call_house_party_protocol_enabled: 1
 
-  house_party_protocol_off:
-    sequence:
-      - delay: 00:00:05
-      - service: homeassistant.turn_off
-        entity_id: group.incense
-      - service: script.status_annc
-        data_template:
-          who: "{{ states('sensor.room_audio') }}"
-          call_house_party_protocol_disabled: 1
+  # house_party_protocol_off:
+  #   sequence:
+  #     - delay: 00:00:05
+  #     - service: homeassistant.turn_off
+  #       entity_id: group.incense
+  #     - service: script.status_annc
+  #       data_template:
+  #         who: "{{ states('sensor.room_audio') }}"
+  #         call_house_party_protocol_disabled: 1
 
-  alexa_interjection:
-    sequence:
-      - service: script.status_annc
-        data:
-          who: "{{ states('sensor.last_alexa')}}"
-          call_confirmation: 1
+  # alexa_interjection:
+  #   sequence:
+  #     - service: script.status_annc
+  #       data:
+  #         who: "{{ states('sensor.last_alexa')}}"
+  #         call_confirmation: 1
 
-  google_interjection:
-    sequence:
-      - service: script.status_annc
-        data:
-          who: "{{ states('sensor.room_audio') }}"
-          call_confirmation: 1
+  # google_interjection:
+  #   sequence:
+  #     - service: script.status_annc
+  #       data:
+  #         who: "{{ states('sensor.room_audio') }}"
+  #         call_confirmation: 1
 
-  jarvis_said_what:
-    sequence:
-      - service: script.speech_engine
-        data:
-          who: "{{ states('sensor.room_audio') }}"
-          message: >
-            {{ states('sensor.lastmsg') }}
+  # jarvis_said_what:
+  #   sequence:
+  #     - service: script.speech_engine
+  #       data:
+  #         message: >
+  #           {{ states('sensor.lastmsg') }}
 
-  test_jarvis_proactive:
-    sequence:
-      - service: script.activate_alexa_actionable_notification
-        data:
-          text: "Boss, It appears you are working. Would you like me to turn on your desk lights?"
-          event_id: "actionable_notification_wfh_lights"
-          alexa_device: "media_player.dads_desk"
+  # test_jarvis_proactive:
+  #   sequence:
+  #     - service: script.activate_alexa_actionable_notification
+  #       data:
+  #         text: "Boss, It appears you are working. Would you like me to turn on your desk lights?"
+  #         event_id: "actionable_notification_wfh_lights"
+  #         alexa_device: "media_player.dads_desk"
 
-  activate_alexa_actionable_notification:
-    sequence:
-      - service: input_text.set_value
-        data:
-          entity_id: input_text.alexa_actionable_notification
-          value: '{"text": "{{ text }}", "event": "{{ event_id }}"}'
-      - service: media_player.play_media
-        data:
-          entity_id: "{{ alexa_device }}"
-          media_content_type: skill
-          media_content_id: amzn1.ask.skill.12146900-4aab-43d0-84b7-fe6df3bbe8df
+  # activate_alexa_actionable_notification:
+  #   sequence:
+  #     - service: input_text.set_value
+  #       data:
+  #         entity_id: input_text.alexa_actionable_notification
+  #         value: '{"text": "{{ text }}", "event": "{{ event_id }}"}'
+  #     - service: media_player.play_media
+  #       data:
+  #         entity_id: "{{ alexa_device }}"
+  #         media_content_type: skill
+  #         media_content_id: amzn1.ask.skill.12146900-4aab-43d0-84b7-fe6df3bbe8df
   marauders_map_opens:
     sequence:
     - service: script.speech_engine
       data:
-        who: basement
+        room: pot_studio
+        type: priority
         message: >
           {{ [
               "What are you doing wandering the corridors at night?, ",
@@ -692,7 +993,8 @@ script:
     sequence:
     - service: script.speech_engine
       data:
-        who: basement
+        room: pot_studio
+        type: priority
         message: >
           {{ [
             "I have enabled the light timer. ",
@@ -758,7 +1060,7 @@ script:
 #                 entity_id: binary_sensor.workday_sensor
 #                 state: "on"
 #             sequence:
-#               - service: script.announcement
+#               - service: script.speech_engine
 #                 data_template:
 #                   who: master_bedroom
 #                   message: >
