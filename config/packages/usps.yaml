@@ -97,9 +97,9 @@ sensor:
           {{deliveries_sentence()}}
 
 camera:
-  - platform: generic
-    name: USPS Mail Pictures
-    still_image_url: !secret usps_camera_url
+  # - platform: generic
+  #   name: USPS Mail Pictures
+  #   still_image_url: !secret usps_camera_url
 
   - platform: local_file
     file_path: /config/images/mail_today.gif
