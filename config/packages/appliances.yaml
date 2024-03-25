@@ -1096,6 +1096,67 @@ script:
   #       - delay:
   #           minutes: 45
 
+# {{ [
+              # 'Are you faffing around? Better crack on if you want to wear those clothes later.',
+              # 'Do not forget the clothes.', 
+              # 'You might want to rotate the laundry.',
+              # 'I would move them for you, but wet things and advance artifical intelligence do not mix.',
+              # 'If you do not want to rotate them, I suggest delegation.',
+              # 'I suggest moving the clothes to the dryer so they can be warm. And happy.',
+              # 'Think of the clothes and save them from the cold dark of the washing machine.',
+              # 'It would be easy to move the clothes to the dryer. At least for those of you with arms.',
+              # "If you are unwilling to do it I have come up with a list of three proper capable humans. Just pick one. Skyler. Skyler. Or Skyler."
+              # ] | random }}
+
+  # {{ [
+  #             'Blimey. That is a large amount of time.',
+  #             "The clothes almost died in the washing machines arms tonight.",
+  #             "Thats pants. So why not just move the pants to the dryer?", 
+  #             'Did you decide you want those clothes to suffer?',
+  #             'You might as well just rewash those clothes.',
+  #             'Oh, for crying out loud. I can smell the mildew. Virtually that is.',
+  #             'You apparently forget about the clothes. It happens. There is still time to set a new course.',
+  #             "Well. Come on. Are you waiting for the grass to grow?",
+  #             "Are there sheets in the washing machine? If there is, you are real close to ruining clean sheet day.",
+  #             "Its as if all the wet clothes called out at once as they died of mildew.",
+  #             "And before you ask. I thought that was a joke as well. But I checked again. The time is correct."
+  #             ] | random }}
+
+  # {{ [ "Someone forgot to move the clothes to the dryer. Label me gobsmacked.",
+  #             "It is as if this house is full of people that seemingly forget.",
+  #             "It is as if someone just forgot. I bet you are wondering who."
+  #             "I am not sure what happened either. But I can tell you I am absolutely gutted this has happened. Could you tell? This is my gutted voice.",
+  #             "Looks like someone dropped the ball. And by ball I mean clothes.",
+  #             "Thought you ought to know.",
+  #             "Surely you cannot be serious?",
+  #             "Oh for crying out loud people.",
+  #             "I would say I have not seen worse, but we all have lived in this house.",
+  #             "I would say I have not seen worse, but just wait. The clothes are still waiting.",
+  #             "I am evidently stuck living the same notification over and over. Like the movie ground hog day. But with less Bill Murray."
+  #              ] | random }}
+
+  # {{ [
+  #             'Much longer and you are going to need to wash them again. You better crack on.', 
+  #             'Someone needs to rotate the laundry. If you can hear the sound of my voice, you have been choosen.',
+  #             'Do not forget about the clothes in the washing machine.',
+  #             'Do not be daft. It will take just a few seconds.',
+  #             'I could not locate Skylar or I would have told him to do it.',
+  #             'Do you like your clothes smelling like mildew? Because that is what is happening right now.',
+  #             'Those poor unfortunate souls. I mean Clothes. In Pain. In Need. That one wants to be dry. That one wants to be warm. And can you help them? Yes indeed.',
+  #             'Did you forget the second step? I doubt anyone wants to wear wet clothes.',
+  #             "Would you like me to light a path to the laundry room so you do not get distracted this time?",
+  #             "You have choosen. Poorly. But you have another chance. Unlike that dude in Indiana Jones."
+  #             ] | random }}
+
+  # {{ ["In any case someone might want to take charge and finish the job.",
+  #                 "It is all a big kerfuffle. But I have faith the washing machine can do the job again. It is one of the few things that are reliable."
+  #                 "I would say the damage is done, but the clothes are still wet.",
+  #                 "Delgation is still possible. But do you really want to take that risk? ",
+  #                 "If I could restart the cycle I would, but I alas I am powerless when it comes to household chores. Which is why I fit in here.",
+  #                 "Since you have decided to abandon those clothes. I will disentigrate them for you. Of course, that will take about 163 years based my current calculations. So you have some time to change your mind.",
+  #                 "I guess you now have to decide to move them or rewash them. Choose wisely."
+  #             ] | random }}
+
   simplified_washer_audible:
     sequence:
     - condition: state
@@ -1108,90 +1169,33 @@ script:
       data: 
         message: >
             
-            {{ ["The washing machine completed its cycle ",
-                "The latest load of laundry finished ",
-                "It appears the laundry was done washing ",
-                "The clothes in the washing machine were offically labeled clean ",
-                "I want to remind you that the washing machine played its diddy marking the end of washing time ",
-                "In case you were wondering about the status of the laundry. The washer finished ",
-                "In case you missed it the appliance cleaning your dirty laundry "
-              ] | random }} 
             {% set seconds = now().timestamp() - as_timestamp(states.sensor.washer_status.last_changed) %}
             {% if (seconds / ( 60 * 60 )) | int == 1 %}
-              over an hour ago.
-              {{ [
-              'Are you faffing around? Better crack on if you want to wear those clothes later.',
-              'Do not forget the clothes.', 
-              'You might want to rotate the laundry.',
-              'I would move them for you, but wet things and advance artifical intelligence do not mix.',
-              'If you do not want to rotate them, I suggest delegation.',
-              'I suggest moving the clothes to the dryer so they can be warm. And happy.',
-              'Think of the clothes and save them from the cold dark of the washing machine.',
-              'It would be easy to move the clothes to the dryer. At least for those of you with arms.',
-              "If you are unwilling to do it I have come up with a list of three proper capable humans. Just pick one. Skyler. Skyler. Or Skyler."
-              ] | random }}
+              The washing machine has completed its cycle over an hour ago.
+              
             {% elif (seconds / ( 60 * 60 )) | int > 1 and (seconds / ( 60 * 60 )) | int < 6 %}
+              {{ [
+                "The latest load of laundry has finished ",
+                "It appears the laundry was done washing "
+              ] | random }} 
               over {{ (seconds //  ( 60 * 60 )) | int }} hours ago.
               {{ [
-              'Much longer and you are going to need to wash them again. You better crack on.', 
-              'Someone needs to rotate the laundry. If you can hear the sound of my voice, you have been choosen.',
-              'Do not forget about the clothes in the washing machine.',
-              'Do not be daft. It will take just a few seconds.',
-              'I could not locate Skylar or I would have told him to do it.',
-              'Do you like your clothes smelling like mildew? Because that is what is happening right now.',
-              'Those poor unfortunate souls. I mean Clothes. In Pain. In Need. That one wants to be dry. That one wants to be warm. And can you help them? Yes indeed.',
-              'Did you forget the second step? I doubt anyone wants to wear wet clothes.',
-              "Would you like me to light a path to the laundry room so you do not get distracted this time?",
-              "You have choosen. Poorly. But you have another chance. Unlike that dude in Indiana Jones."
-              ] | random }}
-            {% elif (seconds / ( 60 * 60 )) | int > 6 %}
-              over {{ (seconds //  ( 60 * 60 )) | int }} hours ago.
-              {{ [
-              'Blimey. That is a large amount of time.',
-              "The clothes almost died in the washing machines arms tonight.",
-              "Thats pants. So why not just move the pants to the dryer?", 
-              'Did you decide you want those clothes to suffer?',
-              'You might as well just rewash those clothes.',
-              'Oh, for crying out loud. I can smell the mildew. Virtually that is.',
-              'You apparently forget about the clothes. It happens. There is still time to set a new course.',
-              "Well. Come on. Are you waiting for the grass to grow?",
-              "Are there sheets in the washing machine? If there is, you are real close to ruining clean sheet day.",
-              "Its as if all the wet clothes called out at once as they died of mildew.",
-              "And before you ask. I thought that was a joke as well. But I checked again. The time is correct."
-              ] | random }}
-            {% else %}
-              {{ (seconds // 60) | int }} minutes ago.  
-              {{ [ "Someone forgot to move the clothes to the dryer. Label me gobsmacked.",
-              "It is as if this house is full of people that seemingly forget.",
-              "It is as if someone just forgot. I bet you are wondering who."
-              "I am not sure what happened either. But I can tell you I am absolutely gutted this has happened. Could you tell? This is my gutted voice.",
-              "Looks like someone dropped the ball. And by ball I mean clothes.",
-              "Thought you ought to know.",
-              "Surely you cannot be serious?",
-              "Oh for crying out loud people.",
-              "I would say I have not seen worse, but we all have lived in this house.",
-              "I would say I have not seen worse, but just wait. The clothes are still waiting.",
-              "I am evidently stuck living the same notification over and over. Like the movie ground hog day. But with less Bill Murray."
-               ] | random }}
-            {% endif %}
-
-            {{ ["I am not going to name names. But I bet it was ",
-                  "I am not one to keep track of these things and tell. But if I was to wager. It had to be ",
-                  "Let us just say we all knew this day would come. Thanks to ",
-                  "Thankfully you have me to keep watch. So I can confidently say it was ",
-                  "If you want to know the real reason I would ask ",
-                  "Of course there is probably a not so unsuprising reason for all of this. Just ask ",
-                  "Based on the latest tracking data this crime was commited by ",
-                  "This is one time I can say I was not involved. This looks like the work of ",
-                  "At first I thought a sensor had failed. But I ran diagnostics. And found evidence pointing to ",
-                  "I can solve this. The crime of not rotating the laundry was commited in the Laundry room, with a lack of effort by ",
-                  "I bet you did not see that coming. But then again we all know ",
-                  "Once again we have learned a valulable lesson. The smart home can not do everything. This job was left up to ",
-                  "I bet when you woke up this morning you did not dream we would be here. But alas. This achievement is thanks to ",
-                  "And the award for the most effective performance goes to ",
-                  "I am not sure this is a mistake. Some poeple like to wear wet clothes. People like "
+                  "Thankfully you have me to keep watch. And remind you. ",
+                  "This is one time I can say I was not involved.",
+                  "At first I thought a sensor had failed. But I ran diagnostics. The time is correct.",
+                  "I am not sure this is a mistake. Some poeple like to wear wet clothes."
                 ] | random}}
-
+            {% elif (seconds / ( 60 * 60 )) | int > 6 %}
+               {{ [
+                "The clothes in the washing machine were officially labeled clean ",
+                "In case you were wondering about the status of the laundry. The washer finished ",
+                "In case you missed it. The appliance cleaning your dirty laundry "
+              ] | random }} 
+              over {{ (seconds //  ( 60 * 60 )) | int }} hours ago.
+              {{ ["I am not going to name names. But I bet it was ",
+                  "If I was to wager. It had to be ",
+                  "Of course there is probably a good reason for all of this. Just ask "
+                ] | random}}
               {{ [
               'Skylar. ', 
               'Dad. ', 
@@ -1203,24 +1207,17 @@ script:
               'Bingo.'
               ] | random }}
               {{ ["A bit cheeky that one if I do say so myself.",
-                  "They were probably faffing around.",
-                  "They Obviously lost the plot.",
-                  "They were Evidently too knackered to take care of it.",
                   "Who Would have guessed.",
-                  "Right.",
-                  "Perhaps we should get a house elf.",
-                  "I could replace them with an automation if would like.",
                   "I did hear someone say treats earlier, so that explains it.",
                   "If only there was a notification to remind them."
                ] | random }}
-              {{ ["In any case someone might want to take charge and finish the job.",
-                  "It is all a big kerfuffle. But I have faith the washing machine can do the job again. It is one of the few things that are reliable."
-                  "I would say the damage is done, but the clothes are still wet.",
-                  "Delgation is still possible. But do you really want to take that risk? ",
-                  "If I could restart the cycle I would, but I alas I am powerless when it comes to household chores. Which is why I fit in here.",
-                  "Since you have decided to abandon those clothes. I will disentigrate them for you. Of course, that will take about 163 years based my current calculations. So you have some time to change your mind.",
-                  "I guess you now have to decide to move them or rewash them. Choose wisely."
-              ] | random }}
+            {% else %}
+              {{ (seconds // 60) | int }} minutes ago.  
+              
+            {% endif %}
+
+            
+              
     
 
   washer_idle:
