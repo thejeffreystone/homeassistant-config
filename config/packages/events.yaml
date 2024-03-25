@@ -722,44 +722,28 @@ script:
     - variables:
         message: >
           {{ greetings.general }} 
-          {{ ["Skyler",
-              "Skyman",
-              "" 
-          ] |random }}
+          
           {{ ["Got your jim jams on I see.",
               "Is that what you are planning to sleep in?",
               "You brushed your teeth right?",
               "Did you read for 20 minutes?"
-              "Time for a quick kip I see.",
               "Is it already time to kip down for the night?"
             ] | random }}
-          {{ ["Anyway,",
-              "Right,",
-              "Well then, ",
-              "Time to crack on then."
+          {{ ["Anyway.",
+              "Right.",
+              "Well then. "
             ] | random }}
           {{ [ 'I have initiated your bedtime routine. ',
           'I just kicked off your bedtime program. ',
-          'I am configuring your room according to your sleep preferences.',
-          'Your sleep preferences are being applied to the rooms devices.',
-          'I am importing your room preferences, and calibrating your lighting.',
-          'Time to wrap things up I guess.',
-          'Guess it is time to shut it down the house.',
           'Initiating Bed time protocol.'
           ] | random }} 
-          {{ [ "Which is good, because",
-              "Blimey!",
-              "Have you been faffing around all day? Because ",
-              "What were you doing today? Something wild no doubt ",
-              "Oh,",
+          {{ [ "Which is good. Because",
+              "Blimey! What were you doing today?",
               "Wait. This can not be right.",
               "Listen. Did you know ",
-              "Well this explains it. ",
-              "Look at that."
+              "Well Look at that."
            ] | random }}          
           it appears you have been awake for {{ awake_for }}.
-
-
 
           {{ school_info.school_tomorrow}}
 
@@ -767,27 +751,20 @@ script:
 
           {{ school_info.lunch_tomorrow}}
 
-          {{ ["Tomorrow appears to be a busy one.",
+          {{ ["Tomorrow might be a busy one.",
               "Looks like tomorrow will be a fun day.",
               "I hope you are ready for tomorrow.",
-              "Exiting day waiting for you tomorrow it seems." 
+              "Exciting day waiting for you tomorrow it seems." 
             ] | random }}
 
           {{ [ 'I have set your alarm according to your schedule tomorrow. ',
           'I have adjusted your alarm for the morning. ',
-          'I took the liberty to reconfigure your morning alarm.',
-          'I adjusted your morning alarm to wake you up based on your schedule.',
           'I went ahead and made sure your alarm is ready.'
           ] | random }} 
-
-          {{ [ 'All wrapped up here, sir. ',
-          'Alight, I am done. ',
-          'I guess that is all I have.'
-          ] | random }}
-
-          {{ [ 'Good night Skyler. ',
-              'Sleep well Skyler. ',
-              'Sweet dreams Skyler. '
+          
+          {{ [ 'Good night. ',
+              'Sleep well. ',
+              'Sweet dreams. '
             ] | random }}
     - service: script.cleanup_text
       data:
@@ -801,6 +778,14 @@ script:
         - media_player.skylars_echo
         volume_level: >
           {{ states('input_number.skylar_room_notification_volume') | float}}
+    - service: script.local_audio
+      data:
+        media: >
+          {{ [ 
+            "/media/disney/KissGoodnight_short.mp3"
+            ] | random }}
+        volume: .30
+        speaker: skylars_bedroom
     - delay: "00:00:03"
     - service: script.speech_engine
       data: 
