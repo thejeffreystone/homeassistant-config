@@ -1,0 +1,28 @@
+automation:
+ -  alias: Generate sensor dash on restart
+    description: ""
+    trigger:
+      - platform: homeassistant
+        event: start
+    condition: []
+    action:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 30
+      - service: pyscript.generate_sensors_dash
+        data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+      - service: pyscript.generate_automation
+        data: {}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+      - service:  automation.reload
+        data: {}
+         
+    mode: single
