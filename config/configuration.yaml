@@ -13,6 +13,21 @@ homeassistant:
     books: /media/books
     images: /media/images
 
+#config for pyscript
+pyscript:
+  allow_all_imports: true
+  hass_is_global: true
+#config for lovelace dash
+lovelace:
+  mode: storage
+  dashboards:
+    lovelace-roomsense:
+      mode: yaml
+      title: RoomSense IQ
+      icon: mdi:script
+      show_in_sidebar: true
+      filename: dashboards.yaml
+
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
@@ -46,9 +61,9 @@ device_tracker:
   - platform: eero_tracker
     consider_home: 300
     interval_seconds: 60
-    only_macs: "68:54:fd:29:20:87, 68:54:fd:d5:ae:3d, 50:dc:e7:5b:10:69, 2c:cc:44:bf:9b:b4, 28:18:78:74:79:10, 44:61:32:f8:c8:09, 64:cf:d9:3c:5d:0c, 50:02:91:ed:2c:47, ec:71:db:31:0e:6c, 4e:6d:02:24:ac:87, 7c:1c:4e:2e:62:30, dc:03:98:3e:a9:6d"
+    only_macs: "68:54:fd:29:20:87, 68:54:fd:d5:ae:3d, 50:dc:e7:5b:10:69, 2c:cc:44:bf:9b:b4, 28:18:78:74:79:10, 44:61:32:f8:c8:09, 64:cf:d9:3c:5d:0c, 50:02:91:ed:2c:47, ec:71:db:31:0e:6c, 4e:6d:02:24:ac:87, 7c:1c:4e:2e:62:30, dc:03:98:3e:a9:6d, 9E:3E:65:49:38:2A"
 
-discovery:
+# discovery:
 
 
 
@@ -85,20 +100,16 @@ binary_sensor:
   before: sunset
 - platform: tod
   name: Quiet time
-  after: '21:00'
-  before: '06:00'
+  after: '22:00'
+  before: '05:30'
 - platform: tod
   name: Lights Out
   after: '23:00'
-  before: '06:00'
+  before: '05:30'
 - platform: tod
   name: Morning
-  after: '06:00'
+  after: '05:30'
   before: '08:30'
-- platform: tod
-  name: Midday
-  after: '08:30'
-  before: '17:00'
 - platform: tod
   name: Evening
   after: '17:00'
@@ -106,7 +117,7 @@ binary_sensor:
 - platform: tod
   name: Overnight
   after: '18:00'
-  before: '06:00'
+  before: '05:30'
 
 ### Includes ###
 automation: !include automations.yaml
