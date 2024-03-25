@@ -96,8 +96,8 @@ automation:
     alias: studio_announcements
     trigger:
     - platform: state
-      entity_id: sensor.jeff_room
-      to: 'studio'
+      entity_id: binary_sensor.slacker_labs_motion_occupancy
+      to: 'on'
       id: welcome
     - platform: template
       value_template: >-
@@ -115,6 +115,9 @@ automation:
           - condition: state
             entity_id: binary_sensor.morning
             state: 'on'
+          - condition: state
+            entity_id: sensor.jeff_room
+            state: 'studio'
         sequence:
           - service: script.studio_welcome_msg
           - service: input_boolean.turn_off
@@ -466,7 +469,7 @@ script:
           {{[
             'Do not forget to grab some breakfast.',
             'I hope you have a good day.',
-            'Be sure to grab soem food.',
+            'Be sure to grab some food.',
             'Looks like an exciting day out there.' 
           ] | random }}
     - service: script.cleanup_text
@@ -474,6 +477,16 @@ script:
         message: >
           {{ message }}
       response_variable: "cleaned_briefing"
+    - service: script.local_audio
+      data:
+        media: >
+          {{ [ 
+            "/media/disney/monorail_chime.mp3",
+            "/media/disney/SkylinerChime.mp3"
+            ] | random }}
+        volume: .70
+        speaker: skylars_bedroom
+    - delay: "00:00:07"
     - service: script.speech_engine
       data: 
           who: skylars_bedroom
@@ -646,11 +659,11 @@ script:
               'I see you made it you made it to another day.'
             ] | random }}
           device_status: >
-            {% set level = states('sensor.jeffrey_ha_app_battery_level') %}
-            {% set charging = states('sensor.jeffrey_ha_app_battery_state') %}
+            {% set level = states('sensor.jeffreys_iphone_11_battery_level') %}
+            {% set charging = states('sensor.jeffreys_iphone_11_battery_state') %}
             {% set level2 = states('sensor.jeffreys_ipad_battery_level') %}
             {% set charging2 = states('sensor.jeffreys_ipad_battery_state') %}
-            {% if has_value('sensor.jeffrey_ha_app_battery_level') %}
+            {% if has_value('sensor.jeffreys_iphone_11_battery_level') %}
               {{ [
                 'Your phone is currently at ' ~ level ~ ' percent.',
                 'You have ' ~ level ~ ' percent remaining on your devices battery.',
@@ -865,6 +878,15 @@ script:
         message: >
           {{ message }}
       response_variable: "cleaned_briefing"
+    - service: script.local_audio
+      data:
+        media: >
+          {{ [ 
+            "/media/disney/SkylinerChime.mp3"
+            ] | random }}
+        volume: .40
+        speaker: master_bedroom
+    - delay: "00:00:07"
     - service: script.speech_engine
       data:
         who: master_bedroom
