@@ -645,6 +645,8 @@
     light.theater_lights:
       state: 'on'
       brightness: 25
+    light.theater_main_lights:
+      state: 'off'
   id: 641f194690c444f6a75676fe5defd808
 - name: theater bright
   entities:
