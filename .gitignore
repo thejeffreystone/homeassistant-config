@@ -3,38 +3,50 @@ update_git.py
 transporter.py
 
 # ignore hidden folders
-/config/.storage
-/config/.cloud
-/config/.google.token
+**.aarlo/
+**.storage/
+**.cloud/
+**.google.token
 
 # ignore some directories.
-/config/icloud/
-/config/www/
-/config/tts/
-/config/deps/
-/config/hadashboards/
-/config/intents/
-/config/themes/
-/config/custom_components
-/config/deps
-/config/hacs
-/config/zigbee2mqtt/
-/config/custom_components/localtuya/__pycache__/
-
+**/icloud/
+**/www/
+**/tts/
+**/deps/
+**/hadashboards/
+**/intents/
+**/themes/
+**/custom_components
+**/deps
+**/hacs
+**/zigbee2mqtt/
+**/__pycache__/
+**/zha_quirks/
+**/templates/
+**/pyscript/
+**python_scripts/
+**/life360/
+**/images/
+**/trash/
 
 # ignore any of these files no matter where they are using double *
 **.DS_Store
 **._*
 **.HA_VERSION
+**.ini
 **.pyc
 **.conf
 **.uuid
 **.txt
-**.log
+**.log*
 **.db
 **.sqlite
 **.xml
 **secrets*
+**.session
+**.*.json
+**.ip_authenticated.yaml
+**eero_tracker_instantiate.py
 **known_devices.yaml
 **google_calendars.yaml
 **ip_bans.yaml
@@ -49,10 +61,9 @@ transporter.py
 **.csr
 **.crt
 **.key
+**.pem
 **core.*
 **OZW_Log.txt
-**home-assistant.log
-**home-assistant_v2.db
 **.db-journal
 **.db-shm
 **.db-wal
