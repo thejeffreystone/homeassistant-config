@@ -91,17 +91,30 @@ script:
       response_variable: "cleaned"
 
   get_room_services:
+    fields:
+      room:
+        selector:
+          select:
+            options:
+              - jeff
+              - kat
+              - skylar
+              - living room
+              - theater
+              - studio
+              - master bedroom
+              - skylars bedroom
+        name: room
+        description: Where to send notification
+        required: False
+        default: living room
     sequence:
     - variables:
         room_priority: >
-          {% if room is defined %}
-            {% if room in ['jeff','kat','skylar']%}
-              {{ states('sensor.'~room~'_room') }}
-            {% else %}
-              {{ room }}          
-            {% endif %}
+          {% if room in ['jeff','kat','skylar']%}
+            {{ states('sensor.'~room~'_room') }}
           {% else %}
-            NA         
+            {{ room }}          
           {% endif %}
         room_services: >-
           {% set jarvis_speaker = states.media_player | 
@@ -117,24 +130,49 @@ script:
               map(attribute='entity_id') |
             list | first %}
 
+
           {% set tts = 'amp' %}
           {"area":"{{room}}","jarvis_speaker":"{{jarvis_speaker}}","jarvis_tts":"{{tts}}","audio_speaker":"{{audio_speaker}}"}
     - stop: "ok, Im done."
       response_variable: "room_services"          
 
-  get_room_audio:
+  get_audio_services:
+    fields:
+      room:
+        selector:
+          select:
+            options:
+              - jeff
+              - kat
+              - skylar
+              - living room
+              - theater
+              - studio
+              - master bedroom
+              - skylars bedroom
+        name: room
+        description: Room where to Send Audio
+        required: true
+        default: living room
+      type:
+        selector:
+          select:
+            options:
+              - normal
+              - notification
+              - briefing
+              - weather_alert
+              - weather_advisory
+              - alert
+              - goodnight
+        name: type
+        description: Type of notification
+        required: true
+        default: normal
     sequence:
     - service: script.get_room_presence
       response_variable: "presence"
     - variables:
-        type: >
-          {% if type == 'alert' %}
-            alert
-          {% elif room in ['jeff','kat','skylar'] or type in ['priority','briefing'] %}
-            priority
-          {% else %}
-            normal
-          {% endif %}
         room_priority: >
           {% if room is defined %}
             {% if room in ['jeff','kat','skylar']%}
@@ -156,13 +194,32 @@ script:
           {% if type == 'alert'%}
             {% set jarvis_speaker = states.media_player | 
               rejectattr('attributes.last_called', 'undefined') |
-              rejectattr('entity_id', 'search', '(skyman|this_device|everywhere)') |
+              rejectattr('entity_id', 'search', '(skyman|this_device|everywhere|skylars)') |
               map(attribute='entity_id') |
               list | join(',') %}
             {% set audio_speaker = 'none' %}
             {% set tts = 'amp' %}
             {% set room = 'all' %}
-          {% elif type in ['priority','briefing'] %} 
+          {% elif is_state('input_boolean.audible_notifications', 'off')%}
+            {% set room = 'text' %}
+            {% set jarvis_speaker = 'none' %}
+            {% set audio_speaker = 'none' %}
+            {% set tts = 'text' %}
+          {% elif is_state('input_boolean.vacation_mode', 'on')%}
+            {% set room = 'text' %}
+            {% set jarvis_speaker = 'none' %}
+            {% set audio_speaker = 'none' %}
+            {% set tts = 'text' %}
+          {% elif type == 'normal'%}
+            {% set jarvis_speaker = states.media_player | 
+              rejectattr('attributes.last_called', 'undefined') |
+              rejectattr('entity_id', 'search', '(skyman|this_device|everywhere|bedroom|skylars)') |
+              map(attribute='entity_id') |
+              list | join(',') %}
+            {% set audio_speaker = 'none' %}
+            {% set tts = 'amp' %}
+            {% set room = 'all' %}
+          {% elif room in ['jeff','kat','skylar'] %} 
             {% set room = room_priority |
             replace('master_bedroom','Master Bedroom') |
             replace('living_room','Living Room') |
@@ -209,3 +266,214 @@ script:
           "type":"{{type}}"}
     - stop: "ok, Im done."
       response_variable: "room_services"
+
+  get_room_mediaplayer:
+    fields:
+      room:
+        selector:
+          text:
+        name: room
+        description: Name or ID of the Room or Area
+        required: true
+      label:
+        selector:
+          text:
+        name: label
+        description: Label of the entities you want to target
+        required: true
+    sequence:
+    - variables:
+        room_entities: >-
+          {% set entities = states.media_player | expand(label_entities(label)) |
+                selectattr('entity_id', 'in', area_entities(room)) |
+                map(attribute='entity_id') |
+                list | first %}
+
+          {"area":"{{room}}","label":"{{label}}","entities":"{{entities}}"}
+    - stop: "ok, Im done."
+      response_variable: "room_entities"
+
+  get_room_audio:
+    sequence:
+    - service: script.get_room_presence
+      response_variable: "presence"
+    - variables:
+        type: >
+          {% if type in ['alert','priority','briefing','goodnight','weather_alert','weather_advisory','notification','gong','tornado','alarm','intercom'] %}
+            {{type}}
+          {% elif room in ['jeff','kat','skylar'] %}
+            priority
+          {% else %}
+            normal
+          {% endif %}
+        room_priority: >
+          {% if room is defined %}
+            {% if room in ['jeff','kat','skylar']%}
+              {{ states('sensor.'~room~'_room') }}
+            {% else %}
+              {{ room }}          
+            {% endif %}
+          {% else %}
+            NA         
+          {% endif %}
+        rooms: >
+          {{ presence.occupied_rooms |
+            replace('master_bedroom','Master Bedroom') |
+            replace('living_room','Living Room') |
+            replace('pot_studio','Pottery Studio') |
+            replace('skylars_bedroom','Skylars Bedroom') |
+            replace('kitchen','Living Room')  }}
+        room_services: >
+          {% if type in ['alarm','weather-alert','weather-advisory','tornado'] %}
+            {% set jarvis_speaker = 'media_player.all_rooms' %}
+            {% set audio_speaker = 'media_player.all_rooms' %}
+            {% set tts = 'ncc' %}
+            {% set room = 'all' %}
+
+          {% elif room_priority != 'NA'  %}
+            {% set room = room_priority |
+            replace('master_bedroom','Master Bedroom') |
+            replace('living_room','Living Room') |
+            replace('pot_studio','Pottery Studio') |
+            replace('skylars_bedroom','Skylars Bedroom') |
+            replace('kitchen','Living Room') %}
+
+            {% set jarvis_speaker = expand(label_entities('Amazon Speakers')) |
+                selectattr('entity_id', 'in', area_entities(room)) |
+                map(attribute='entity_id') |
+              list | first %}
+
+            {% set audio_speaker = expand(label_entities('Google Speakers')) |
+                selectattr('entity_id', 'in', area_entities(room)) |
+                map(attribute='entity_id') |
+              list | first %}
+
+            {% set tts = 'ncc' %}
+          {% elif room_priority == 'NA' %}
+            {% set ns = namespace(area_speakers = []) %}
+            {% set nsa = namespace(audio_speakers = []) %}
+            {% for room in rooms %}
+              {% set ns.area_speakers = ns.area_speakers + expand(label_entities('Amazon Speakers')) |
+                selectattr('entity_id', 'in', area_entities(room)) |
+                map(attribute='entity_id') | list %}
+              {% set nsa.audio_speakers = nsa.audio_speakers + expand(label_entities('Google Speakers')) |
+                selectattr('entity_id', 'in', area_entities(room)) |
+                map(attribute='entity_id') | list %}
+            {% endfor %}
+            {% set jarvis_speaker = ns.area_speakers | join(',') %}
+            {% set room = rooms | join(',') %}
+            {% set audio_speaker = nsa.audio_speakers | join(',') %}
+            {% set tts = 'ncc' %}
+          {% else %} 
+            {% set room = 'none' %}
+            {% set jarvis_speaker = 'none' %}
+            {% set audio_speaker = 'none' %}
+            {% set tts = 'none' %}
+          {% endif %}
+
+          {"area":"{{room}}",
+          "jarvis_speaker":"{{jarvis_speaker}}",
+          "jarvis_tts":"{{tts}}",
+          "audio_speaker":"{{audio_speaker}}",
+          "type":"{{type}}",
+          "room_priority":"{{room_priority}}"}
+    - stop: "ok, Im done."
+      response_variable: "room_services"
+
+  # get_room_audio:
+  #   sequence:
+  #   - service: script.get_room_presence
+  #     response_variable: "presence"
+  #   - variables:
+  #       type: >
+  #         {% if type in ['alert','priority','briefing','goodnight','weather_alert','weather_advisory','notification','gong','tornado','alarm'] %}
+  #           {{type}}
+  #         {% elif room in ['jeff','kat','skylar'] %}
+  #           priority
+  #         {% else %}
+  #           normal
+  #         {% endif %}
+  #       room_priority: >
+  #         {% if room is defined %}
+  #           {% if room in ['jeff','kat','skylar']%}
+  #             {{ states('sensor.'~room~'_room') }}
+  #           {% else %}
+  #             {{ room }}          
+  #           {% endif %}
+  #         {% else %}
+  #           NA         
+  #         {% endif %}
+  #       rooms: >
+  #         {{ presence.occupied_rooms |
+  #           replace('master_bedroom','Master Bedroom') |
+  #           replace('living_room','Living Room') |
+  #           replace('pot_studio','Pottery Studio') |
+  #           replace('skylars_bedroom','Skylars Bedroom') |
+  #           replace('kitchen','Living Room')  }}
+  #       room_services: >
+  #         {% if type in ['alert','tornado','alarm'] %}
+  #           {% set jarvis_speaker = states.media_player | 
+  #             rejectattr('attributes.last_called', 'undefined') |
+  #             rejectattr('entity_id', 'search', '(skyman|this_device|everywhere)') |
+  #             map(attribute='entity_id') |
+  #             list | join(',') %}
+  #           {% set audio_speaker = 'none' %}
+  #           {% set tts = 'amp' %}
+  #           {% set room = 'all' %}
+          
+  #         {% elif type in ['priority','goodnight','gong'] %} 
+  #           {% set room = room_priority |
+  #           replace('master_bedroom','Master Bedroom') |
+  #           replace('living_room','Living Room') |
+  #           replace('pot_studio','Pottery Studio') |
+  #           replace('skylars_bedroom','Skylars Bedroom') |
+  #           replace('kitchen','Living Room') %}
+
+  #           {% set jarvis_speaker = states.media_player | 
+  #               rejectattr('attributes.last_called', 'undefined') |
+  #               selectattr('entity_id', 'in', area_entities(room)) |
+  #               map(attribute='entity_id') |
+  #             list | first %}
+
+  #           {% set audio_speaker = states.media_player | 
+  #               rejectattr('attributes.device_class', 'undefined') |
+  #               selectattr('attributes.device_class', 'search', '(speaker)') | 
+  #               selectattr('entity_id', 'in', area_entities(room)) |
+  #               map(attribute='entity_id') |
+  #             list | first %}
+            
+  #           {% set tts = 'amp' %}
+  #         {% elif type in ['normal','briefing','weather-alert','weather-advisory','notification'] %}
+  #           {% set ns = namespace(area_speakers = []) %}
+  #           {% set nsa = namespace(audio_speakers = []) %}
+  #           {% for room in rooms %}
+  #             {% set ns.area_speakers = ns.area_speakers + states.media_player | 
+  #             rejectattr('attributes.last_called', 'undefined') |
+  #             selectattr('entity_id', 'in', area_entities(room))|
+  #             map(attribute='entity_id') | list %}
+  #           {% endfor %}
+  #           {% for room in rooms %}
+  #             {% set nsa.audio_speakers = nsa.audio_speakers + states.media_player | 
+  #               rejectattr('attributes.device_class', 'undefined') |
+  #               selectattr('attributes.device_class', 'search', '(speaker)') | 
+  #               selectattr('entity_id', 'in', area_entities(room)) |
+  #               map(attribute='entity_id') | list %}
+  #           {% endfor %}  
+  #           {% set jarvis_speaker = ns.area_speakers | join(',') %}
+  #           {% set room = rooms | join(',') %}
+  #           {% set audio_speaker = nsa.audio_speakers | join(',') %}
+  #           {% set tts = 'amp' %}
+  #         {% else %} 
+  #           {% set room = 'none' %}
+  #           {% set jarvis_speaker = 'none' %}
+  #           {% set audio_speaker = 'none' %}
+  #           {% set tts = 'none' %}
+  #         {% endif %}
+
+  #         {"area":"{{room}}",
+  #         "jarvis_speaker":"{{jarvis_speaker}}",
+  #         "jarvis_tts":"{{tts}}",
+  #         "audio_speaker":"{{audio_speaker}}",
+  #         "type":"{{type}}"}
+  #   - stop: "ok, Im done."
+  #     response_variable: "room_services"
